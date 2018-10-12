@@ -51,3 +51,8 @@ It helps me to imagine that instead of white balls we have solid white marble
 blocks, and instead of red balls we have thin red cards. Initially there's just
 one place to drop a card between two marble blocks, but once we drop a card in
 there, there are now two places to drop a second card, and so on.
+
+Once we've dropped in all the cards, we pour water on them, and they swell into
+balls, pushing along the marble blocks and balls to their right to make space
+for themselves. So each red ball moves along by as many slots as it has red
+balls to its left; that's what the sort and the last line does.
