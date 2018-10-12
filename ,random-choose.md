@@ -7,9 +7,10 @@ The obvious way to do it: generate a candidate, reject if it's already been
 generated, repeat until you have k. However that's not linear time; if you're
 asked for (n=20, k=19) you will reject a lot of samples.
 
-What I like about this way: you don't have to store the samples generated so far
-in anything more complex than a list, and you don't have to crawl over them all
-for a new sample either.
+What I like about this way: there's no rejection sampling so it always finishes
+in k steps, you don't have to store the samples generated so far in anything
+more complex than a list, and you don't have to crawl over them all for a new
+sample either.
 
 Intuition: supposing you have (n=7, k=3). So you have three red balls out of
 seven balls total; let's say the other four balls are white. Start with the four
