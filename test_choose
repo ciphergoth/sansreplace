@@ -4,6 +4,13 @@ import argparse
 
 import choose
 
+def binomial(n, k):
+    r = 1
+    for i in range(min(k, n - k)):
+        r *= n - i
+        r //= i + 1
+    return r
+
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('n', type=int)
@@ -21,6 +28,7 @@ def main():
     if len(counts) <= args.show_max:
         for k, v in sorted(counts.items()):
             print(f"{k}: {v}")
+    print(len(counts), binomial(args.n, args.k))
     print(min(counts.values()), max(counts.values()))
 
 if __name__ == '__main__':
