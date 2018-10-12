@@ -1,3 +1,5 @@
+import random
+
 def choose(n, k):
     "k distinct integers 0 <= x < n, sorted"
     t = n - k + 1

@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+import argparse
+
+import choose
+
+def parse_args():
+    p = argparse.ArgumentParser()
+    p.add_argument('n', type=int)
+    p.add_argument('k', type=int)
+    p.add_argument('--tests', type=int, default=100000)
+    p.add_argument('--show-max', type=int, default=21)
+    return p.parse_args()
+
+def main():
+    args = parse_args()
+    counts = {}
+    for _ in range(args.tests):
+        r = tuple(choose.choose(args.n, args.k))
+        counts[r] = 1 + counts.get(r, 0)
+    if len(counts) <= args.show_max:
+        for k, v in sorted(counts.items()):
+            print(f"{k}: {v}")
+    print(min(counts.values()), max(counts.values()))
+
+if __name__ == '__main__':
+    main()
