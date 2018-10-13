@@ -4,8 +4,8 @@ def choose(n, k):
     "k distinct integers 0 <= x < n, sorted"
     t = n - k + 1
     d = []
-    for _ in range(k):
-        r = random.randrange(t + len(d))
+    for i in range(k):
+        r = random.randrange(t + i)
         if r < t:
             d.append(r)
         else:
