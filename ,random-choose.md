@@ -72,3 +72,18 @@ that's what the sort and the last line does.
 
      O x x O O x O
      0 1 2 3 4 5 6
+
+## Alternate algorithms
+
+Any algorithm can be turned into one with a "sorted" order guarantee
+with an O(k log k) sort, or a "random" order guarantee with an O(k)
+Fisher-Yates shuffle.
+
+Order guarantee | Time | Data structures | Algorithm
+----|----|----|----
+Random | k  | Set | rejection sampling
+Sorted | k log k | none | this algorithm
+Sorted | n | none | iterative random choosing
+Random | n | n-sized list | Python-style Fisher-Yates
+Random | k | Dictionary | Selby Fisher-Yates
+none | k | Set | Floyd's F2
