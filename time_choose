@@ -42,10 +42,10 @@ def main():
             'rejectionsample', 'selby_fy']
     modules = [(m, getattr(importlib.import_module(m), args.method))
         for m in modules]
-    for np in range(1,21):
-        n = 1 << np
+    for np in range(1,7):
+        n = 10**np
         for kp in range(0, np):
-            k = 1 << kp
+            k = 10**kp
             print(f"{n:7} choose {k:7}")
             l = []
             for name, choose in modules:
