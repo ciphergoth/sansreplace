@@ -33,7 +33,7 @@ def test_choose(args, name, choose, n, k):
     while True:
         inittime = time_test(choose, n, k, initruns)
         if inittime * 10 >= args.test_time:
-            num_tests = int(args.test_time * initruns / inittime)
+            num_tests = max(1, int(args.test_time * initruns / inittime))
             break
         initruns *= 10
     res = time_test(choose, n, k, num_tests) / num_tests
