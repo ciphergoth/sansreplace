@@ -2,7 +2,7 @@
 
 import argparse
 
-import choose
+import importlib
 
 def binomial(n, k):
     r = 1
@@ -11,25 +11,30 @@ def binomial(n, k):
         r //= i + 1
     return r
 
-def parse_args():
-    p = argparse.ArgumentParser()
-    p.add_argument('n', type=int)
-    p.add_argument('k', type=int)
-    p.add_argument('--tests', type=int, default=100000)
-    p.add_argument('--show-max', type=int, default=21)
-    return p.parse_args()
-
-def main():
-    args = parse_args()
+def test_choose(args, choose):
     counts = {}
     for _ in range(args.tests):
-        r = tuple(choose.choose(args.n, args.k))
+        r = tuple(choose(args.n, args.k))
         counts[r] = 1 + counts.get(r, 0)
     if len(counts) <= args.show_max:
         for k, v in sorted(counts.items()):
             print(f"{k}: {v}")
     print(len(counts), binomial(args.n, args.k))
     print(min(counts.values()), max(counts.values()))
+
+def parse_args():
+    p = argparse.ArgumentParser()
+    p.add_argument('n', type=int)
+    p.add_argument('k', type=int)
+    p.add_argument('--tests', type=int, default=100000)
+    p.add_argument('--show-max', type=int, default=21)
+    p.add_argument('--module', default='choose')
+    return p.parse_args()
+
+def main():
+    args = parse_args()
+    m = importlib.import_module(args.module)
+    test_choose(args, m.choose)
 
 if __name__ == '__main__':
     main()
