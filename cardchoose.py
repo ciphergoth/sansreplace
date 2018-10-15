@@ -11,4 +11,6 @@ def choose(n, k):
         else:
             d[i] = d[r - t]
     d.sort()
-    return [i + v for i, v in enumerate(d)]
+    for i in range(k):
+        d[i] += i
+    return d
