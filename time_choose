@@ -37,7 +37,7 @@ def test_choose(args, name, choose, n, k):
             break
         initruns *= 10
     res = time_test(choose, n, k, num_tests) / num_tests
-    print(f"    {res:10.1g}s {name}")
+    print(f"    {res:10.3g}s {name}")
     return res
 
 def parse_args():
