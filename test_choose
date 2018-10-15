@@ -29,12 +29,13 @@ def parse_args():
     p.add_argument('--tests', type=int, default=100000)
     p.add_argument('--show-max', type=int, default=21)
     p.add_argument('--module', default='cardchoose')
+    p.add_argument('--method', default='sorted_choose')
     return p.parse_args()
 
 def main():
     args = parse_args()
     m = importlib.import_module(args.module)
-    test_choose(args, m.choose)
+    test_choose(args, getattr(m, args.method))
 
 if __name__ == '__main__':
     main()

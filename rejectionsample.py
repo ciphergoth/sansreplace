@@ -1,6 +1,6 @@
 import random
 
-def choose(n, k):
+def random_choose(n, k):
     "k distinct integers 0 <= x < n, random"
     d = []
     r = set()
@@ -9,4 +9,9 @@ def choose(n, k):
         if j not in r:
             d.append(j)
             r.add(j)
+    return d
+
+def sorted_choose(n, k):
+    d = random_choose(n, k)
+    d.sort()
     return d

@@ -29,6 +29,7 @@ def test_choose(args, name, choose, n, k):
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('--test-ns', type=int, default=1000000000)
+    p.add_argument('--method', default='sorted_choose')
     p.add_argument('--module', action='append')
     return p.parse_args()
 
@@ -39,7 +40,7 @@ def main():
         # iterativechoose is always terrible, leave it out
         modules = ['cardchoose', 'fisheryates', 'floydf2',
             'rejectionsample', 'selby_fy']
-    modules = [(m, importlib.import_module(m).choose)
+    modules = [(m, getattr(importlib.import_module(m), args.method))
         for m in modules]
     for np in range(1,21):
         n = 1 << np
@@ -51,7 +52,7 @@ def main():
                 t = test_choose(args, name, choose, n, k)
                 l.append((t, name))
             l.sort()
-            threshhold = l[0][0] * 2
+            threshhold = l[0][0] * 1.5
             winners = [e[1] for e in l if e[0] <= threshhold]
             print(f"{n:7} choose {k:7} winners: {', '.join(winners)}")
             print()
