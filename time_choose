@@ -20,7 +20,8 @@ def test_choose(args, name, choose):
             break
         initruns *= 10
     res = time_test(choose, args.n, args.k, num_tests) / num_tests
-    print(f"{res:.0f}ns {name}")
+    print(f"{res*0.001:10.1f}μs {name}")
+    return res
 
 def parse_args():
     p = argparse.ArgumentParser()
