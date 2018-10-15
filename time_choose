@@ -1,34 +1,34 @@
 #!/usr/bin/env python3
 
 import argparse
+import gc
 import importlib
 import time
 
 def time_test(choose, n, k, iters):
+    gc.disable()
     start = time.process_time_ns()
     for _ in range(iters):
         choose(n, k)
     finish = time.process_time_ns()
+    gc.enable()
     return finish - start
 
-def test_choose(args, name, choose):
+def test_choose(args, name, choose, n, k):
     initruns = 1
     while True:
-        inittime = time_test(choose, args.n, args.k, initruns)
+        inittime = time_test(choose, n, k, initruns)
         if inittime * 10 >= args.test_ns:
             num_tests = args.test_ns * initruns // inittime
             break
         initruns *= 10
-    res = time_test(choose, args.n, args.k, num_tests) / num_tests
-    print(f"{res*0.001:10.1f}μs {name}")
+    res = time_test(choose, n, k, num_tests) / num_tests
+    print(f"    {res*0.001:10.1f}μs {name}")
     return res
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument('n', type=int)
-    p.add_argument('k', type=int)
     p.add_argument('--test-ns', type=int, default=1000000000)
-    p.add_argument('--show-max', type=int, default=21)
     p.add_argument('--module', action='append')
     return p.parse_args()
 
@@ -36,12 +36,24 @@ def main():
     args = parse_args()
     modules = args.module
     if modules is None:
+        # iterativechoose is always terrible, leave it out
         modules = ['cardchoose', 'fisheryates', 'floydf2',
-            'iterativechoose', 'rejectionsample', 'selbychoose']
+            'rejectionsample', 'selbychoose']
     modules = [(m, importlib.import_module(m).choose)
         for m in modules]
-    for name, choose in modules:
-        test_choose(args, name, choose)
-
+    for np in range(1,21):
+        n = 1 << np
+        for kp in range(0, np):
+            k = 1 << kp
+            print(f"{n:7} choose {k:7}")
+            l = []
+            for name, choose in modules:
+                t = test_choose(args, name, choose, n, k)
+                l.append((t, name))
+            l.sort()
+            threshhold = l[0][0] * 2
+            winners = [e[1] for e in l if e[0] <= threshhold]
+            print(f"{n:7} choose {k:7} winners: {', '.join(winners)}")
+            print()
 if __name__ == '__main__':
     main()
