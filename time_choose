@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import argparse
+import importlib
+import time
+
+def test_choose(args, name, choose):
+    start = time.process_time_ns()
+    for _ in range(args.tests):
+        choose(args.n, args.k)
+    finish = time.process_time_ns()
+    print(f"{(finish - start)/args.tests:.0f}ns {name}")
+
+def parse_args():
+    p = argparse.ArgumentParser()
+    p.add_argument('n', type=int)
+    p.add_argument('k', type=int)
+    p.add_argument('--tests', type=int, default=100000)
+    p.add_argument('--show-max', type=int, default=21)
+    p.add_argument('--module', action='append')
+    return p.parse_args()
+
+def main():
+    args = parse_args()
+    modules = args.module
+    if modules is None:
+        modules = ['cardchoose', 'fisheryates', 'floydf2',
+            'iterativechoose', 'rejectionsample', 'selbychoose']
+    modules = [(m, importlib.import_module(m).choose)
+        for m in modules]
+    for name, choose in modules:
+        test_choose(args, name, choose)
+
+if __name__ == '__main__':
+    main()
