@@ -1,7 +1,7 @@
 # Random choice algorithm
 
-[`choose.py`](choose.py) generates k distinct natural numbers less than n, in
-sorted order, fairly among all the ways of doing so.
+[`cardchoose.py`](cardchoose.py) generates k distinct natural numbers less than
+n, in sorted order, fairly among all the ways of doing so.
 
 The obvious way to do it: generate a candidate, reject if it's already been
 generated, repeat until you have k, then sort. But a dictionary is a big data
@@ -79,11 +79,11 @@ Any algorithm can be turned into one with a "sorted" order guarantee
 with an O(k log k) sort, or a "random" order guarantee with an O(k)
 Fisher-Yates shuffle.
 
-Order guarantee | Time | Data structures | Algorithm
-----|----|----|----
-Random | k  | Set | rejection sampling
-Sorted | k log k | none | this algorithm
-Sorted | n | none | iterative random choosing
-Random | n | n-sized list | Python-style Fisher-Yates
-Random | k | Dictionary | Selby Fisher-Yates
-none | k | Set | Floyd's F2
+Order guarantee | Time | Data structures | Algorithm | File
+----|----|----|----|----
+Random | k  | Set | rejection sampling | `rejectionsample.py`
+Sorted | k log k | none | this algorithm | `cardchoose.py`
+Sorted | n | none | iterative random choosing | `iterativechoose.py`
+Random | n | n-sized list | Python-style Fisher-Yates | `fisheryates.py`
+Random | k | Dictionary | Selby Fisher-Yates | `selby_fy.py`
+none | k | Set | Floyd's F2 | `floydf2.py`
