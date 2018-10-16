@@ -17,7 +17,17 @@ void cardchoose(int n, int k, int *result) {
         }
     }
     std::sort(result, result + k);
+#if 0
     for (int i = 0; i < k; i++) {
         result[i] += i;
     }
+#else
+    for (int i = 0; i < k; i++) {
+        std::uniform_int_distribution<int> distribution(0, i);
+        int r = distribution(generator);
+        auto t = result[i] + i;
+        result[i] = result[r];
+        result[r] = t;
+    }
+#endif
 }
