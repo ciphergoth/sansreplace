@@ -53,12 +53,22 @@ struct timeable totime[] = {
     {"", nullptr}
 };
 
-int main() {
+static void time_all(int n, int k) {
     std::chrono::seconds sec(1);
     struct timeable *tm;
     for (tm = totime; tm->func; tm++) {
-        auto time_s = timefunc_for(sec, 100, 10, tm->func).count();
+        auto time_s = timefunc_for(sec, n, k, tm->func).count();
         std::cout << tm->name << " " << time_s << std::endl;
+    }
+}
+
+int main() {
+    for (int n = 10; n < 10000000; n *= 10) {
+        for (int k = 1; k < n; k *= 10) {
+            std::cout << "n, k = " << n << ", " << k << std::endl;
+            time_all(n, k);
+            std::cout << std::endl;
+        }
     }
     return 0;
 }
