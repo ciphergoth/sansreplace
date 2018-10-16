@@ -48,6 +48,7 @@ struct timeable {
 
 struct timeable totime[] = {
     {"donothing", donothing},
+    {"rejectionsample", rejectionsample},
     {"cardchoose", cardchoose},
     {"", nullptr}
 };

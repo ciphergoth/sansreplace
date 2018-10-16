@@ -21,5 +21,6 @@ src = [
     'cardchoose.cpp',
     'donothing.c',
     'main.cpp',
+    'rejectionsample.cpp',
 ]
 cipherbench = executable('sansreplace', src)
