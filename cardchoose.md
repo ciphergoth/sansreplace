@@ -1,6 +1,6 @@
 # Random choice algorithm
 
-[`cardchoose.py`](cardchoose.py) generates k distinct natural numbers less than
+[`cardchoose.py`](python/cardchoose.py) generates k distinct natural numbers less than
 n, in sorted order, fairly among all the ways of doing so.
 
 The obvious way to do it: generate a candidate, reject if it's already been
