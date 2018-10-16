@@ -47,8 +47,7 @@ struct timeable {
 };
 
 struct timeable totime[] = {
-    {"donothing", donothing},
-    {"cardchoose", cardchoose},
+//    {"donothing", donothing},
     {"fisheryates", fisheryates},
     {"floydf2", floydf2},
     {"iterativechoose", iterativechoose},
@@ -59,10 +58,12 @@ struct timeable totime[] = {
 
 static void time_all(int n, int k) {
     std::chrono::seconds sec(1);
+    auto base_time_s = timefunc_for(sec, n, k, cardchoose).count();
+    std::cout << "cardchoose " << base_time_s << "s" << std::endl;
     struct timeable *tm;
     for (tm = totime; tm->func; tm++) {
         auto time_s = timefunc_for(sec, n, k, tm->func).count();
-        std::cout << tm->name << " " << time_s << std::endl;
+        std::cout << tm->name << " " << time_s / base_time_s << std::endl;
     }
 }
 
