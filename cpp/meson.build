@@ -24,5 +24,6 @@ src = [
     'floydf2.cpp',
     'main.cpp',
     'rejectionsample.cpp',
+    'selby_fy.cpp',
 ]
 cipherbench = executable('sansreplace', src)
