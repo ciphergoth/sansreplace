@@ -48,8 +48,9 @@ struct timeable {
 
 struct timeable totime[] = {
     {"donothing", donothing},
-    {"rejectionsample", rejectionsample},
     {"cardchoose", cardchoose},
+    {"floydf2", floydf2},
+    {"rejectionsample", rejectionsample},
     {"", nullptr}
 };
 
@@ -64,7 +65,7 @@ static void time_all(int n, int k) {
 
 int main() {
     for (int n = 10; n < 10000000; n *= 10) {
-        for (int k = 1; k < n; k *= 10) {
+        for (int k = 8; k < n; k *= 10) {
             std::cout << "n, k = " << n << ", " << k << std::endl;
             time_all(n, k);
             std::cout << std::endl;

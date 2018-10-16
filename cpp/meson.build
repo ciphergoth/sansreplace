@@ -20,6 +20,7 @@ add_project_arguments('-Wall', '-Wno-pointer-sign', '-fno-strict-aliasing',
 src = [
     'cardchoose.cpp',
     'donothing.c',
+    'floydf2.cpp',
     'main.cpp',
     'rejectionsample.cpp',
 ]

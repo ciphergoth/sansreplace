@@ -5,6 +5,7 @@ extern "C" {
 #endif
     void donothing(int n, int k, int *result);
     void cardchoose(int n, int k, int *result);
+    void floydf2(int n, int k, int *result);
     void rejectionsample(int n, int k, int *result);
 #if __cplusplus
 }
