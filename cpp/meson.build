@@ -18,7 +18,8 @@ add_project_arguments('-Wall', '-Wno-pointer-sign', '-fno-strict-aliasing',
     language : ['c', 'cpp'])
 
 src = [
+    'cardchoose.c',
+    'donothing.c',
     'main.cpp',
-    'donothing.c'
 ]
 cipherbench = executable('sansreplace', src)

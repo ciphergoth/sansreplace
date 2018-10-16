@@ -2,6 +2,7 @@
 #include <chrono>
 #include <iostream>
 #include <ratio>
+#include <string>
 #include <vector>
 
 #include "testfunc.h"
@@ -40,10 +41,23 @@ static std::chrono::duration<double> timefunc_for(
     return t / iters;
 }
 
+struct timeable {
+    std::string name;
+    void (*func)(int n, int k, int *result);
+};
+
+struct timeable totime[] = {
+    {"donothing", donothing},
+    {"cardchoose", cardchoose},
+    {"", nullptr}
+};
+
 int main() {
-    std::cout << "Hello, World!" << std::endl;
     std::chrono::seconds sec(1);
-    auto time_s = timefunc_for(sec, 100, 10, donothing).count();
-    std::cout << time_s << std::endl;
+    struct timeable *tm;
+    for (tm = totime; tm->func; tm++) {
+        auto time_s = timefunc_for(sec, 100, 10, tm->func).count();
+        std::cout << tm->name << " " << time_s << std::endl;
+    }
     return 0;
 }
