@@ -25,13 +25,14 @@ static std::mt19937_64 generator;
 void floydf2(int n, int k, int *result) {
     std::unordered_set<int> done;
     for (int i = 0; i < k; i++) {
-        std::uniform_int_distribution<int> distribution(0, n - i - 1);
+        int m = n + i - k;
+        std::uniform_int_distribution<int> distribution(0, m);
         int r = distribution(generator);
         if (done.find(r) == done.end()) {
             done.insert(r);
             result[i] = r;
         } else {
-            result[i] = n - i - 1;
+            result[i] = m;
         }
     }
 }
