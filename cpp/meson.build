@@ -33,5 +33,6 @@ src = [
     'randbelow.c',
     'rejectionsample.cpp',
     'selby_fy.cpp',
+    'timing.cpp',
 ]
 cipherbench = executable('sansreplace', src, include_directories : include_dirs)
