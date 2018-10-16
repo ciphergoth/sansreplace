@@ -15,17 +15,14 @@
  */
 
 #include <algorithm>
-#include <random>
 
+#include "randbelow.h"
 #include "testfunc.h"
-
-static std::mt19937_64 generator;
 
 void cardchoose(int n, int k, int *result) {
     auto t = n - k + 1;
     for (int i = 0; i < k; i++) {
-        std::uniform_int_distribution<int> distribution(0, t + i - 1);
-        int r = distribution(generator);
+        int r = randbelow(t + i);
         if (r < t) {
             result[i] = r;
         } else {
@@ -39,8 +36,7 @@ void cardchoose(int n, int k, int *result) {
     }
 #else
     for (int i = 0; i < k; i++) {
-        std::uniform_int_distribution<int> distribution(0, i);
-        int r = distribution(generator);
+        int r = randbelow(i + 1);
         auto t = result[i] + i;
         result[i] = result[r];
         result[r] = t;

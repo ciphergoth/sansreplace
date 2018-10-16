@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-#include <algorithm>
-#include <vector>
+#pragma once
 
-#include "randbelow.h"
-#include "testfunc.h"
-
-void fisheryates(int n, int k, int *result) {
-    std::vector<int> options(n);
-    for (int i = 0; i < n; i++) {
-        options[i] = i;
-    }
-    for (int i = 0; i < k; i++) {
-        int r = i + randbelow(n - i);
-        result[i] = options[r];
-        options[r] = options[i];
-    }
+#if __cplusplus
+extern "C" {
+#endif
+    extern void rand_init();
+    // FIXME: make this use uint32_t
+    extern int randbelow(int range);
+#if __cplusplus
 }
+#endif

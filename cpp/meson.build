@@ -14,17 +14,23 @@
 
 project('sansreplace', ['c', 'cpp'],
     default_options : ['buildtype=debugoptimized', 'c_std=c11', 'cpp_std=c++2a'])
-add_project_arguments('-Wall', '-Wno-pointer-sign', '-fno-strict-aliasing',
+add_project_arguments(
+    '-Wall', '-Wno-pointer-sign', '-fno-strict-aliasing', '-march=native',
     language : ['c', 'cpp'])
+include_dirs = [
+    include_directories('../third_party/SIMDxorshift/include')
+]
 
 src = [
+    '../third_party/SIMDxorshift/src/simdxorshift128plus.c',
     'cardchoose.cpp',
     'donothing.c',
     'fisheryates.cpp',
     'floydf2.cpp',
     'iterativechoose.cpp',
     'main.cpp',
+    'randbelow.c',
     'rejectionsample.cpp',
     'selby_fy.cpp',
 ]
-cipherbench = executable('sansreplace', src)
+cipherbench = executable('sansreplace', src, include_directories : include_dirs)
