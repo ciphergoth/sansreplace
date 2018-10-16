@@ -51,6 +51,7 @@ struct timeable totime[] = {
     {"cardchoose", cardchoose},
     {"fisheryates", fisheryates},
     {"floydf2", floydf2},
+    {"iterativechoose", iterativechoose},
     {"rejectionsample", rejectionsample},
     {"selby_fy", selby_fy},
     {"", nullptr}

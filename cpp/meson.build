@@ -22,6 +22,7 @@ src = [
     'donothing.c',
     'fisheryates.cpp',
     'floydf2.cpp',
+    'iterativechoose.cpp',
     'main.cpp',
     'rejectionsample.cpp',
     'selby_fy.cpp',
