@@ -76,11 +76,19 @@ struct timeable totime[] = {
 static void time_all(int n, int k) {
     std::chrono::seconds sec(1);
     auto base_time_s = timefunc_for(sec, n, k, cardchoose).count();
-    std::cout << "cardchoose " << base_time_s << "s" << std::endl;
+    std::cout << "cardchoose" << std::endl;
+    std::cout << "    " << base_time_s << " s" << std::endl;
+    std::cout << "    " << base_time_s/k << " s/k" << std::endl;
+    std::cout << "    " << base_time_s/n << " s/n" << std::endl;
+
     struct timeable *tm;
     for (tm = totime; tm->func; tm++) {
         auto time_s = timefunc_for(sec, n, k, tm->func).count();
-        std::cout << tm->name << " " << time_s / base_time_s << std::endl;
+        std::cout << tm->name << std::endl;
+        std::cout << "    " << time_s << " s" << std::endl;
+        std::cout << "    " << time_s/k << " s/k" << std::endl;
+        std::cout << "    " << time_s/n << " s/n" << std::endl;
+        std::cout << "    " << time_s / base_time_s << " vs cardchoose" << std::endl;
     }
 }
 
