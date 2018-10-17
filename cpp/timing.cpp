@@ -33,27 +33,22 @@ static std::chrono::duration<double> timefunc(int iters, int n, int k,
     return end - start;
 }
 
-static int choose_iters(
+std::chrono::duration<double> timefunc_for(
     std::chrono::duration<double> totake,
     int n, int k,
     void (*func)(int n, int k, int *result)) {
     int iters = 1;
     for (;;) {
         auto t = timefunc(iters, n, k, func);
-        if (t * 10 >= totake) {
-            return std::max(1, static_cast<int>(totake * iters / t));
+        if (t * 100 >= totake) {
+            if (t < totake) {
+                iters = static_cast<int>(iters * totake / t);
+                t = timefunc(iters, n, k, func);
+            }
+            return t / iters;
         }
         iters *= 10;
     }
-}
-
-std::chrono::duration<double> timefunc_for(
-    std::chrono::duration<double> totake,
-    int n, int k,
-    void (*func)(int n, int k, int *result)) {
-    int iters = choose_iters(totake, n, k, func);
-    auto t = timefunc(iters, n, k, func);
-    return t / iters;
 }
 
 struct timeable totime[] = {
