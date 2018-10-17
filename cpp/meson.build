@@ -13,9 +13,10 @@
 # limitations under the License.
 
 project('sansreplace', ['c', 'cpp'],
-    default_options : ['buildtype=debugoptimized', 'c_std=c11', 'cpp_std=c++2a'])
+    default_options : ['buildtype=debugoptimized', 'c_std=c11',
+'cpp_std=c++11'])
 add_project_arguments(
-    '-Wall', '-Wno-pointer-sign', '-fno-strict-aliasing', '-march=native',
+    '-Wall', '-fno-strict-aliasing', '-march=native',
     language : ['c', 'cpp'])
 include_dirs = [
     include_directories('../third_party/SIMDxorshift/include')
