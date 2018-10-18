@@ -21,7 +21,7 @@
 #include "testfunc.h"
 
 void rejectionsample(uint32_t n, uint32_t k, uint32_t* result) {
-    std::unordered_set<uint32_t> done;
+    std::unordered_set<uint32_t> done(2*k);
     for (uint32_t i = 0; i < k;) {
         uint32_t r = randbelow(n);
         if (done.find(r) == done.end()) {
