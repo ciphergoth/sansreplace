@@ -17,14 +17,14 @@
 #include <chrono>
 #include <string>
 
-extern std::chrono::duration<double> timefunc_for(
-    std::chrono::duration<double> totake,
-    uint32_t n, uint32_t k,
-    void (*func)(uint32_t n, uint32_t k, uint32_t *result));
+extern std::chrono::duration<double> timefunc_for(std::chrono::duration<double> totake, uint32_t n,
+                                                  uint32_t k,
+                                                  void (*func)(uint32_t n, uint32_t k,
+                                                               uint32_t* result));
 
 struct timeable {
     std::string name;
-    void (*func)(uint32_t n, uint32_t k, uint32_t *result);
+    void (*func)(uint32_t n, uint32_t k, uint32_t* result);
 };
 
 extern struct timeable totime[];

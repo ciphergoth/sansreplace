@@ -23,7 +23,8 @@
 #include "testfunc.h"
 
 static std::chrono::duration<double> timefunc(uint32_t iters, uint32_t n, uint32_t k,
-    void (*func)(uint32_t n, uint32_t k, uint32_t *result)) {
+                                              void (*func)(uint32_t n, uint32_t k,
+                                                           uint32_t* result)) {
     auto result = std::vector<uint32_t>(n);
     auto start = std::chrono::system_clock::now();
     for (uint32_t i = 0; i < iters; i++) {
@@ -33,10 +34,9 @@ static std::chrono::duration<double> timefunc(uint32_t iters, uint32_t n, uint32
     return end - start;
 }
 
-std::chrono::duration<double> timefunc_for(
-    std::chrono::duration<double> totake,
-    uint32_t n, uint32_t k,
-    void (*func)(uint32_t n, uint32_t k, uint32_t *result)) {
+std::chrono::duration<double> timefunc_for(std::chrono::duration<double> totake, uint32_t n,
+                                           uint32_t k,
+                                           void (*func)(uint32_t n, uint32_t k, uint32_t* result)) {
     uint32_t iters = 1;
     for (;;) {
         auto t = timefunc(iters, n, k, func);
@@ -52,12 +52,11 @@ std::chrono::duration<double> timefunc_for(
 }
 
 struct timeable totime[] = {
-//    {"donothing", donothing},
+    //    {"donothing", donothing},
     {"cardchoose", cardchoose},
     {"fisheryates", fisheryates},
     {"floydf2", floydf2},
     {"iterativechoose", iterativechoose},
     {"rejectionsample", rejectionsample},
     {"selby_fy", selby_fy},
-    {"", nullptr}
-};
+    {"", nullptr}};

@@ -20,7 +20,7 @@
 #include "randbelow.h"
 #include "testfunc.h"
 
-void iterativechoose(uint32_t n, uint32_t k, uint32_t *result) {
+void iterativechoose(uint32_t n, uint32_t k, uint32_t* result) {
     uint32_t ix = 0;
     for (uint32_t i = 0; i < n; i++) {
         uint32_t r = randbelow(n - i);

@@ -19,7 +19,7 @@
 #include "randbelow.h"
 #include "testfunc.h"
 
-void cardchoose(uint32_t n, uint32_t k, uint32_t *result) {
+void cardchoose(uint32_t n, uint32_t k, uint32_t* result) {
     auto t = n - k + 1;
     for (uint32_t i = 0; i < k; i++) {
         uint32_t r = randbelow(t + i);

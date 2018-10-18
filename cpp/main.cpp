@@ -26,7 +26,7 @@
 #include "timing.h"
 
 static void time_all(uint32_t n, uint32_t k) {
-    struct timeable *tm = &totime[0];
+    struct timeable* tm = &totime[0];
     std::chrono::seconds sec(1);
     double base_time_s = 0;
 
@@ -34,8 +34,8 @@ static void time_all(uint32_t n, uint32_t k) {
         auto time_s = timefunc_for(sec, n, k, tm->func).count();
         std::cout << tm->name << std::endl;
         std::cout << "    " << time_s << " s" << std::endl;
-        std::cout << "    " << time_s/k << " s/k" << std::endl;
-        std::cout << "    " << time_s/n << " s/n" << std::endl;
+        std::cout << "    " << time_s / k << " s/k" << std::endl;
+        std::cout << "    " << time_s / n << " s/n" << std::endl;
         if (tm == totime) {
             base_time_s = time_s;
         } else {

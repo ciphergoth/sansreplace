@@ -21,13 +21,13 @@
 #if __cplusplus
 extern "C" {
 #endif
-    void donothing(uint32_t n, uint32_t k, uint32_t *result);
-    void cardchoose(uint32_t n, uint32_t k, uint32_t *result);
-    void fisheryates(uint32_t n, uint32_t k, uint32_t *result);
-    void floydf2(uint32_t n, uint32_t k, uint32_t *result);
-    void iterativechoose(uint32_t n, uint32_t k, uint32_t *result);
-    void rejectionsample(uint32_t n, uint32_t k, uint32_t *result);
-    void selby_fy(uint32_t n, uint32_t k, uint32_t *result);
+void donothing(uint32_t n, uint32_t k, uint32_t* result);
+void cardchoose(uint32_t n, uint32_t k, uint32_t* result);
+void fisheryates(uint32_t n, uint32_t k, uint32_t* result);
+void floydf2(uint32_t n, uint32_t k, uint32_t* result);
+void iterativechoose(uint32_t n, uint32_t k, uint32_t* result);
+void rejectionsample(uint32_t n, uint32_t k, uint32_t* result);
+void selby_fy(uint32_t n, uint32_t k, uint32_t* result);
 #if __cplusplus
 }
 #endif

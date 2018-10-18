@@ -19,8 +19,8 @@
 #if __cplusplus
 extern "C" {
 #endif
-    extern void rand_init();
-    extern uint32_t randbelow(uint32_t range);
+extern void rand_init();
+extern uint32_t randbelow(uint32_t range);
 #if __cplusplus
 }
 #endif

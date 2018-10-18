@@ -24,28 +24,28 @@ static uint32_t consumed;
 void rand_init() {
     // Deterministic seeding for now
     avx_xorshift128plus_init(324, 4444, &mykey);
-    consumed = sizeof(__m256i)/sizeof(uint32_t);
+    consumed = sizeof(__m256i) / sizeof(uint32_t);
 }
 
 static uint32_t random32() {
-    if (consumed == sizeof(__m256i)/sizeof(uint32_t)) {
+    if (consumed == sizeof(__m256i) / sizeof(uint32_t)) {
         buf = avx_xorshift128plus(&mykey);
         consumed = 0;
     }
-    return ((uint32_t *)&buf)[consumed++];
+    return ((uint32_t*)&buf)[consumed++];
 }
 
 // inspired by https://lemire.me/blog/2016/06/30/fast-random-shuffling/
 uint32_t randbelow(uint32_t range) {
     uint64_t random32bit = random32();
     uint64_t multiresult = random32bit * range;
-    uint32_t leftover = (uint32_t) multiresult;
+    uint32_t leftover = (uint32_t)multiresult;
     if (leftover < range) {
         uint32_t threshold = -range % range;
         while (leftover < threshold) {
             random32bit = random32();
             multiresult = random32bit * range;
-            leftover = (uint32_t) multiresult;
+            leftover = (uint32_t)multiresult;
         }
     }
     return multiresult >> 32;
