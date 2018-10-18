@@ -22,17 +22,22 @@ include_dirs = [
     include_directories('../third_party/SIMDxorshift/include')
 ]
 
-src = [
+libsrc = [
     '../third_party/SIMDxorshift/src/simdxorshift128plus.c',
     'cardchoose.cpp',
     'donothing.cpp',
     'fisheryates.cpp',
     'floydf2.cpp',
     'iterativechoose.cpp',
-    'main.cpp',
     'randbelow.c',
     'rejectionsample.cpp',
     'selby_fy.cpp',
     'timing.cpp',
 ]
-cipherbench = executable('sansreplace', src, include_directories : include_dirs)
+lib = shared_library('sansreplace',
+                        libsrc,
+                        include_directories : include_dirs,
+                        install : false)
+timingtest = executable('timingtest', 'main.cpp',
+                        include_directories : include_dirs,
+                        link_with : lib)
