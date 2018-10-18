@@ -27,11 +27,11 @@
 
 static void time_all(uint32_t n, uint32_t k) {
     struct timeable* tm = &totime[0];
-    std::chrono::seconds sec(1);
+    std::chrono::seconds timefor(1);
     double base_time_s = 0;
 
     for (tm = totime; tm->func; tm++) {
-        auto time_s = timefunc_for(sec, n, k, tm->func).count();
+        auto time_s = timefunc_for(timefor, n, k, tm->func).count();
         std::cout << tm->name << std::endl;
         std::cout << "    " << time_s << " s" << std::endl;
         std::cout << "    " << time_s / k << " s/k" << std::endl;

@@ -25,7 +25,7 @@
 static std::chrono::duration<double> timefunc(uint32_t iters, uint32_t n, uint32_t k,
                                               void (*func)(uint32_t n, uint32_t k,
                                                            uint32_t* result)) {
-    auto result = std::vector<uint32_t>(n);
+    auto result = std::vector<uint32_t>(k);
     auto start = std::chrono::system_clock::now();
     for (uint32_t i = 0; i < iters; i++) {
         func(n, k, &result[0]);
