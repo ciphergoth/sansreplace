@@ -20,10 +20,10 @@
 #include "randbelow.h"
 #include "testfunc.h"
 
-void selby_fy(int n, int k, int *result) {
-    std::unordered_map<int, int> options;
-    for (int i = 0; i < k; i++) {
-        int r = randbelow(n);
+void selby_fy(uint32_t n, uint32_t k, uint32_t *result) {
+    std::unordered_map<uint32_t, uint32_t> options;
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t r = randbelow(n);
         auto fr = options.find(r);
         if (fr == options.end()) {
             result[i] = r;

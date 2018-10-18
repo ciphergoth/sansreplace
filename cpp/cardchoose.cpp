@@ -19,10 +19,10 @@
 #include "randbelow.h"
 #include "testfunc.h"
 
-void cardchoose(int n, int k, int *result) {
+void cardchoose(uint32_t n, uint32_t k, uint32_t *result) {
     auto t = n - k + 1;
-    for (int i = 0; i < k; i++) {
-        int r = randbelow(t + i);
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t r = randbelow(t + i);
         if (r < t) {
             result[i] = r;
         } else {
@@ -31,12 +31,12 @@ void cardchoose(int n, int k, int *result) {
     }
     std::sort(result, result + k);
 #if 0
-    for (int i = 0; i < k; i++) {
+    for (uint32_t i = 0; i < k; i++) {
         result[i] += i;
     }
 #else
-    for (int i = 0; i < k; i++) {
-        int r = randbelow(i + 1);
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t r = randbelow(i + 1);
         auto t = result[i] + i;
         result[i] = result[r];
         result[r] = t;

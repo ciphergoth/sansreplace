@@ -20,13 +20,13 @@
 #include "randbelow.h"
 #include "testfunc.h"
 
-void fisheryates(int n, int k, int *result) {
-    std::vector<int> options(n);
-    for (int i = 0; i < n; i++) {
+void fisheryates(uint32_t n, uint32_t k, uint32_t *result) {
+    std::vector<uint32_t> options(n);
+    for (uint32_t i = 0; i < n; i++) {
         options[i] = i;
     }
-    for (int i = 0; i < k; i++) {
-        int r = i + randbelow(n - i);
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t r = i + randbelow(n - i);
         result[i] = options[r];
         options[r] = options[i];
     }

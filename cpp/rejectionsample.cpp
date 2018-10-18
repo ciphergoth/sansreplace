@@ -20,10 +20,10 @@
 #include "randbelow.h"
 #include "testfunc.h"
 
-void rejectionsample(int n, int k, int *result) {
-    std::unordered_set<int> done;
-    for (int i = 0; i < k;) {
-        int r = randbelow(n);
+void rejectionsample(uint32_t n, uint32_t k, uint32_t *result) {
+    std::unordered_set<uint32_t> done;
+    for (uint32_t i = 0; i < k;) {
+        uint32_t r = randbelow(n);
         if (done.find(r) == done.end()) {
             done.insert(r);
             result[i++] = r;

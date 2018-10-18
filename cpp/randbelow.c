@@ -19,7 +19,7 @@
 static avx_xorshift128plus_key_t mykey;
 
 static __m256i buf;
-static int consumed;
+static uint32_t consumed;
 
 void rand_init() {
     // Deterministic seeding for now
@@ -36,7 +36,7 @@ static uint32_t random32() {
 }
 
 // inspired by https://lemire.me/blog/2016/06/30/fast-random-shuffling/
-int randbelow(int range) {
+uint32_t randbelow(uint32_t range) {
     uint64_t random32bit = random32();
     uint64_t multiresult = random32bit * range;
     uint32_t leftover = (uint32_t) multiresult;

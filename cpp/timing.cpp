@@ -22,11 +22,11 @@
 
 #include "testfunc.h"
 
-static std::chrono::duration<double> timefunc(int iters, int n, int k,
-    void (*func)(int n, int k, int *result)) {
-    auto result = std::vector<int>(n);
+static std::chrono::duration<double> timefunc(uint32_t iters, uint32_t n, uint32_t k,
+    void (*func)(uint32_t n, uint32_t k, uint32_t *result)) {
+    auto result = std::vector<uint32_t>(n);
     auto start = std::chrono::system_clock::now();
-    for (int i = 0; i < iters; i++) {
+    for (uint32_t i = 0; i < iters; i++) {
         func(n, k, &result[0]);
     }
     auto end = std::chrono::system_clock::now();
@@ -35,14 +35,14 @@ static std::chrono::duration<double> timefunc(int iters, int n, int k,
 
 std::chrono::duration<double> timefunc_for(
     std::chrono::duration<double> totake,
-    int n, int k,
-    void (*func)(int n, int k, int *result)) {
-    int iters = 1;
+    uint32_t n, uint32_t k,
+    void (*func)(uint32_t n, uint32_t k, uint32_t *result)) {
+    uint32_t iters = 1;
     for (;;) {
         auto t = timefunc(iters, n, k, func);
         if (t * 100 >= totake) {
             if (t < totake) {
-                iters = static_cast<int>(iters * totake / t);
+                iters = static_cast<uint32_t>(iters * totake / t);
                 t = timefunc(iters, n, k, func);
             }
             return t / iters;

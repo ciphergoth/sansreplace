@@ -19,12 +19,12 @@
 
 extern std::chrono::duration<double> timefunc_for(
     std::chrono::duration<double> totake,
-    int n, int k,
-    void (*func)(int n, int k, int *result));
+    uint32_t n, uint32_t k,
+    void (*func)(uint32_t n, uint32_t k, uint32_t *result));
 
 struct timeable {
     std::string name;
-    void (*func)(int n, int k, int *result);
+    void (*func)(uint32_t n, uint32_t k, uint32_t *result);
 };
 
 extern struct timeable totime[];

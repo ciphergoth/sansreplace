@@ -20,8 +20,7 @@
 extern "C" {
 #endif
     extern void rand_init();
-    // FIXME: make this use uint32_t
-    extern int randbelow(int range);
+    extern uint32_t randbelow(uint32_t range);
 #if __cplusplus
 }
 #endif

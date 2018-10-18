@@ -25,7 +25,7 @@
 #include "testfunc.h"
 #include "timing.h"
 
-static void time_all(int n, int k) {
+static void time_all(uint32_t n, uint32_t k) {
     struct timeable *tm = &totime[0];
     std::chrono::seconds sec(1);
     double base_time_s = 0;
@@ -46,8 +46,8 @@ static void time_all(int n, int k) {
 
 int main() {
     rand_init();
-    for (int n = 10; n < 10000000; n *= 10) {
-        for (int k = 8; k < n; k *= 10) {
+    for (uint32_t n = 10; n < 10000000; n *= 10) {
+        for (uint32_t k = 8; k < n; k *= 10) {
             std::cout << "n, k = " << n << ", " << k << std::endl;
             time_all(n, k);
             std::cout << std::endl;

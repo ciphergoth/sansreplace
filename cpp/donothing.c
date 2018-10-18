@@ -16,5 +16,5 @@
 
 #include "testfunc.h"
 
-void donothing(int n, int k, int *result) {
+void donothing(uint32_t n, uint32_t k, uint32_t *result) {
 }

@@ -16,16 +16,18 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #if __cplusplus
 extern "C" {
 #endif
-    void donothing(int n, int k, int *result);
-    void cardchoose(int n, int k, int *result);
-    void fisheryates(int n, int k, int *result);
-    void floydf2(int n, int k, int *result);
-    void iterativechoose(int n, int k, int *result);
-    void rejectionsample(int n, int k, int *result);
-    void selby_fy(int n, int k, int *result);
+    void donothing(uint32_t n, uint32_t k, uint32_t *result);
+    void cardchoose(uint32_t n, uint32_t k, uint32_t *result);
+    void fisheryates(uint32_t n, uint32_t k, uint32_t *result);
+    void floydf2(uint32_t n, uint32_t k, uint32_t *result);
+    void iterativechoose(uint32_t n, uint32_t k, uint32_t *result);
+    void rejectionsample(uint32_t n, uint32_t k, uint32_t *result);
+    void selby_fy(uint32_t n, uint32_t k, uint32_t *result);
 #if __cplusplus
 }
 #endif
