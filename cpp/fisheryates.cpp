@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
 #include "randbelow.h"
-#include "testfunc.h"
 
-void fisheryates(uint32_t n, uint32_t k, uint32_t* result) {
+extern "C" void fisheryates(uint32_t n, uint32_t k, uint32_t* result) {
     std::vector<uint32_t> options(n);
     for (uint32_t i = 0; i < n; i++) {
         options[i] = i;

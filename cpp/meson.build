@@ -38,6 +38,3 @@ lib = shared_library('sansreplace',
                         libsrc,
                         include_directories : include_dirs,
                         install : false)
-timingtest = executable('timingtest', 'main.cpp',
-                        include_directories : include_dirs,
-                        link_with : lib)

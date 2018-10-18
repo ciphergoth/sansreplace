@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import argparse
+import os
+import sys
+import subprocess
+import pathlib
+
+import cffi
+
+scriptdir = pathlib.Path(__file__).resolve().parent
+
+timeables = [
+    "donothing",
+    "cardchoose",
+    "fisheryates",
+    "floydf2",
+    "iterativechoose",
+    "rejectionsample",
+    "selby_fy"
+]
+
+def setup_module(args):
+    b = str(scriptdir / "build/host")
+    subprocess.run(["ninja", "-C", b], check=True)
+    ffi = cffi.FFI()
+    ffi.cdef("""
+        void rand_init();
+        typedef unsigned uint32_t;
+        double timefunc_s(uint32_t iters, uint32_t n, uint32_t k,
+                                                      void (*func)(uint32_t n, uint32_t k,
+                                                                   uint32_t* result));
+    """)
+    source = """
+        #include "randbelow.h"
+        #include "timing.h"
+    """
+    for t in timeables:
+        ffi.cdef(f"void (*const {t})(uint32_t n, uint32_t k, uint32_t* result);")
+        source += f"void {t}(uint32_t n, uint32_t k, uint32_t* result);\n"
+    ffi.set_source("sansreplace", source,
+        include_dirs=[str(scriptdir)],
+        library_dirs=[b],
+        runtime_library_dirs=[b],
+        libraries=["sansreplace"],
+        extra_link_args=[f"-Wl,-rpath,{b}"])
+    ffi.compile(tmpdir=b)
+    sys.path.append(b)
+    import sansreplace as s
+    global sansreplace
+    sansreplace = s
+    sansreplace.lib.rand_init()
+
+def timefunc_for(time, n, k, func):
+    iters = 1
+    remaining = time
+    while True:
+        t = sansreplace.lib.timefunc_s(iters, n, k,
+            getattr(sansreplace.lib, func))
+        #print(f"{func}({n}, {k}) * {iters} = {t}")
+        remaining -= t
+        if t >= remaining:
+            return t / iters
+        elif t * 100 > remaining:
+            iters = int(iters * remaining / t)
+        elif t * 10000 > remaining:
+            iters = int(iters * remaining * 0.1 / t)
+        else:
+            iters *= 10
+
+def run_timings():
+    ptop = 7
+    klim = {}
+    for pn in range(1, ptop):
+        for pk in range(pn):
+            for func in timeables:
+                if pk < klim.get(func, ptop):
+                    t = timefunc_for(1, 10**pn, 10**pk, func)
+                    print(f"{func:>20}(10^{pn}, 10^{pk}) = {t:10.2e}")
+                    if t > 1:
+                        print(f"hit tlim")
+                        klim[func] = pk
+            print()
+
+def parse_args():
+    p = argparse.ArgumentParser()
+    return p.parse_args()
+
+def main():
+    args = parse_args()
+    setup_module(args)
+    run_timings()
+
+if __name__ == '__main__':
+    main()
