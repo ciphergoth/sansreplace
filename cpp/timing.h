@@ -17,6 +17,8 @@
 #include <chrono>
 #include <string>
 
+#include <stdint.h>
+
 extern std::chrono::duration<double> timefunc_for(std::chrono::duration<double> totake, uint32_t n,
                                                   uint32_t k,
                                                   void (*func)(uint32_t n, uint32_t k,
