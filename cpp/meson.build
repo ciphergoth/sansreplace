@@ -25,7 +25,7 @@ include_dirs = [
 src = [
     '../third_party/SIMDxorshift/src/simdxorshift128plus.c',
     'cardchoose.cpp',
-    'donothing.c',
+    'donothing.cpp',
     'fisheryates.cpp',
     'floydf2.cpp',
     'iterativechoose.cpp',
