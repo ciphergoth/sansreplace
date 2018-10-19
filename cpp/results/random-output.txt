@@ -1,0 +1,908 @@
+ninja: Entering directory `/usr/local/google/home/paulcrowley/google/playpen/sansreplace/cpp/build/host'
+ninja: no work to do.
+
+sorttype: random
+time_for: 0.1
+values: ['small', 'large']
+
+donothing:     2.3ns
+n = 0, k = 0, random
+         2.4ns cardchoose          
+         2.8ns fisheryates         
+         3.5ns quadraticreject     
+         4.4ns iterativechoose     
+        38.7ns rejectionsample     
+        38.8ns selby_fy            
+        38.9ns floydf2             
+
+n = 1, k = 0, random
+         2.1ns cardchoose          
+         2.8ns quadraticreject     
+         9.9ns iterativechoose     
+        26.7ns fisheryates         
+        36.8ns selby_fy            
+        36.9ns rejectionsample     
+        37.6ns floydf2             
+
+n = 1, k = 1, random
+         6.7ns quadraticreject     
+         8.6ns iterativechoose     
+        15.2ns cardchoose          
+        31.8ns fisheryates         
+        80.6ns rejectionsample     
+        84.9ns floydf2             
+        98.7ns selby_fy            
+
+n = 2, k = 0, random
+         2.1ns cardchoose          
+         2.7ns quadraticreject     
+        13.9ns iterativechoose     
+        27.8ns fisheryates         
+        36.9ns rejectionsample     
+        36.9ns selby_fy            
+        37.9ns floydf2             
+
+n = 2, k = 1, random
+         6.8ns quadraticreject     
+        15.2ns cardchoose          
+        18.5ns iterativechoose     
+        32.6ns fisheryates         
+        80.0ns rejectionsample     
+        83.2ns floydf2             
+        99.8ns selby_fy            
+
+n = 2, k = 2, random
+        16.7ns iterativechoose     
+        25.5ns quadraticreject     
+        29.9ns cardchoose          
+        37.6ns fisheryates         
+       125.1ns floydf2             
+       152.9ns rejectionsample     
+       160.7ns selby_fy            
+
+n = 3, k = 0, random
+         2.1ns cardchoose          
+         2.7ns quadraticreject     
+        19.0ns iterativechoose     
+        28.9ns fisheryates         
+        36.8ns selby_fy            
+        36.9ns rejectionsample     
+        37.7ns floydf2             
+
+n = 3, k = 1, random
+         6.7ns quadraticreject     
+        15.1ns cardchoose          
+        25.2ns iterativechoose     
+        33.7ns fisheryates         
+        82.2ns rejectionsample     
+        83.3ns floydf2             
+       100.9ns selby_fy            
+
+n = 3, k = 2, random
+        19.9ns quadraticreject     
+        28.7ns iterativechoose     
+        30.9ns cardchoose          
+        38.4ns fisheryates         
+       129.5ns floydf2             
+       142.4ns rejectionsample     
+       163.6ns selby_fy            
+
+n = 3, k = 3, random
+        25.5ns iterativechoose     
+        43.7ns cardchoose          
+        44.2ns fisheryates         
+        54.2ns quadraticreject     
+       166.7ns floydf2             
+       220.7ns selby_fy            
+       229.6ns rejectionsample     
+
+n = 4, k = 0, random
+         2.1ns cardchoose          
+         2.7ns quadraticreject     
+        24.1ns iterativechoose     
+        29.5ns fisheryates         
+        37.1ns selby_fy            
+        37.3ns rejectionsample     
+        37.3ns floydf2             
+
+n = 4, k = 1, random
+         6.7ns quadraticreject     
+        15.5ns cardchoose          
+        30.3ns iterativechoose     
+        34.4ns fisheryates         
+        83.8ns floydf2             
+       104.4ns rejectionsample     
+       127.6ns selby_fy            
+
+n = 4, k = 2, random
+        18.4ns quadraticreject     
+        30.9ns cardchoose          
+        38.9ns iterativechoose     
+        42.1ns fisheryates         
+       132.3ns floydf2             
+       137.0ns rejectionsample     
+       162.9ns selby_fy            
+
+n = 4, k = 3, random
+        37.8ns quadraticreject     
+        40.3ns iterativechoose     
+        44.5ns fisheryates         
+        46.2ns cardchoose          
+       175.6ns floydf2             
+       220.6ns rejectionsample     
+       233.6ns selby_fy            
+
+n = 4, k = 4, random
+        44.3ns iterativechoose     
+        46.4ns fisheryates         
+        58.4ns cardchoose          
+        90.4ns quadraticreject     
+       285.9ns floydf2             
+       294.9ns selby_fy            
+       392.6ns rejectionsample     
+
+n = 5, k = 0, random
+         2.1ns cardchoose          
+         2.7ns quadraticreject     
+        31.2ns fisheryates         
+        36.8ns iterativechoose     
+        39.0ns selby_fy            
+        41.9ns rejectionsample     
+        50.1ns floydf2             
+
+n = 5, k = 1, random
+         6.7ns quadraticreject     
+        15.8ns cardchoose          
+        35.0ns fisheryates         
+        39.3ns iterativechoose     
+        79.3ns rejectionsample     
+        82.1ns floydf2             
+        99.6ns selby_fy            
+
+n = 5, k = 2, random
+        16.3ns quadraticreject     
+        31.2ns cardchoose          
+        39.7ns fisheryates         
+        47.0ns iterativechoose     
+       130.1ns floydf2             
+       134.6ns rejectionsample     
+       164.2ns selby_fy            
+
+n = 5, k = 3, random
+        31.2ns quadraticreject     
+        45.0ns fisheryates         
+        46.6ns cardchoose          
+        54.8ns iterativechoose     
+       176.1ns floydf2             
+       198.9ns rejectionsample     
+       225.9ns selby_fy            
+
+n = 5, k = 4, random
+        45.3ns fisheryates         
+        47.1ns iterativechoose     
+        59.8ns quadraticreject     
+        62.2ns cardchoose          
+       213.9ns floydf2             
+       283.4ns rejectionsample     
+       293.4ns selby_fy            
+
+n = 5, k = 5, random
+        44.8ns iterativechoose     
+        51.0ns fisheryates         
+        67.8ns cardchoose          
+       124.0ns quadraticreject     
+       247.3ns floydf2             
+       351.1ns selby_fy            
+       398.9ns rejectionsample     
+
+n = 6, k = 0, random
+         2.1ns cardchoose          
+         2.7ns quadraticreject     
+        30.8ns fisheryates         
+        32.7ns iterativechoose     
+        35.9ns rejectionsample     
+        35.9ns selby_fy            
+        36.9ns floydf2             
+
+n = 6, k = 1, random
+         6.6ns quadraticreject     
+        14.8ns cardchoose          
+        35.3ns fisheryates         
+        44.1ns iterativechoose     
+        78.5ns rejectionsample     
+        81.0ns floydf2             
+        96.6ns selby_fy            
+
+n = 6, k = 2, random
+        15.2ns quadraticreject     
+        30.8ns cardchoose          
+        40.4ns fisheryates         
+        58.9ns iterativechoose     
+       131.7ns rejectionsample     
+       133.2ns floydf2             
+       162.5ns selby_fy            
+
+n = 6, k = 3, random
+        28.1ns quadraticreject     
+        45.4ns fisheryates         
+        47.4ns cardchoose          
+        56.7ns iterativechoose     
+       177.0ns floydf2             
+       193.0ns rejectionsample     
+       228.1ns selby_fy            
+
+n = 6, k = 4, random
+        46.1ns fisheryates         
+        49.5ns quadraticreject     
+        63.8ns cardchoose          
+        67.0ns iterativechoose     
+       227.2ns floydf2             
+       271.9ns rejectionsample     
+       299.1ns selby_fy            
+
+n = 6, k = 5, random
+        54.9ns fisheryates         
+        58.7ns iterativechoose     
+        85.8ns cardchoose          
+        92.6ns quadraticreject     
+       269.6ns floydf2             
+       366.4ns selby_fy            
+       366.4ns rejectionsample     
+
+n = 6, k = 6, random
+        53.9ns iterativechoose     
+        56.3ns fisheryates         
+        78.1ns cardchoose          
+       166.8ns quadraticreject     
+       309.8ns floydf2             
+       425.4ns selby_fy            
+       510.5ns rejectionsample     
+
+n = 7, k = 0, random
+         2.1ns cardchoose          
+         2.7ns quadraticreject     
+        32.6ns fisheryates         
+        36.3ns rejectionsample     
+        36.5ns selby_fy            
+        36.7ns floydf2             
+        39.6ns iterativechoose     
+
+n = 7, k = 1, random
+         6.6ns quadraticreject     
+        15.1ns cardchoose          
+        36.9ns fisheryates         
+        52.2ns iterativechoose     
+        80.8ns rejectionsample     
+        82.9ns floydf2             
+        97.2ns selby_fy            
+
+n = 7, k = 2, random
+        15.0ns quadraticreject     
+        30.9ns cardchoose          
+        41.5ns fisheryates         
+        55.8ns iterativechoose     
+       132.7ns rejectionsample     
+       134.8ns floydf2             
+       167.9ns selby_fy            
+
+n = 7, k = 3, random
+        26.0ns quadraticreject     
+        46.4ns fisheryates         
+        47.8ns cardchoose          
+        77.0ns iterativechoose     
+       180.4ns floydf2             
+       195.7ns rejectionsample     
+       227.8ns selby_fy            
+
+n = 7, k = 4, random
+        43.8ns quadraticreject     
+        48.6ns fisheryates         
+        66.3ns cardchoose          
+        79.1ns iterativechoose     
+       224.2ns floydf2             
+       258.6ns rejectionsample     
+       294.6ns selby_fy            
+
+n = 7, k = 5, random
+        54.6ns fisheryates         
+        70.7ns quadraticreject     
+        77.1ns iterativechoose     
+        91.9ns cardchoose          
+       271.3ns floydf2             
+       349.0ns rejectionsample     
+       375.4ns selby_fy            
+
+n = 7, k = 6, random
+        59.3ns fisheryates         
+        72.1ns iterativechoose     
+       105.4ns cardchoose          
+       122.8ns quadraticreject     
+       328.2ns floydf2             
+       461.0ns selby_fy            
+       481.4ns rejectionsample     
+
+n = 7, k = 7, random
+        59.8ns fisheryates         
+        60.3ns iterativechoose     
+        92.4ns cardchoose          
+       219.0ns quadraticreject     
+       367.9ns floydf2             
+       497.3ns selby_fy            
+       599.6ns rejectionsample     
+
+n = 8, k = 0, random
+         2.1ns cardchoose          
+         2.7ns quadraticreject     
+        34.2ns fisheryates         
+        37.6ns selby_fy            
+        37.6ns rejectionsample     
+        37.8ns floydf2             
+        44.8ns iterativechoose     
+
+n = 8, k = 1, random
+         6.7ns quadraticreject     
+        15.3ns cardchoose          
+        37.8ns fisheryates         
+        50.7ns iterativechoose     
+        80.9ns rejectionsample     
+        82.6ns floydf2             
+       102.8ns selby_fy            
+
+n = 8, k = 2, random
+        15.2ns quadraticreject     
+        32.3ns cardchoose          
+        43.2ns fisheryates         
+        70.9ns iterativechoose     
+       132.5ns rejectionsample     
+       136.5ns floydf2             
+       167.2ns selby_fy            
+
+n = 8, k = 3, random
+        24.9ns quadraticreject     
+        50.1ns fisheryates         
+        51.3ns cardchoose          
+        89.7ns iterativechoose     
+       199.3ns floydf2             
+       201.2ns rejectionsample     
+       237.5ns selby_fy            
+
+n = 8, k = 4, random
+        40.3ns quadraticreject     
+        48.2ns fisheryates         
+        65.7ns cardchoose          
+        93.0ns iterativechoose     
+       225.4ns floydf2             
+       255.3ns rejectionsample     
+       295.7ns selby_fy            
+
+n = 8, k = 5, random
+        53.6ns fisheryates         
+        62.6ns quadraticreject     
+        82.9ns iterativechoose     
+        91.6ns cardchoose          
+       266.7ns floydf2             
+       326.5ns rejectionsample     
+       363.5ns selby_fy            
+
+n = 8, k = 6, random
+        56.1ns fisheryates         
+        85.0ns iterativechoose     
+        95.5ns quadraticreject     
+       110.8ns cardchoose          
+       314.9ns floydf2             
+       408.6ns rejectionsample     
+       422.1ns selby_fy            
+
+n = 8, k = 7, random
+        60.0ns fisheryates         
+        75.4ns iterativechoose     
+       119.0ns cardchoose          
+       147.0ns quadraticreject     
+       377.8ns floydf2             
+       501.6ns selby_fy            
+       525.9ns rejectionsample     
+
+n = 8, k = 8, random
+        63.2ns fisheryates         
+        67.7ns iterativechoose     
+        95.4ns cardchoose          
+       258.2ns quadraticreject     
+       399.8ns floydf2             
+       544.0ns selby_fy            
+       667.6ns rejectionsample     
+
+n = 9, k = 0, random
+         2.0ns cardchoose          
+         2.7ns quadraticreject     
+        33.5ns fisheryates         
+        35.6ns rejectionsample     
+        35.7ns selby_fy            
+        36.6ns floydf2             
+        53.0ns iterativechoose     
+
+n = 9, k = 1, random
+         6.5ns quadraticreject     
+        14.8ns cardchoose          
+        38.6ns fisheryates         
+        63.4ns iterativechoose     
+        78.9ns rejectionsample     
+        82.9ns floydf2             
+        95.8ns selby_fy            
+
+n = 9, k = 2, random
+        14.2ns quadraticreject     
+        30.5ns cardchoose          
+        42.9ns fisheryates         
+        73.5ns iterativechoose     
+       130.7ns rejectionsample     
+       133.2ns floydf2             
+       168.5ns selby_fy            
+
+n = 9, k = 3, random
+        23.3ns quadraticreject     
+        47.1ns cardchoose          
+        47.7ns fisheryates         
+        88.8ns iterativechoose     
+       184.5ns floydf2             
+       195.8ns rejectionsample     
+       241.9ns selby_fy            
+
+n = 9, k = 4, random
+        38.3ns quadraticreject     
+        51.7ns fisheryates         
+        68.1ns cardchoose          
+        96.8ns iterativechoose     
+       237.6ns floydf2             
+       252.0ns rejectionsample     
+       303.7ns selby_fy            
+
+n = 9, k = 5, random
+        58.3ns fisheryates         
+        60.1ns quadraticreject     
+        96.7ns cardchoose          
+       106.5ns iterativechoose     
+       287.9ns floydf2             
+       328.1ns rejectionsample     
+       375.7ns selby_fy            
+
+n = 9, k = 6, random
+        57.9ns fisheryates         
+        83.0ns quadraticreject     
+       109.1ns iterativechoose     
+       115.8ns cardchoose          
+       326.8ns floydf2             
+       423.2ns rejectionsample     
+       468.3ns selby_fy            
+
+n = 9, k = 7, random
+        68.2ns fisheryates         
+        98.1ns iterativechoose     
+       133.7ns quadraticreject     
+       143.7ns cardchoose          
+       381.5ns floydf2             
+       520.1ns rejectionsample     
+       524.6ns selby_fy            
+
+n = 9, k = 8, random
+        67.6ns fisheryates         
+        84.6ns iterativechoose     
+       126.3ns cardchoose          
+       182.7ns quadraticreject     
+       435.5ns floydf2             
+       571.6ns selby_fy            
+       603.1ns rejectionsample     
+
+n = 9, k = 9, random
+        75.4ns fisheryates         
+        76.0ns iterativechoose     
+       111.4ns cardchoose          
+       323.9ns quadraticreject     
+       443.6ns floydf2             
+       624.1ns selby_fy            
+       773.5ns rejectionsample     
+
+n = 10, k = 0, random
+         2.1ns cardchoose          
+         2.7ns quadraticreject     
+        35.2ns fisheryates         
+        37.0ns selby_fy            
+        37.1ns rejectionsample     
+        38.0ns floydf2             
+        59.0ns iterativechoose     
+
+n = 10, k = 1, random
+         6.7ns quadraticreject     
+        15.4ns cardchoose          
+        41.1ns fisheryates         
+        69.0ns iterativechoose     
+        81.8ns rejectionsample     
+        83.7ns floydf2             
+       106.3ns selby_fy            
+
+n = 10, k = 2, random
+        15.0ns quadraticreject     
+        34.1ns cardchoose          
+        46.4ns fisheryates         
+        82.4ns iterativechoose     
+       137.0ns rejectionsample     
+       141.6ns floydf2             
+       169.5ns selby_fy            
+
+n = 10, k = 3, random
+        22.5ns quadraticreject     
+        48.6ns fisheryates         
+        48.6ns cardchoose          
+        88.9ns iterativechoose     
+       183.3ns floydf2             
+       189.1ns rejectionsample     
+       241.8ns selby_fy            
+
+n = 10, k = 4, random
+        35.3ns quadraticreject     
+        49.4ns fisheryates         
+        65.0ns cardchoose          
+       105.8ns iterativechoose     
+       228.0ns floydf2             
+       243.4ns rejectionsample     
+       293.0ns selby_fy            
+
+n = 10, k = 5, random
+        53.2ns quadraticreject     
+        58.5ns fisheryates         
+        97.7ns cardchoose          
+       114.7ns iterativechoose     
+       276.6ns floydf2             
+       314.3ns rejectionsample     
+       372.5ns selby_fy            
+
+n = 10, k = 6, random
+        58.5ns fisheryates         
+        77.7ns quadraticreject     
+       119.4ns cardchoose          
+       123.4ns iterativechoose     
+       323.6ns floydf2             
+       399.3ns rejectionsample     
+       435.6ns selby_fy            
+
+n = 10, k = 7, random
+        70.2ns fisheryates         
+       103.3ns iterativechoose     
+       107.0ns quadraticreject     
+       144.3ns cardchoose          
+       407.6ns floydf2             
+       481.3ns rejectionsample     
+       511.2ns selby_fy            
+
+n = 10, k = 8, random
+        65.7ns fisheryates         
+       107.0ns iterativechoose     
+       141.4ns cardchoose          
+       150.9ns quadraticreject     
+       433.5ns floydf2             
+       563.7ns selby_fy            
+       573.8ns rejectionsample     
+
+n = 10, k = 9, random
+        77.0ns fisheryates         
+        96.4ns iterativechoose     
+       156.6ns cardchoose          
+       222.6ns quadraticreject     
+       454.6ns floydf2             
+       646.8ns selby_fy            
+       734.7ns rejectionsample     
+
+n = 10, k = 10, random
+        73.0ns fisheryates         
+        85.2ns iterativechoose     
+       118.8ns cardchoose          
+       378.8ns quadraticreject     
+       480.4ns floydf2             
+       698.4ns selby_fy            
+       865.3ns rejectionsample     
+
+n = 10^1, k = 10^0, random
+         6.4ns quadraticreject     
+        15.1ns cardchoose          
+        39.0ns fisheryates         
+        67.8ns iterativechoose     
+        78.6ns rejectionsample     
+        81.7ns floydf2             
+        96.5ns selby_fy            
+
+n = 10^2, k = 10^0, random
+         6.5ns quadraticreject     
+        14.9ns cardchoose          
+        80.3ns rejectionsample     
+        85.4ns floydf2             
+        99.5ns selby_fy            
+       130.6ns fisheryates         
+       503.1ns iterativechoose     
+
+n = 10^2, k = 10^1, random
+        77.5ns quadraticreject     
+       176.6ns fisheryates         
+       193.7ns cardchoose          
+       599.5ns rejectionsample     
+       618.1ns iterativechoose     
+       621.5ns floydf2             
+       799.4ns selby_fy            
+
+n = 10^3, k = 10^0, random
+         6.5ns quadraticreject     
+        15.0ns cardchoose          
+        80.9ns rejectionsample     
+        82.9ns floydf2             
+        97.1ns selby_fy            
+       671.8ns fisheryates         
+      4764.2ns iterativechoose     
+
+n = 10^3, k = 10^1, random
+        68.5ns quadraticreject     
+       190.7ns cardchoose          
+       611.0ns rejectionsample     
+       635.4ns floydf2             
+       831.1ns fisheryates         
+       834.8ns selby_fy            
+      4983.4ns iterativechoose     
+
+n = 10^3, k = 10^2, random
+         1.1μs fisheryates         
+         3.0μs quadraticreject     
+         3.1μs cardchoose          
+         6.2μs iterativechoose     
+         7.4μs floydf2             
+         7.6μs rejectionsample     
+         9.4μs selby_fy            
+
+n = 10^4, k = 10^0, random
+         6.6ns quadraticreject     
+        15.1ns cardchoose          
+        78.9ns rejectionsample     
+        81.4ns floydf2             
+        96.2ns selby_fy            
+      6259.7ns fisheryates         
+     47302.2ns iterativechoose     
+
+n = 10^4, k = 10^1, random
+        67.4ns quadraticreject     
+       189.7ns cardchoose          
+       585.5ns rejectionsample     
+       643.6ns floydf2             
+       831.2ns selby_fy            
+      7707.1ns fisheryates         
+     47754.6ns iterativechoose     
+
+n = 10^4, k = 10^2, random
+         2.9μs quadraticreject     
+         3.0μs cardchoose          
+         6.6μs fisheryates         
+         7.4μs rejectionsample     
+         7.7μs floydf2             
+         9.9μs selby_fy            
+        49.5μs iterativechoose     
+
+n = 10^4, k = 10^3, random
+        10.3μs fisheryates         
+        40.8μs cardchoose          
+        61.6μs iterativechoose     
+        74.2μs rejectionsample     
+        75.2μs floydf2             
+        94.6μs selby_fy            
+       169.3μs quadraticreject     
+
+n = 10^5, k = 10^0, random
+         6.5ns quadraticreject     
+        14.8ns cardchoose          
+        78.5ns rejectionsample     
+        81.8ns floydf2             
+        96.3ns selby_fy            
+     66529.9ns fisheryates         
+    474735.3ns iterativechoose     
+
+n = 10^5, k = 10^1, random
+        67.2ns quadraticreject     
+       188.1ns cardchoose          
+       602.5ns rejectionsample     
+       635.5ns floydf2             
+       842.1ns selby_fy            
+     77092.6ns fisheryates         
+    473777.5ns iterativechoose     
+
+n = 10^5, k = 10^2, random
+         2.9μs quadraticreject     
+         3.0μs cardchoose          
+         7.4μs rejectionsample     
+         7.8μs floydf2             
+         9.8μs selby_fy            
+        66.0μs fisheryates         
+       476.5μs iterativechoose     
+
+n = 10^5, k = 10^3, random
+        41.1μs cardchoose          
+        73.2μs fisheryates         
+        74.5μs rejectionsample     
+        78.7μs floydf2             
+        98.1μs selby_fy            
+       165.0μs quadraticreject     
+       489.7μs iterativechoose     
+
+n = 10^5, k = 10^4, random
+       128.4μs fisheryates         
+       515.9μs cardchoose          
+       623.5μs iterativechoose     
+       779.3μs floydf2             
+       786.7μs rejectionsample     
+       967.6μs selby_fy            
+     15752.4μs quadraticreject     
+
+n = 10^6, k = 10^0, random
+         6.5ns quadraticreject     
+        14.8ns cardchoose          
+        78.5ns rejectionsample     
+        81.4ns floydf2             
+        97.0ns selby_fy            
+    668875.6ns fisheryates         
+   4719324.8ns iterativechoose     
+
+n = 10^6, k = 10^1, random
+        67.9ns quadraticreject     
+       190.6ns cardchoose          
+       582.3ns rejectionsample     
+       644.6ns floydf2             
+       813.9ns selby_fy            
+    721552.6ns fisheryates         
+   4738130.2ns iterativechoose     
+
+n = 10^6, k = 10^2, random
+         2.8μs quadraticreject     
+         3.0μs cardchoose          
+         7.2μs rejectionsample     
+         7.8μs floydf2             
+         9.7μs selby_fy            
+       663.2μs fisheryates         
+      4842.0μs iterativechoose     
+
+n = 10^6, k = 10^3, random
+        40.3μs cardchoose          
+        74.6μs rejectionsample     
+        79.9μs floydf2             
+        99.5μs selby_fy            
+       162.9μs quadraticreject     
+       668.7μs fisheryates         
+      4748.6μs iterativechoose     
+
+n = 10^6, k = 10^4, random
+       509.1μs cardchoose          
+       747.6μs fisheryates         
+       771.1μs rejectionsample     
+       817.6μs floydf2             
+       999.5μs selby_fy            
+      4874.2μs iterativechoose     
+     15770.9μs quadraticreject     
+
+n = 10^6, k = 10^5, random
+hit tlim: quadraticreject
+         1.4ms fisheryates         
+         6.1ms cardchoose          
+         6.2ms iterativechoose     
+         9.0ms floydf2             
+         9.1ms rejectionsample     
+        10.7ms selby_fy            
+      1791.4ms quadraticreject     
+
+n = 10^7, k = 10^0, random
+         6.6ns quadraticreject     
+        14.7ns cardchoose          
+        77.9ns rejectionsample     
+        81.0ns floydf2             
+        96.0ns selby_fy            
+  23137063.5ns fisheryates         
+  47497114.0ns iterativechoose     
+
+n = 10^7, k = 10^1, random
+        68.1ns quadraticreject     
+       191.9ns cardchoose          
+       587.3ns rejectionsample     
+       646.9ns floydf2             
+       818.9ns selby_fy            
+  23539687.3ns fisheryates         
+  47342386.0ns iterativechoose     
+
+n = 10^7, k = 10^2, random
+         2.9μs quadraticreject     
+         3.1μs cardchoose          
+         7.5μs rejectionsample     
+         7.8μs floydf2             
+         9.9μs selby_fy            
+     24799.8μs fisheryates         
+     48991.6μs iterativechoose     
+
+n = 10^7, k = 10^3, random
+        40.3μs cardchoose          
+        73.9μs rejectionsample     
+        79.0μs floydf2             
+        99.4μs selby_fy            
+       163.8μs quadraticreject     
+     23045.8μs fisheryates         
+     47344.3μs iterativechoose     
+
+n = 10^7, k = 10^4, random
+       508.4μs cardchoose          
+       774.2μs rejectionsample     
+       844.2μs floydf2             
+       998.4μs selby_fy            
+     15361.4μs quadraticreject     
+     23953.4μs fisheryates         
+     47543.0μs iterativechoose     
+
+n = 10^7, k = 10^5, random
+         6.1ms cardchoose          
+         9.0ms rejectionsample     
+         9.5ms floydf2             
+        11.2ms selby_fy            
+        25.3ms fisheryates         
+        49.1ms iterativechoose     
+
+n = 10^7, k = 10^6, random
+hit tlim: floydf2
+hit tlim: rejectionsample
+hit tlim: selby_fy
+        51.8ms fisheryates         
+        62.6ms iterativechoose     
+        73.3ms cardchoose          
+       153.8ms floydf2             
+       183.9ms rejectionsample     
+       199.3ms selby_fy            
+
+n = 10^8, k = 10^0, random
+hit tlim: fisheryates
+hit tlim: iterativechoose
+         6.7ns quadraticreject     
+        15.2ns cardchoose          
+        79.1ns rejectionsample     
+        82.2ns floydf2             
+        98.7ns selby_fy            
+ 311142348.0ns fisheryates         
+ 491177839.0ns iterativechoose     
+
+n = 10^8, k = 10^1, random
+        72.2ns quadraticreject     
+       195.9ns cardchoose          
+       592.7ns rejectionsample     
+       643.3ns floydf2             
+       825.5ns selby_fy            
+
+n = 10^8, k = 10^2, random
+         2.9μs quadraticreject     
+         3.0μs cardchoose          
+         7.4μs rejectionsample     
+         7.7μs floydf2             
+         9.8μs selby_fy            
+
+n = 10^8, k = 10^3, random
+        40.9μs cardchoose          
+        76.1μs rejectionsample     
+        79.9μs floydf2             
+        99.2μs selby_fy            
+       166.1μs quadraticreject     
+
+n = 10^8, k = 10^4, random
+       507.4μs cardchoose          
+       786.7μs rejectionsample     
+       819.4μs floydf2             
+      1015.6μs selby_fy            
+     15196.2μs quadraticreject     
+
+n = 10^8, k = 10^5, random
+         6.2ms cardchoose          
+         9.0ms rejectionsample     
+         9.4ms floydf2             
+        11.2ms selby_fy            
+
+n = 10^8, k = 10^6, random
+        73.4ms cardchoose          
+
+n = 10^8, k = 10^7, random
+hit tlim: cardchoose
+       945.2ms cardchoose          
+

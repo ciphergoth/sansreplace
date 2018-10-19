@@ -19,4 +19,8 @@ Random | n | n-sized list | Python-style Fisher-Yates | [Python](python/fisherya
 Random | k | Dictionary | Selby Fisher-Yates | [Python](python/selby_fy.py) | [C++](cpp/selby_fy.cpp)
 none | k | Set | Floyd's F2 | [Python](python/floydf2.py) | [C++](cpp/floydf2.cpp)
 
+On my machine, in C++, Fisher-Yates is the only algorithm using an auxiliary
+data  structure that ever does better than one which doesn't; see [these
+preliminary results](cpp/results).
+
 This is not an officially supported Google product.
