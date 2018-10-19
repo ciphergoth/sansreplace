@@ -20,8 +20,7 @@
 extern "C" {
 #endif
 double timefunc_s(uint32_t iters, uint32_t n, uint32_t k,
-                                              void (*func)(uint32_t n, uint32_t k,
-                                                           uint32_t* result));
+                  void (*func)(uint32_t n, uint32_t k, uint32_t* result));
 
 #if __cplusplus
 }

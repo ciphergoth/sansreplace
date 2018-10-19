@@ -22,7 +22,7 @@
 #include "randbelow.h"
 
 extern "C" void selby_fy(uint32_t n, uint32_t k, uint32_t* result) {
-    std::unordered_map<uint32_t, uint32_t> options(2*k);
+    std::unordered_map<uint32_t, uint32_t> options(2 * k);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t r = randbelow(n);
         auto fr = options.find(r);

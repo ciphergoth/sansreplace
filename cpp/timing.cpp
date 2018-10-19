@@ -24,8 +24,7 @@
 #include <vector>
 
 double timefunc_s(uint32_t iters, uint32_t n, uint32_t k,
-                                              void (*func)(uint32_t n, uint32_t k,
-                                                           uint32_t* result)) {
+                  void (*func)(uint32_t n, uint32_t k, uint32_t* result)) {
     auto result = std::vector<uint32_t>(k);
     auto start = std::chrono::system_clock::now();
     for (uint32_t i = 0; i < iters; i++) {

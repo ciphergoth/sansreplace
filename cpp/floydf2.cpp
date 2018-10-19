@@ -22,7 +22,7 @@
 #include "randbelow.h"
 
 extern "C" void floydf2(uint32_t n, uint32_t k, uint32_t* result) {
-    std::unordered_set<uint32_t> done(2*k);
+    std::unordered_set<uint32_t> done(2 * k);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
