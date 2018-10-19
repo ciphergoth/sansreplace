@@ -21,7 +21,7 @@
 
 #include "randbelow.h"
 
-extern "C" void fisheryates(uint32_t n, uint32_t k, uint32_t* result) {
+extern "C" void random_fisheryates(uint32_t n, uint32_t k, uint32_t* result) {
     std::vector<uint32_t> options(n);
     for (uint32_t i = 0; i < n; i++) {
         options[i] = i;
@@ -31,4 +31,9 @@ extern "C" void fisheryates(uint32_t n, uint32_t k, uint32_t* result) {
         result[i] = options[r];
         options[r] = options[i];
     }
+}
+
+extern "C" void sorted_fisheryates(uint32_t n, uint32_t k, uint32_t* result) {
+    random_fisheryates(n, k, result);
+    std::sort(result, result + k);
 }

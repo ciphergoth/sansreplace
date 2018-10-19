@@ -24,6 +24,8 @@ import cffi
 
 scriptdir = pathlib.Path(__file__).resolve().parent
 
+prefix = "random"
+
 timeables = [
     "quadraticreject",
     "donothing",
@@ -51,8 +53,8 @@ def setup_module(args):
         #include "timing.h"
     """
     for t in timeables:
-        ffi.cdef(f"void (*const {t})(uint32_t n, uint32_t k, uint32_t* result);")
-        source += f"void {t}(uint32_t n, uint32_t k, uint32_t* result);\n"
+        ffi.cdef(f"void (*const {prefix}_{t})(uint32_t n, uint32_t k, uint32_t* result);")
+        source += f"void {prefix}_{t}(uint32_t n, uint32_t k, uint32_t* result);\n"
     ffi.set_source("sansreplace", source,
         include_dirs=[str(scriptdir)],
         library_dirs=[b],
@@ -67,11 +69,11 @@ def setup_module(args):
     sansreplace.lib.rand_init()
 
 def timefunc_for(time, n, k, func):
+    fpointer = getattr(sansreplace.lib, f"{prefix}_{func}")
     iters = 1
     remaining = time
     while True:
-        t = sansreplace.lib.timefunc_s(iters, n, k,
-            getattr(sansreplace.lib, func))
+        t = sansreplace.lib.timefunc_s(iters, n, k, fpointer)
         #print(f"{func}({n}, {k}) * {iters} = {t}")
         remaining -= t
         if t >= remaining:

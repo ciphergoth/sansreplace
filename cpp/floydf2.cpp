@@ -21,7 +21,7 @@
 
 #include "randbelow.h"
 
-extern "C" void floydf2(uint32_t n, uint32_t k, uint32_t* result) {
+static void floydf2(uint32_t n, uint32_t k, uint32_t* result) {
     std::unordered_set<uint32_t> done(2 * k);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
@@ -32,5 +32,20 @@ extern "C" void floydf2(uint32_t n, uint32_t k, uint32_t* result) {
         } else {
             result[i] = m;
         }
+    }
+}
+
+extern "C" void sorted_floydf2(uint32_t n, uint32_t k, uint32_t* result) {
+    floydf2(n, k, result);
+    std::sort(result, result + k);
+}
+
+extern "C" void random_floydf2(uint32_t n, uint32_t k, uint32_t* result) {
+    floydf2(n, k, result);
+    for (uint32_t i = 1; i < k; i++) {
+        uint32_t r = randbelow(i + 1);
+        auto t = result[i];
+        result[i] = result[r];
+        result[r] = t;
     }
 }

@@ -20,7 +20,7 @@
 
 #include "randbelow.h"
 
-extern "C" void cardchoose(uint32_t n, uint32_t k, uint32_t* result) {
+static inline void cardchoose(uint32_t n, uint32_t k, uint32_t* result) {
     auto t = n - k + 1;
     for (uint32_t i = 0; i < k; i++) {
         uint32_t r = randbelow(t + i);
@@ -31,16 +31,21 @@ extern "C" void cardchoose(uint32_t n, uint32_t k, uint32_t* result) {
         }
     }
     std::sort(result, result + k);
-#if 0
+}
+
+extern "C" void sorted_cardchoose(uint32_t n, uint32_t k, uint32_t* result) {
+    cardchoose(n, k, result);
     for (uint32_t i = 0; i < k; i++) {
         result[i] += i;
     }
-#else
+}
+
+extern "C" void random_cardchoose(uint32_t n, uint32_t k, uint32_t* result) {
+    cardchoose(n, k, result);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t r = randbelow(i + 1);
         auto t = result[i] + i;
         result[i] = result[r];
         result[r] = t;
     }
-#endif
 }
