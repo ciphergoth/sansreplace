@@ -137,6 +137,10 @@ def parse_args():
 
 def main():
     args = parse_args()
+    print()
+    for k, v in sorted(vars(args).items()):
+        print(f"{k}: {v}")
+    print()
     setup_module(args)
     t = timefunc_for(args.time_for, 0, 0, "donothing")
     print(f"donothing: {t*1E9:7.1f}ns")
