@@ -26,9 +26,8 @@ scriptdir = pathlib.Path(__file__).resolve().parent
 
 prefix = "random"
 
-timeables = [
+samplers = [
     "quadraticreject",
-    "donothing",
     "cardchoose",
     "fisheryates",
     "floydf2",
@@ -36,6 +35,8 @@ timeables = [
     "rejectionsample",
     "selby_fy"
 ]
+
+timeables = ["donothing"] + samplers
 
 def setup_module(args):
     b = str(scriptdir / "build/host")
@@ -85,28 +86,53 @@ def timefunc_for(time, n, k, func):
         else:
             iters *= 10
 
-def run_timings():
+def run_timings(timefor, values):
+    klim = {}
+    for v in values:
+        vitr = globals()[f"{v}_values"]
+        for descrip, n, k in vitr():
+            print(f"{descrip}, {prefix}")
+            res = []
+            for func in samplers:
+                if k < klim.get(func, k+1):
+                    t = timefunc_for(timefor, n, k, func)
+                    res.append((t, func))
+                    if t > timefor:
+                        print(f"hit tlim: {func}")
+                        klim[func] = k
+            res.sort()
+            for t, func in res:
+                print(f"{t*1E9:12.1f}ns {func:20}")
+            print()
+
+def small_values():
+    top = 11
+    for n in range(top):
+        for k in range(n+1):
+            yield f"n = {n}, k = {k}", n, k
+
+def large_values():
     ptop = 7
     klim = {}
-    for pn in range(1, ptop):
+    for pn in range(ptop):
         for pk in range(pn):
-            for func in timeables:
-                if pk < klim.get(func, ptop):
-                    t = timefunc_for(1, 10**pn, 10**pk, func)
-                    print(f"{func:>20}(10^{pn}, 10^{pk}) = {t:10.2e}")
-                    if t > 1:
-                        print(f"hit tlim")
-                        klim[func] = pk
-            print()
+            yield f"n = 10^{pn}, k = 10^{pk}", 10**pn, 10**pk
 
 def parse_args():
     p = argparse.ArgumentParser()
+    p.add_argument("--time-for", type=float, default=0.1)
+    p.add_argument("--values", action='append')
     return p.parse_args()
 
 def main():
     args = parse_args()
     setup_module(args)
-    run_timings()
+    t = timefunc_for(args.time_for, 0, 0, "donothing")
+    print(f"donothing: {t*1E9:7.1f}ns")
+    values = args.values
+    if values is None:
+        values = ["large"]
+    run_timings(args.time_for, values)
 
 if __name__ == '__main__':
     main()
