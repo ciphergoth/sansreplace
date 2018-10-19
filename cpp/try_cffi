@@ -96,15 +96,23 @@ def run_timings(args, values):
         print(f"{descrip}, {args.sorttype}")
         res = []
         for func in samplers:
-            if k < klim.get(func, k+1):
+            if func not in klim or k < klim[func]:
                 t = timefunc_for(args.time_for, n, k, f"{args.sorttype}_{func}")
                 res.append((t, func))
                 if t > args.time_for:
                     print(f"hit tlim: {func}")
                     klim[func] = k
         res.sort()
+        if res[0][0] < 1E-6:
+            unit = "ns"; mul = 1E9
+        elif res[0][0] < 1E-3:
+            unit = "μs"; mul = 1E6
+        elif res[0][0] < 1:
+            unit = "ms"; mul = 1E3
+        else:
+            unit = "s"; mul = 1
         for t, func in res:
-            print(f"{t*1E9:12.1f}ns {func:20}")
+            print(f"{t*mul:12.1f}{unit} {func:20}")
         print()
 
 def small_values():
@@ -114,7 +122,7 @@ def small_values():
             yield f"n = {n}, k = {k}", n, k
 
 def large_values():
-    ptop = 7
+    ptop = 9
     klim = {}
     for pn in range(ptop):
         for pk in range(pn):
