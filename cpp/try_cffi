@@ -25,6 +25,7 @@ import cffi
 scriptdir = pathlib.Path(__file__).resolve().parent
 
 timeables = [
+    "quadraticreject",
     "donothing",
     "cardchoose",
     "fisheryates",
