@@ -16,5 +16,4 @@
 
 #include <stdint.h>
 
-extern "C" void sorted_donothing(uint32_t n, uint32_t k, uint32_t* result) {}
-extern "C" void random_donothing(uint32_t n, uint32_t k, uint32_t* result) {}
+extern "C" void donothing(uint32_t n, uint32_t k, uint32_t* result) {}

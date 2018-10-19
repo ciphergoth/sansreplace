@@ -24,8 +24,6 @@ import cffi
 
 scriptdir = pathlib.Path(__file__).resolve().parent
 
-prefix = "random"
-
 samplers = [
     "quadraticreject",
     "cardchoose",
@@ -36,7 +34,11 @@ samplers = [
     "selby_fy"
 ]
 
-timeables = ["donothing"] + samplers
+def list_functions():
+    yield "donothing"
+    for prefix in ["sorted", "random"]:
+        for t in samplers:
+            yield f"{prefix}_{t}"
 
 def setup_module(args):
     b = str(scriptdir / "build/host")
@@ -53,14 +55,15 @@ def setup_module(args):
         #include "randbelow.h"
         #include "timing.h"
     """
-    for t in timeables:
-        ffi.cdef(f"void (*const {prefix}_{t})(uint32_t n, uint32_t k, uint32_t* result);")
-        source += f"void {prefix}_{t}(uint32_t n, uint32_t k, uint32_t* result);\n"
+    for f in list_functions():
+        ffi.cdef(f"void (*const {f})(uint32_t n, uint32_t k, uint32_t* result);")
+        source += f"void {f}(uint32_t n, uint32_t k, uint32_t* result);\n"
     ffi.set_source("sansreplace", source,
         include_dirs=[str(scriptdir)],
         library_dirs=[b],
         runtime_library_dirs=[b],
         libraries=["sansreplace"],
+        extra_compile_args=['-std=c11'],
         extra_link_args=[f"-Wl,-rpath,{b}"])
     ffi.compile(tmpdir=b)
     sys.path.append(b)
@@ -70,7 +73,7 @@ def setup_module(args):
     sansreplace.lib.rand_init()
 
 def timefunc_for(time, n, k, func):
-    fpointer = getattr(sansreplace.lib, f"{prefix}_{func}")
+    fpointer = getattr(sansreplace.lib, func)
     iters = 1
     remaining = time
     while True:
@@ -86,24 +89,23 @@ def timefunc_for(time, n, k, func):
         else:
             iters *= 10
 
-def run_timings(timefor, values):
+def run_timings(args, values):
+    vitr = globals()[f"{values}_values"]
     klim = {}
-    for v in values:
-        vitr = globals()[f"{v}_values"]
-        for descrip, n, k in vitr():
-            print(f"{descrip}, {prefix}")
-            res = []
-            for func in samplers:
-                if k < klim.get(func, k+1):
-                    t = timefunc_for(timefor, n, k, func)
-                    res.append((t, func))
-                    if t > timefor:
-                        print(f"hit tlim: {func}")
-                        klim[func] = k
-            res.sort()
-            for t, func in res:
-                print(f"{t*1E9:12.1f}ns {func:20}")
-            print()
+    for descrip, n, k in vitr():
+        print(f"{descrip}, {args.sorttype}")
+        res = []
+        for func in samplers:
+            if k < klim.get(func, k+1):
+                t = timefunc_for(args.time_for, n, k, f"{args.sorttype}_{func}")
+                res.append((t, func))
+                if t > args.time_for:
+                    print(f"hit tlim: {func}")
+                    klim[func] = k
+        res.sort()
+        for t, func in res:
+            print(f"{t*1E9:12.1f}ns {func:20}")
+        print()
 
 def small_values():
     top = 11
@@ -121,6 +123,7 @@ def large_values():
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--time-for", type=float, default=0.1)
+    p.add_argument("--sorttype", default="random")
     p.add_argument("--values", action='append')
     return p.parse_args()
 
@@ -132,7 +135,8 @@ def main():
     values = args.values
     if values is None:
         values = ["large"]
-    run_timings(args.time_for, values)
+    for v in values:
+        run_timings(args, v)
 
 if __name__ == '__main__':
     main()
