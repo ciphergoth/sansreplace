@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import csv
 import subprocess
 import pathlib
 
@@ -41,7 +42,7 @@ def timefunc_for(time, params, timeable):
         else:
             iters *= 10
 
-def run_timings(vitr, totime, time_for):
+def run_timings(writer, vitr, totime, time_for):
     klim = {}
     for descrip, n, k in vitr():
         print(f"{descrip}")
@@ -49,6 +50,7 @@ def run_timings(vitr, totime, time_for):
         for name, tm in totime.items():
             if name not in klim or k < klim[name]:
                 t = timefunc_for(time_for, (n, k), tm)
+                writer.writerow(['result', name, n, k, t])
                 res.append((t, name))
                 if t > time_for:
                     print(f"hit tlim: {name}")
@@ -98,24 +100,26 @@ def parse_args():
     p.add_argument("--sorttype", default="random")
     p.add_argument("--values", action='append')
     p.add_argument("--language", default="cpp")
+    p.add_argument("--csv", type=pathlib.Path,
+        default=pathlib.Path('/dev/null'))
     return p.parse_args()
 
 def main():
     args = parse_args()
-    print(f"Version: {get_gitstate()}")
-    for k, v in sorted(vars(args).items()):
-        print(f"{k}: {v}")
-    print()
-    languages = {"cpp": load_cpp, "python": load_python}
-    timeables = languages[args.language].get_timeables(topdir)
-    t = timefunc_for(args.time_for, (0, 0), timeables["donothing"]["donothing"])
-    print(f"donothing: {t*1E9:7.1f}ns")
-    values = args.values
-    if values is None:
-        values = ["small", "large"]
-    for v in values:
-        vitr = globals()[f"{v}_values"]
-        run_timings(vitr, timeables[args.sorttype], args.time_for)
+    if args.values is None:
+        args.values = ["small", "large"]
+    with args.csv.open("w") as csvf:
+        writer = csv.writer(csvf)
+        writer.writerow(['config', 'version', get_gitstate()])
+        for k, v in sorted(vars(args).items()):
+            writer.writerow(['config', k, v])
+        languages = {"cpp": load_cpp, "python": load_python}
+        timeables = languages[args.language].get_timeables(topdir)
+        t = timefunc_for(args.time_for, (0, 0), timeables["donothing"]["donothing"])
+        print(f"donothing: {t*1E9:7.1f}ns")
+        for v in args.values:
+            vitr = globals()[f"{v}_values"]
+            run_timings(writer, vitr, timeables[args.sorttype], args.time_for)
 
 if __name__ == '__main__':
     main()
