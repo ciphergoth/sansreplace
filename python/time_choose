@@ -54,7 +54,7 @@ def main():
         # iterativechoose is always terrible, leave it out
         modules = ['cardchoose', 'fisheryates', 'floydf2',
             'rejectionsample', 'selby_fy']
-    modules = [(m, getattr(importlib.import_module(m), args.method))
+    modules = [(m, getattr(importlib.import_module(f"algorithms.{m}"), args.method))
         for m in modules]
     for np in range(1,7):
         n = 10**np
