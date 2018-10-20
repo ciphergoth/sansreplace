@@ -13,7 +13,7 @@ Order guarantee | Time | Data structures | Algorithm | Python | C++
 ----|----|----|----|----|----
 Sorted | k log k | none | this algorithm | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp)
 Random | k  | Set | rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp)
-Random | k^2  | none | quadratic rejection sampling |  | [C++](cpp/quadraticreject.cpp)
+Random | k^2  | none | quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp)
 Sorted | n | none | iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp)
 Random | n | n-sized list | Python-style Fisher-Yates | [Python](python/algorithms/fisheryates.py) | [C++](cpp/fisheryates.cpp)
 Random | k | Dictionary | Selby Fisher-Yates | [Python](python/algorithms/algorithms/selby_fy.py) | [C++](cpp/selby_fy.cpp)
