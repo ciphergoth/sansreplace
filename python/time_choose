@@ -15,60 +15,98 @@
 # limitations under the License.
 
 import argparse
-import gc
-import importlib
-import time
+import sys
+import subprocess
+import pathlib
 
-def time_test(choose, n, k, iters):
-    gc.disable()
-    start = time.process_time()
-    for _ in range(iters):
-        choose(n, k)
-    finish = time.process_time()
-    gc.enable()
-    return finish - start
+import cffi
 
-def test_choose(args, name, choose, n, k):
-    initruns = 1
+import load_cpp
+import load_python
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+def timefunc_for(time, params, timeable):
+    iters = 1
+    remaining = time
     while True:
-        inittime = time_test(choose, n, k, initruns)
-        if inittime * 10 >= args.test_time:
-            num_tests = max(1, int(args.test_time * initruns / inittime))
-            break
-        initruns *= 10
-    res = time_test(choose, n, k, num_tests) / num_tests
-    print(f"    {res:10.3g}s {name}")
-    return res
+        t = timeable.time(params, iters)
+        #print(f"{func}({n}, {k}) * {iters} = {t}")
+        remaining -= t
+        if t >= remaining:
+            return t / iters
+        elif t * 100 > remaining:
+            iters = int(iters * remaining / t)
+        elif t * 10000 > remaining:
+            iters = int(iters * remaining * 0.1 / t)
+        else:
+            iters *= 10
+
+def run_timings(values, totime, time_for):
+    vitr = globals()[f"{values}_values"]
+    klim = {}
+    for descrip, n, k in vitr():
+        print(f"{descrip}")
+        res = []
+        for name, tm in totime.items():
+            if name not in klim or k < klim[name]:
+                t = timefunc_for(time_for, (n, k), tm)
+                res.append((t, name))
+                if t > time_for:
+                    print(f"hit tlim: {name}")
+                    klim[name] = k
+        if len(res) == 0:
+            print()
+            continue
+        res.sort()
+        if res[0][0] < 1E-6:
+            unit = "ns"; mul = 1E9
+        elif res[0][0] < 1E-3:
+            unit = "μs"; mul = 1E6
+        elif res[0][0] < 1:
+            unit = "ms"; mul = 1E3
+        else:
+            unit = "s"; mul = 1
+        for t, name in res:
+            print(f"{t*mul:12.1f}{unit} {name:20}")
+        print()
+
+def small_values():
+    top = 11
+    for n in range(top):
+        for k in range(n+1):
+            yield f"n = {n}, k = {k}", n, k
+
+def large_values():
+    ptop = 9
+    klim = {}
+    for pn in range(ptop):
+        for pk in range(pn):
+            yield f"n = 10^{pn}, k = 10^{pk}", 10**pn, 10**pk
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument('--test-time', type=int, default=1.0)
-    p.add_argument('--method', default='sorted_choose')
-    p.add_argument('--module', action='append')
+    p.add_argument("--time-for", type=float, default=0.1)
+    p.add_argument("--sorttype", default="random")
+    p.add_argument("--values", action='append')
+    p.add_argument("--language", default="cpp")
     return p.parse_args()
 
 def main():
     args = parse_args()
-    modules = args.module
-    if modules is None:
-        # iterativechoose is always terrible, leave it out
-        modules = ['cardchoose', 'fisheryates', 'floydf2',
-            'rejectionsample', 'selby_fy']
-    modules = [(m, getattr(importlib.import_module(f"algorithms.{m}"), args.method))
-        for m in modules]
-    for np in range(1,7):
-        n = 10**np
-        for kp in range(0, np):
-            k = 10**kp
-            print(f"{n:7} choose {k:7}")
-            l = []
-            for name, choose in modules:
-                t = test_choose(args, name, choose, n, k)
-                l.append((t, name))
-            l.sort()
-            threshhold = l[0][0] * 1.5
-            winners = [e[1] for e in l if e[0] <= threshhold]
-            print(f"{n:7} choose {k:7} winners: {', '.join(winners)}")
-            print()
+    print()
+    for k, v in sorted(vars(args).items()):
+        print(f"{k}: {v}")
+    print()
+    languages = {"cpp": load_cpp, "python": load_python}
+    timeables = languages[args.language].get_timeables(topdir)
+    t = timefunc_for(args.time_for, (0, 0), timeables["donothing"]["donothing"])
+    print(f"donothing: {t*1E9:7.1f}ns")
+    values = args.values
+    if values is None:
+        values = ["large"]
+    for v in values:
+        run_timings(v, timeables[args.sorttype], args.time_for)
+
 if __name__ == '__main__':
     main()
