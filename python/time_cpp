@@ -22,7 +22,7 @@ import pathlib
 
 import cffi
 
-scriptdir = pathlib.Path(__file__).resolve().parent
+topdir = pathlib.Path(__file__).resolve().parent.parent
 
 samplers = [
     "quadraticreject",
@@ -41,7 +41,8 @@ def list_functions():
             yield f"{prefix}_{t}"
 
 def setup_module(args):
-    b = str(scriptdir / "build/host")
+    cppdir = topdir / "cpp"
+    b = str(cppdir / "build/host")
     subprocess.run(["ninja", "-C", b], check=True)
     ffi = cffi.FFI()
     ffi.cdef("""
@@ -59,7 +60,7 @@ def setup_module(args):
         ffi.cdef(f"void (*const {f})(uint32_t n, uint32_t k, uint32_t* result);")
         source += f"void {f}(uint32_t n, uint32_t k, uint32_t* result);\n"
     ffi.set_source("sansreplace", source,
-        include_dirs=[str(scriptdir)],
+        include_dirs=[str(cppdir)],
         library_dirs=[b],
         runtime_library_dirs=[b],
         libraries=["sansreplace"],
