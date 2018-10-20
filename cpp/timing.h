@@ -19,9 +19,8 @@
 #if __cplusplus
 extern "C" {
 #endif
-double timefunc_s(uint32_t iters, uint32_t n, uint32_t k,
-                  void (*func)(uint32_t n, uint32_t k, uint32_t* result));
-
+double timefunc_s(void (*func)(uint32_t n, uint32_t k, uint32_t* result), uint32_t n, uint32_t k,
+                  uint32_t iters);
 #if __cplusplus
 }
 #endif

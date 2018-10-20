@@ -38,14 +38,19 @@ def setup_module(cppdir, functions):
     ffi = cffi.FFI()
     ffi.cdef("""
         void rand_init();
-        typedef unsigned uint32_t;
-        double timefunc_s(uint32_t iters, uint32_t n, uint32_t k,
-                                                      void (*func)(uint32_t n, uint32_t k,
-                                                                   uint32_t* result));
+        double timefunc_s(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
+                          uint32_t n, uint32_t k, uint32_t iters);
+        void callchoose(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
+                        uint32_t n, uint32_t k, uint32_t* result);
     """)
     source = """
         #include "randbelow.h"
         #include "timing.h"
+
+        void callchoose(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
+                        uint32_t n, uint32_t k, uint32_t* result) {
+            func(n, k, result);
+        }
     """
     for f in functions:
         ffi.cdef(f"void (*const {f})(uint32_t n, uint32_t k, uint32_t* result);")
@@ -75,9 +80,15 @@ class Timeable:
         self._funcname = funcname
         self._fpointer = getattr(module.lib, funcname)
 
+    def call(self, params):
+        n, k = params
+        buf = self._module.ffi.new('uint32_t[]', k)
+        self._module.lib.callchoose(self._fpointer, n, k, buf)
+        return list(buf)
+
     def time(self, params, iters):
         n, k = params
-        return self._module.lib.timefunc_s(iters, n, k, self._fpointer)
+        return self._module.lib.timefunc_s(self._fpointer, n, k, iters)
 
 def get_timeables(topdir):
     module = setup_module(topdir / "cpp", [f[2] for f in list_functions()])

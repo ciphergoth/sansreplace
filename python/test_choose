@@ -15,8 +15,13 @@
 # limitations under the License.
 
 import argparse
-
 import importlib
+import pathlib
+
+import load_cpp
+import load_python
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
 
 def binomial(n, k):
     r = 1
@@ -28,7 +33,7 @@ def binomial(n, k):
 def test_choose(args, choose):
     counts = {}
     for _ in range(args.tests):
-        r = tuple(choose(args.n, args.k))
+        r = tuple(choose((args.n, args.k)))
         counts[r] = 1 + counts.get(r, 0)
     if len(counts) <= args.show_max:
         for k, v in sorted(counts.items()):
@@ -42,14 +47,19 @@ def parse_args():
     p.add_argument('k', type=int)
     p.add_argument('--tests', type=int, default=100000)
     p.add_argument('--show-max', type=int, default=21)
-    p.add_argument('--module', default='cardchoose')
-    p.add_argument('--method', default='sorted_choose')
+    p.add_argument("--sorttype", default="sorted")
+    p.add_argument("--language", default="python")
+    p.add_argument('--algorithm', default='cardchoose')
     return p.parse_args()
 
 def main():
     args = parse_args()
-    m = importlib.import_module(f"algorithms.{args.module}")
-    test_choose(args, getattr(m, args.method))
+    for k, v in sorted(vars(args).items()):
+        print(f"{k}: {v}")
+    print()
+    languages = {"cpp": load_cpp, "python": load_python}
+    timeables = languages[args.language].get_timeables(topdir)
+    test_choose(args, timeables[args.sorttype][args.algorithm].call)
 
 if __name__ == '__main__':
     main()

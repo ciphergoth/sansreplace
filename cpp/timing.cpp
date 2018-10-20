@@ -23,8 +23,8 @@
 #include <ratio>
 #include <vector>
 
-double timefunc_s(uint32_t iters, uint32_t n, uint32_t k,
-                  void (*func)(uint32_t n, uint32_t k, uint32_t* result)) {
+double timefunc_s(void (*func)(uint32_t n, uint32_t k, uint32_t* result), uint32_t n, uint32_t k,
+                  uint32_t iters) {
     auto result = std::vector<uint32_t>(k);
     auto start = std::chrono::system_clock::now();
     for (uint32_t i = 0; i < iters; i++) {

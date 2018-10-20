@@ -94,7 +94,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-    print()
     for k, v in sorted(vars(args).items()):
         print(f"{k}: {v}")
     print()
@@ -104,7 +103,7 @@ def main():
     print(f"donothing: {t*1E9:7.1f}ns")
     values = args.values
     if values is None:
-        values = ["large"]
+        values = ["small", "large"]
     for v in values:
         run_timings(v, timeables[args.sorttype], args.time_for)
 

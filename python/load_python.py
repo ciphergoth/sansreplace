@@ -23,6 +23,9 @@ class Timeable:
     def __init__(self, choose):
         self._choose = choose
 
+    def call(self, params):
+        return self._choose(*params)
+
     def time(self, params, iters):
         gc.disable()
         start = time.process_time()
