@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import subprocess
 import pathlib
 
 import cffi
@@ -40,8 +41,7 @@ def timefunc_for(time, params, timeable):
         else:
             iters *= 10
 
-def run_timings(values, totime, time_for):
-    vitr = globals()[f"{values}_values"]
+def run_timings(vitr, totime, time_for):
     klim = {}
     for descrip, n, k in vitr():
         print(f"{descrip}")
@@ -82,6 +82,16 @@ def large_values():
         for pk in range(pn):
             yield f"n = 10^{pn}, k = 10^{pk}", 10**pn, 10**pk
 
+def get_gitstate():
+    rp = subprocess.run(["git", "rev-parse", "HEAD"], cwd=topdir, check=True,
+        stdout=subprocess.PIPE, errors='strict')
+    gitstate = rp.stdout.strip()
+    di = subprocess.run(["git", "diff-index", "--quiet", "HEAD", "--"],
+        cwd=topdir)
+    if di.returncode != 0:
+        gitstate += "+"
+    return gitstate
+
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--time-for", type=float, default=0.1)
@@ -92,6 +102,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    print(f"Version: {get_gitstate()}")
     for k, v in sorted(vars(args).items()):
         print(f"{k}: {v}")
     print()
@@ -103,7 +114,8 @@ def main():
     if values is None:
         values = ["small", "large"]
     for v in values:
-        run_timings(v, timeables[args.sorttype], args.time_for)
+        vitr = globals()[f"{v}_values"]
+        run_timings(vitr, timeables[args.sorttype], args.time_for)
 
 if __name__ == '__main__':
     main()
