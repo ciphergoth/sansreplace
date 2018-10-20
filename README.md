@@ -1,6 +1,6 @@
 # Selection without replacement
 
-[This algorithm](cardchoose.md) selects k integers 0 <= x < n at random
+[This algorithm](cardchoose.md) selects k distinct integers 0 <= x < n at random
 and returns them in sorted order. It takes O(k log k) time and needs no
 auxiliary data structures, just the list it will return things in. I've
 implemented it in Python and C++, and compared it to some other options.
