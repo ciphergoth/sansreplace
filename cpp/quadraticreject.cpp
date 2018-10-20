@@ -17,7 +17,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <unordered_set>
 
 #include "randbelow.h"
 

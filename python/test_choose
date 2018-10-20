@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import argparse
-import importlib
 import pathlib
 
 import load_cpp

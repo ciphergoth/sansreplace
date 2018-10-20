@@ -15,8 +15,6 @@
 # limitations under the License.
 
 import argparse
-import sys
-import subprocess
 import pathlib
 
 import cffi

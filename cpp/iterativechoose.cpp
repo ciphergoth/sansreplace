@@ -17,7 +17,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <vector>
 
 #include "randbelow.h"
 
