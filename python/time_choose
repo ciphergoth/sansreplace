@@ -81,14 +81,14 @@ def power10_values():
     ptop = 9
     klim = {}
     for pn in range(ptop):
-        for pk in range(pn):
+        for pk in range(pn + 1):
             yield f"n = 10^{pn}, k = 10^{pk}", 10**pn, 10**pk
 
 def power2_values():
     ptop = 30
     klim = {}
     for pn in range(ptop):
-        for pk in range(pn):
+        for pk in range(pn + 1):
             yield f"n = 2^{pn}, k = 2^{pk}", 2**pn, 2**pk
 
 def fib(m):
