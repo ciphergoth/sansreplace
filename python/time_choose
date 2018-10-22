@@ -77,12 +77,19 @@ def small_values():
         for k in range(n+1):
             yield f"n = {n}, k = {k}", n, k
 
-def large_values():
+def power10_values():
     ptop = 9
     klim = {}
     for pn in range(ptop):
         for pk in range(pn):
             yield f"n = 10^{pn}, k = 10^{pk}", 10**pn, 10**pk
+
+def power2_values():
+    ptop = 30
+    klim = {}
+    for pn in range(ptop):
+        for pk in range(pn):
+            yield f"n = 2^{pn}, k = 2^{pk}", 2**pn, 2**pk
 
 def get_gitstate():
     rp = subprocess.run(["git", "rev-parse", "HEAD"], cwd=topdir, check=True,
@@ -107,7 +114,7 @@ def parse_args():
 def main():
     args = parse_args()
     if args.values is None:
-        args.values = ["small", "large"]
+        args.values = ["small", "power10"]
     with args.csv.open("w") as csvf:
         writer = csv.writer(csvf)
         writer.writerow(['config', 'version', get_gitstate()])
