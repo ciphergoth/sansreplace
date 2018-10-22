@@ -17,15 +17,15 @@ used is the output vector, so no extra memory is needed; it runs in O(_k_ log
 _k_) time. I've implemented this and six other algorithms in C++ and Python
 to compare their performance.
 
-Order guarantee | Time | Data structures | Algorithm | Python | C++
+ Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-Sorted | _k_ log _k_ | none | "[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp)
-Random | _k_^2  | none | quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp)
-Sorted | _n_ | none | iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp)
-Random | _n_ | n-sized list | Python-style Fisher-Yates | [Python](python/algorithms/fisheryates.py) | [C++](cpp/fisheryates.cpp)
-Random | _k_  | Set | rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp)
-none | _k_ | Set | Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp)
-Random | _k_ | Dictionary | Selby Fisher-Yates | [Python](python/algorithms/algorithms/selby_fy.py) | [C++](cpp/selby_fy.cpp)
+"[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
+iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
+Python-style Fisher-Yates | [Python](python/algorithms/fisheryates.py) | [C++](cpp/fisheryates.cpp) | Random | n-sized list | _n_
+rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
+Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
+Selby Fisher-Yates | [Python](python/algorithms/selby_fy.py) | [C++](cpp/selby_fy.cpp) | Random | Dictionary | _k_
 
 In [my C++ tests](results.md), `cardchoose` outperforms `rejectionsample`,
 `floydf2`, and `selby_fy` for all values of _n_ and _k_. `quadraticreject` is
@@ -33,7 +33,7 @@ best where _k_ < 100 or so, and `fisheryates` and `iterativechoose` perform well
 when _k_/_n_ is large.  `cardchoose` always performs within an acceptable factor of other algorithms.
 
 Any algorithm can be turned into one with a "sorted" order guarantee
-with an O(k log k) sort, or a "random" order guarantee with an O(k)
+with an O(_k_ log _k_) sort, or a "random" order guarantee with an O(_k_)
 Fisher-Yates shuffle.
 
 This is not an officially supported Google product.
