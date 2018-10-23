@@ -37,7 +37,8 @@ class Timeable:
 def get_timeables(topdir):
     res = {}
     for m in ['cardchoose', 'donothing', 'fisheryates', 'floydf2',
-        'iterativechoose', 'quadraticreject', 'rejectionsample', 'selby_fy']:
+        'iterativechoose', 'quadraticreject', 'rejectionsample',
+        'reservoirsample', 'selby_fy']:
         md = importlib.import_module(f"algorithms.{m}")
         for prefix in ["donothing", "random", "sorted"]:
             name = f"{prefix}_choose"
