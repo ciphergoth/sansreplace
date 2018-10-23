@@ -39,6 +39,7 @@ def read_data(args):
 
 def parse_args():
     p = argparse.ArgumentParser()
+    p.add_argument("--algorithm",  action='append')
     p.add_argument('--compare-to', default="cardchoose")
     p.add_argument('--csv', type=pathlib.Path,
         default=topdir / "results/2018-10-20-cpp-random/csv.csv")
@@ -55,9 +56,9 @@ def main():
         matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     data = read_data(args)
-    for alt in sorted(data.keys()):
-        if alt == args.compare_to:
-            continue
+    if args.algorithm is None:
+        args.algorithm = sorted(a for a in data.keys() if a != args.compare_to)
+    for alt in args.algorithm:
         fig = plt.figure()
         ax = plt.gca()
         ax.set_xscale('log')
