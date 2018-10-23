@@ -35,6 +35,14 @@ extern "C" void random_reservoirsample(uint32_t n, uint32_t k, uint32_t* result)
 }
 
 extern "C" void sorted_reservoirsample(uint32_t n, uint32_t k, uint32_t* result) {
-    random_reservoirsample(n, k, result);
+    for (uint32_t i = 0; i < k; i++) {
+        result[i] = i;
+    }
+    for (uint32_t i = k; i < n; i++) {
+        uint32_t r = randbelow(i + 1);
+        if (r < k) {
+            result[r] = i;
+        }
+    }
     std::sort(result, result + k);
 }
