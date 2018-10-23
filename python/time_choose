@@ -97,20 +97,16 @@ def power2_values():
             yield f"n = 2^{pn}, k = 2^{pk}", 2**pn, 2**pk
 
 def fib(m):
-    if m > 0:
-        yield 0, 0
-    i = 2
-    a, b = 1, 2
+    a, b = 0, 1
     while a < m:
-        yield i, a
+        yield a
         a, b = b, a + b
-        i += 1
 
 def fib_values():
     ptop = 1E9
     klim = {}
-    for pn, n in fib(ptop):
-        for pk, k in fib(n + 1):
+    for pn, n in enumerate(fib(ptop)):
+        for pk, k in enumerate(fib(n + 1)):
             yield f"n = F_{pn} = {n}, k = F_{pk} = {k}", n, k
 
 def get_gitstate():
