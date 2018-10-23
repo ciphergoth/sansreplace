@@ -31,6 +31,7 @@ libsrc = [
     'iterativechoose.cpp',
     'randbelow.c',
     'rejectionsample.cpp',
+    'reservoirsample.cpp',
     'quadraticreject.cpp',
     'selby_fy.cpp',
     'timing.cpp',

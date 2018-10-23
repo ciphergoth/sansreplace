@@ -27,6 +27,7 @@ samplers = [
     "floydf2",
     "iterativechoose",
     "rejectionsample",
+    "reservoirsample",
     "selby_fy"
 ]
 
