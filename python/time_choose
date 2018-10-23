@@ -42,7 +42,7 @@ def timefunc_for(time, params, timeable):
         else:
             iters *= 10
 
-def run_timings(writer, vitr, totime, time_for):
+def run_timings(args, vitr, totime):
     klim = {}
     done = set()
     for descrip, n, k in vitr:
@@ -54,10 +54,13 @@ def run_timings(writer, vitr, totime, time_for):
         res = []
         for name, tm in totime.items():
             if name not in klim or k < klim[name]:
-                t = timefunc_for(time_for, (n, k), tm)
-                writer.writerow(['result', name, n, k, t])
+                t = timefunc_for(args.time_for, (n, k), tm)
+                if args.csv is not None:
+                    with args.csv.open("a") as csvf:
+                        writer = csv.writer(csvf)
+                        writer.writerow(['result', name, n, k, t])
                 res.append((t, name))
-                if t > time_for:
+                if t > args.time_for:
                     print(f"hit tlim: {name}")
                     klim[name] = k
         if len(res) == 0:
@@ -122,6 +125,7 @@ def get_gitstate():
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--time-for", type=float, default=0.1)
+    p.add_argument("--algorithm",  action='append')
     p.add_argument("--sorttype", default="random")
     p.add_argument("--values", action='append')
     p.add_argument("--language", default="cpp")
@@ -132,22 +136,24 @@ def main():
     args = parse_args()
     if args.values is None:
         args.values = ["small", "power10"]
-    if args.csv is None:
-        args.csv = pathlib.Path('/dev/null')
-    else:
+    if args.csv is not None:
         args.csv.parent.mkdir(parents=True, exist_ok=True)
-    with args.csv.open("w") as csvf:
-        writer = csv.writer(csvf)
-        writer.writerow(['config', 'version', get_gitstate()])
-        for k, v in sorted(vars(args).items()):
-            writer.writerow(['config', k, v])
-        languages = {"cpp": load_cpp, "python": load_python}
-        timeables = languages[args.language].get_timeables(topdir)
-        t = timefunc_for(args.time_for, (0, 0), timeables["donothing"]["donothing"])
-        print(f"donothing: {t*1E9:7.1f}ns")
-        values = [tup for v in args.values
-            for tup in globals()[f"{v}_values"]()]
-        run_timings(writer, values, timeables[args.sorttype], args.time_for)
+        with args.csv.open("w") as csvf:
+            writer = csv.writer(csvf)
+            writer.writerow(['config', 'version', get_gitstate()])
+            for k, v in sorted(vars(args).items()):
+                writer.writerow(['config', k, v])
+    languages = {"cpp": load_cpp, "python": load_python}
+    timeables = languages[args.language].get_timeables(topdir)
+    t = timefunc_for(args.time_for, (0, 0), timeables["donothing"]["donothing"])
+    print(f"donothing: {t*1E9:7.1f}ns")
+    values = [tup for v in args.values
+        for tup in globals()[f"{v}_values"]()]
+    if args.algorithm is None:
+        totime = timeables[args.sorttype]
+    else:
+        totime = {k:timeables[args.sorttype][k] for k in args.algorithm}
+    run_timings(args, values, totime)
 
 if __name__ == '__main__':
     main()
