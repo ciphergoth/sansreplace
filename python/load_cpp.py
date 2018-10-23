@@ -39,7 +39,7 @@ def setup_module(cppdir, functions):
     ffi.cdef("""
         void rand_init();
         double timefunc_s(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
-                          uint32_t n, uint32_t k, uint32_t iters);
+                          uint32_t n, uint32_t k, uint64_t iters);
         void callchoose(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
                         uint32_t n, uint32_t k, uint32_t* result);
     """)

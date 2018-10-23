@@ -124,14 +124,17 @@ def parse_args():
     p.add_argument("--sorttype", default="random")
     p.add_argument("--values", action='append')
     p.add_argument("--language", default="cpp")
-    p.add_argument("--csv", type=pathlib.Path,
-        default=pathlib.Path('/dev/null'))
+    p.add_argument("--csv", type=pathlib.Path)
     return p.parse_args()
 
 def main():
     args = parse_args()
     if args.values is None:
         args.values = ["small", "power10"]
+    if args.csv is None:
+        args.csv = pathlib.Path('/dev/null')
+    else:
+        args.csv.parent.mkdir(parents=True, exist_ok=True)
     with args.csv.open("w") as csvf:
         writer = csv.writer(csvf)
         writer.writerow(['config', 'version', get_gitstate()])

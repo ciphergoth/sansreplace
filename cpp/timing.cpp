@@ -24,10 +24,10 @@
 #include <vector>
 
 double timefunc_s(void (*func)(uint32_t n, uint32_t k, uint32_t* result), uint32_t n, uint32_t k,
-                  uint32_t iters) {
+                  uint64_t iters) {
     auto result = std::vector<uint32_t>(k);
     auto start = std::chrono::system_clock::now();
-    for (uint32_t i = 0; i < iters; i++) {
+    for (uint64_t i = 0; i < iters; i++) {
         func(n, k, &result[0]);
     }
     auto end = std::chrono::system_clock::now();

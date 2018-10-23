@@ -28,7 +28,7 @@ void rand_init() {
 }
 
 static uint32_t random32() {
-    if (consumed == sizeof(__m256i) / sizeof(uint32_t)) {
+    if (consumed == sizeof(buf) / sizeof(uint32_t)) {
         buf = avx_xorshift128plus(&mykey);
         consumed = 0;
     }

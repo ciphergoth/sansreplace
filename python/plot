@@ -55,13 +55,13 @@ def main():
         matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     data = read_data(args)
-    for alt in data.keys():
+    for alt in sorted(data.keys()):
         if alt == args.compare_to:
             continue
         fig = plt.figure()
         ax = plt.gca()
-        ax.set_yscale('log')
         ax.set_xscale('log')
+        ax.set_yscale('log')
         ax.set_xlabel("k")
         ax.set_ylabel("time/k (s)")
         for alg, color in [[args.compare_to, 'b-'], [alt, 'r-']]:
