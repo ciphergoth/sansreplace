@@ -44,8 +44,13 @@ def timefunc_for(time, params, timeable):
 
 def run_timings(writer, vitr, totime, time_for):
     klim = {}
-    for descrip, n, k in vitr():
+    done = set()
+    for descrip, n, k in vitr:
+        if (n, k) in done:
+            print(f"skipping {descrip}, already done")
+            continue
         print(f"{descrip}")
+        done.add((n, k))
         res = []
         for name, tm in totime.items():
             if name not in klim or k < klim[name]:
@@ -144,9 +149,9 @@ def main():
         timeables = languages[args.language].get_timeables(topdir)
         t = timefunc_for(args.time_for, (0, 0), timeables["donothing"]["donothing"])
         print(f"donothing: {t*1E9:7.1f}ns")
-        for v in args.values:
-            vitr = globals()[f"{v}_values"]
-            run_timings(writer, vitr, timeables[args.sorttype], args.time_for)
+        values = [tup for v in args.values
+            for tup in globals()[f"{v}_values"]()]
+        run_timings(writer, values, timeables[args.sorttype], args.time_for)
 
 if __name__ == '__main__':
     main()
