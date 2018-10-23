@@ -25,8 +25,8 @@ extern "C" void random_rejectionsample(uint32_t n, uint32_t k, uint32_t* result)
     std::unordered_set<uint32_t> done(2 * k);
     for (uint32_t i = 0; i < k;) {
         uint32_t r = randbelow(n);
-        if (done.find(r) == done.end()) {
-            done.insert(r);
+        auto iresult = done.insert(r); // Try to insert
+        if (iresult.second) { // Did insert succeed, or was it already present?
             result[i++] = r;
         }
     }

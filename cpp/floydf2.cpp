@@ -26,8 +26,8 @@ static void floydf2(uint32_t n, uint32_t k, uint32_t* result) {
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
-        if (done.find(r) == done.end()) {
-            done.insert(r);
+        auto iresult = done.insert(r);
+        if (iresult.second) {
             result[i] = r;
         } else {
             result[i] = m;
