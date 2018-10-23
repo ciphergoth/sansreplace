@@ -31,11 +31,13 @@ extern "C" void sorted_iterativechoose(uint32_t n, uint32_t k, uint32_t* result)
 }
 
 extern "C" void random_iterativechoose(uint32_t n, uint32_t k, uint32_t* result) {
-    sorted_iterativechoose(n, k, result);
-    for (uint32_t i = 1; i < k; i++) {
-        uint32_t r = randbelow(i + 1);
-        auto t = result[i];
-        result[i] = result[r];
-        result[r] = t;
+    uint32_t ix = 0;
+    for (uint32_t i = 0; i < n; i++) {
+        uint32_t r = randbelow(n - i);
+        if (r < k - ix) {
+            uint32_t rr = randbelow(ix + 1);
+            result[ix++] = result[rr];
+            result[rr] = i;
+        }
     }
 }
