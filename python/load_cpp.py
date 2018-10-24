@@ -33,8 +33,8 @@ samplers = [
 
 def setup_module(cppdir, functions):
     b = cppdir / "build/host"
-    if not b.is_dir():
-        subprocess.run(["meson",  b], check=True)
+    if not (b / "build.ninja").is_file():
+        subprocess.run(["meson",  b], cwd=cppdir, check=True)
     subprocess.run(["ninja", "-C", b], check=True)
     ffi = cffi.FFI()
     ffi.cdef("""
