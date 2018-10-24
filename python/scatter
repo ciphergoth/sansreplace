@@ -24,10 +24,15 @@ topdir = pathlib.Path(__file__).resolve().parent.parent
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('csv', type=pathlib.Path)
+    p.add_argument('--png-output', type=pathlib.Path)
     return p.parse_args()
 
 def main():
     args = parse_args()
+    if args.png_output is not None:
+        import matplotlib
+        matplotlib.use('Agg')
+        args.png_output.parent.mkdir(parents=True, exist_ok=True)
     import matplotlib.pyplot as plt
     data = {}
     for item in read_results.read(args.csv):
@@ -50,7 +55,10 @@ def main():
     }
     for k, l in points.items():
         plt.scatter([it.n for it in l], [it.k for it in l], marker=markermap[k])
-    plt.show()
+    if args.png_output is not None:
+        plt.savefig(str(args.png_output))
+    else:
+        plt.show()
 
 if __name__ == '__main__':
     main()
