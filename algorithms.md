@@ -1,5 +1,22 @@
 # Algorithms for sampling without replacement
 
+In the standard form of the problem, the answers can be in any order and
+so the order must also be chosen fairly; there is a variation in which the answers must be in sorted
+order.  Any algorithm can be turned into one with a "sorted" order guarantee
+with an O(_k_ log _k_) sort, or a "random" order guarantee with an O(_k_)
+Fisher-Yates shuffle.
+
+Algorithm | Python | C++ | Order guarantee | Data structures | Time
+----|----|----|----|----|----
+rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
+quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
+iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
+reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
+Python-style Fisher-Yates | [Python](python/algorithms/fisheryates.py) | [C++](cpp/fisheryates.cpp) | Random | n-sized list | _n_
+HSAMPLE | [Python](python/algorithms/selby_fy.py) | [C++](cpp/selby_fy.cpp) | Random | Dictionary | _k_
+Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
+"[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+
 ## Rejection sampling
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
