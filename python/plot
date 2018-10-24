@@ -15,47 +15,32 @@
 # limitations under the License.
 
 import argparse
-import csv
 import pathlib
-import attr
+
+import read_results
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
-@attr.s(auto_attribs=True)
-class Test:
-    n: int
-    k: int
-    time: float
-
-def read_data(args):
-    res = {}
-    with args.csv.open(newline='') as f:
-        for row in csv.reader(f):
-            if row[0] == 'result':
-                res.setdefault(row[1], []).append(
-                    Test(int(row[2]), int(row[3]), float(row[4]))
-                )
-    return res
-
 def parse_args():
     p = argparse.ArgumentParser()
+    p.add_argument('csv', type=pathlib.Path)
     p.add_argument("--algorithm",  action='append')
     p.add_argument('--compare-to', default="cardchoose")
-    p.add_argument('--csv', type=pathlib.Path,
-        default=topdir / "results/2018-10-20-cpp-random/csv.csv")
-    p.add_argument('--output-dir', type=pathlib.Path)
     p.add_argument('--to-png', action='store_true')
+    p.add_argument('--output-dir', type=pathlib.Path)
     return p.parse_args()
 
 def main():
     args = parse_args()
     if args.output_dir is None:
         args.output_dir = args.csv.parent
+    data = {}
+    for item in read_results.read(args.csv):
+        data.setdefault(item.alg, []).append(item)
     if args.to_png:
         import matplotlib
         matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    data = read_data(args)
     if args.algorithm is None:
         args.algorithm = sorted(a for a in data.keys() if a != args.compare_to)
     for alt in args.algorithm:
