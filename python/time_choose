@@ -21,8 +21,7 @@ import pathlib
 
 import cffi
 
-import load_cpp
-import load_python
+import impl_load
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -128,8 +127,8 @@ def parse_args():
     p.add_argument("--algorithm",  action='append')
     p.add_argument("--sorttype", default="random")
     p.add_argument("--values", action='append')
-    p.add_argument("--language", default="cpp")
     p.add_argument("--csv", type=pathlib.Path)
+    impl_load.add_arguments(p)
     return p.parse_args()
 
 def main():
@@ -143,8 +142,7 @@ def main():
             writer.writerow(['config', 'version', get_gitstate()])
             for k, v in sorted(vars(args).items()):
                 writer.writerow(['config', k, v])
-    languages = {"cpp": load_cpp, "python": load_python}
-    timeables = languages[args.language].get_timeables(topdir)
+    timeables = impl_load.get_timeables(args, topdir)
     t = timefunc_for(args.time_for, (0, 0), timeables["donothing"]["donothing"])
     print(f"donothing: {t*1E9:7.1f}ns")
     values = [tup for v in args.values

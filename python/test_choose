@@ -17,8 +17,7 @@
 import argparse
 import pathlib
 
-import load_cpp
-import load_python
+import impl_load
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -47,8 +46,8 @@ def parse_args():
     p.add_argument('--tests', type=int, default=100000)
     p.add_argument('--show-max', type=int, default=21)
     p.add_argument("--sorttype", default="sorted")
-    p.add_argument("--language", default="python")
     p.add_argument('--algorithm', default='cardchoose')
+    impl_load.add_arguments(p)
     return p.parse_args()
 
 def main():
@@ -56,8 +55,7 @@ def main():
     for k, v in sorted(vars(args).items()):
         print(f"{k}: {v}")
     print()
-    languages = {"cpp": load_cpp, "python": load_python}
-    timeables = languages[args.language].get_timeables(topdir)
+    timeables = impl_load.get_timeables(args, topdir)
     test_choose(args, timeables[args.sorttype][args.algorithm].call)
 
 if __name__ == '__main__':
