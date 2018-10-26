@@ -2,9 +2,8 @@
 
 The problem of __sampling without replacement__: given integers _n_, _k_ such that 0 ≤ _k_ ≤ _n_,
 return _k_ **distinct** nonnegative integers < _n_, choosing at random such that every possible
-result is equally likely.  
-One way to get a precise understanding of the problem is to look at the simplest algorithm
-for solving it, via these [Python](python/algorithms/quadraticreject.py) or
+result is equally likely. One way to get a precise understanding of the problem is to look at the
+simplest algorithm for solving it, via these [Python](python/algorithms/quadraticreject.py) or
 [C++](cpp/quadraticreject.cpp) implementations.
 
 Here, I propose an algorithm I call "Cardchoose" for this

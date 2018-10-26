@@ -1,11 +1,10 @@
-# Random choice algorithm
+# Cardchoose algorithm
 
-[`cardchoose.py`](python/algorithms/cardchoose.py) generates k distinct natural numbers less than
-n, in sorted order, fairly among all the ways of doing so.
+Algorithm | Python | C++ | Order guarantee | Data structures | Time
+----|----|----|----|----|----
+"[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
 
-The obvious way to do it: generate a candidate, reject if it's already been
-generated, repeat until you have k, then sort. But a dictionary is a big data
-structure, and if you're asked for (n=20, k=19) you will reject a lot of samples.
+Cardchoose is my new algorithm for sampling without replacement efficiently.
 
 With this approach, you don't need any extra data structures or
 storage beyond the list that you'll return, and the steps that fill the list
