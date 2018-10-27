@@ -15,7 +15,22 @@
  */
 
 
-#if __AVX2__
+#if __AVX512F__
+
+#include "simdxorshift128plus.h"
+
+static avx512_xorshift128plus_key_t mykey;
+static __m512i buf;
+
+static inline void init_mykey() {
+    avx512_xorshift128plus_init(324, 4444, &mykey);
+}
+
+static inline void fill_buf() {
+    buf = avx512_xorshift128plus(&mykey);
+}
+
+#elif __AVX2__
 
 #include "simdxorshift128plus.h"
 

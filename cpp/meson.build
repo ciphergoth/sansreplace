@@ -23,6 +23,13 @@ include_dirs = [
 ]
 
 compiler = meson.get_compiler('cpp')
+
+code = '''
+#include <x86intrin.h>
+void test() { __m512i t; _mm512_xor_si512(t, t);}
+'''
+avx512 = compiler.compiles(code, name : 'avx512 check', args: '-march=native')
+
 code = '''
 #include <x86intrin.h>
 void test() { __m256i t; _mm256_xor_si256(t, t);}
@@ -42,7 +49,7 @@ libsrc = [
     'selby_fy.cpp',
     'timing.cpp',
 ]
-if avx2
+if avx512 or avx2
     libsrc += '../third_party/SIMDxorshift/src/simdxorshift128plus.c'
 else
     libsrc += '../third_party/SIMDxorshift/src/xorshift128plus.c'
