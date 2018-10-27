@@ -16,7 +16,8 @@ Debian-derived Linux systems; adjust as needed for your own platform.
     * `. ./venv/bin/activate`
 * Install needed Python packages:
     * `pip install attrs matplotlib meson`
-* Try it out
+* Try it out. While all of the scripts provide help from the command line, you will almost certainly
+need to read the source code to figure out what it does.
 
 ```
 cd python

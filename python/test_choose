@@ -40,7 +40,8 @@ def test_choose(args, choose):
     print(min(counts.values()), max(counts.values()))
 
 def parse_args():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(allow_abbrev=False,
+        description="Test one algorithm implementation for fairness")
     p.add_argument('n', type=int)
     p.add_argument('k', type=int)
     p.add_argument('--num-tests', type=int, default=100000,

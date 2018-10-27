@@ -122,7 +122,8 @@ def get_gitstate():
     return gitstate
 
 def parse_args():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(allow_abbrev=False,
+        description="Time multiple algorithms against multiple n,k values")
     p.add_argument("--time-for", type=float, default=0.1)
     p.add_argument("--algorithm",  action='append')
     p.add_argument("--sorttype", default="sorted", choices=['sorted', 'random'],

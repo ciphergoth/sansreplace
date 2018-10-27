@@ -22,7 +22,8 @@ import read_results
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
 def parse_args():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(allow_abbrev=False,
+        description="Scattergram of which algorithms are fastest for which values")
     p.add_argument('csv', type=pathlib.Path)
     p.add_argument('--png-output', type=pathlib.Path)
     return p.parse_args()
