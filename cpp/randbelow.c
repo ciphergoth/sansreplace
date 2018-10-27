@@ -14,22 +14,50 @@
  * limitations under the License.
  */
 
+
+#if __AVX2__
+
 #include "simdxorshift128plus.h"
 
 static avx_xorshift128plus_key_t mykey;
-
 static __m256i buf;
+
+static inline void init_mykey() {
+    avx_xorshift128plus_init(324, 4444, &mykey);
+}
+
+static inline void fill_buf() {
+    buf = avx_xorshift128plus(&mykey);
+}
+
+#else
+
+#include "xorshift128plus.h"
+
+static xorshift128plus_key_t mykey;
+static uint64_t buf;
+
+static inline void init_mykey() {
+    xorshift128plus_init(324, 4444, &mykey);
+}
+
+static inline void fill_buf() {
+    buf = xorshift128plus(&mykey);
+}
+
+#endif
+
 static uint32_t consumed;
 
 void rand_init() {
     // Deterministic seeding for now
-    avx_xorshift128plus_init(324, 4444, &mykey);
-    consumed = sizeof(__m256i) / sizeof(uint32_t);
+    init_mykey();
+    consumed = sizeof(buf) / sizeof(uint32_t);
 }
 
 static uint32_t random32() {
     if (consumed == sizeof(buf) / sizeof(uint32_t)) {
-        buf = avx_xorshift128plus(&mykey);
+        fill_buf();
         consumed = 0;
     }
     return ((uint32_t*)&buf)[consumed++];

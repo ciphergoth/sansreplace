@@ -14,7 +14,7 @@
 
 project('sansreplace', ['c', 'cpp'],
     default_options : ['buildtype=debugoptimized', 'c_std=c11',
-'cpp_std=c++11'])
+'cpp_std=c++14'])
 add_project_arguments(
     '-Wall', '-fno-strict-aliasing', '-march=native',
     language : ['c', 'cpp'])
@@ -22,8 +22,14 @@ include_dirs = [
     include_directories('../third_party/SIMDxorshift/include')
 ]
 
+compiler = meson.get_compiler('cpp')
+code = '''
+#include <x86intrin.h>
+void test() { __m256i t; _mm256_xor_si256(t, t);}
+'''
+avx2 = compiler.compiles(code, name : 'avx2 check', args: '-march=native')
+
 libsrc = [
-    '../third_party/SIMDxorshift/src/simdxorshift128plus.c',
     'cardchoose.cpp',
     'donothing.cpp',
     'fisheryates.cpp',
@@ -36,6 +42,11 @@ libsrc = [
     'selby_fy.cpp',
     'timing.cpp',
 ]
+if avx2
+    libsrc += '../third_party/SIMDxorshift/src/simdxorshift128plus.c'
+else
+    libsrc += '../third_party/SIMDxorshift/src/xorshift128plus.c'
+endif
 lib = shared_library('sansreplace',
                         libsrc,
                         include_directories : include_dirs,
