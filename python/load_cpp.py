@@ -31,11 +31,12 @@ samplers = [
     "selby_fy"
 ]
 
-def setup_module(cppdir, functions):
-    b = cppdir / "build/host"
-    if not (b / "build.ninja").is_file():
-        subprocess.run(["meson",  b], cwd=cppdir, check=True)
-    subprocess.run(["ninja", "-C", b], check=True)
+def setup_module(cppdir, build_dir, functions):
+    if build_dir is None:
+        build_dir = cppdir / "build/host"
+    if not (build_dir / "build.ninja").is_file():
+        subprocess.run(["meson",  build_dir], cwd=cppdir, check=True)
+    subprocess.run(["ninja", "-C", build_dir], check=True)
     ffi = cffi.FFI()
     ffi.cdef("""
         void rand_init();
@@ -58,13 +59,13 @@ def setup_module(cppdir, functions):
         source += f"void {f}(uint32_t n, uint32_t k, uint32_t* result);\n"
     ffi.set_source("sansreplace", source,
         include_dirs=[str(cppdir)],
-        library_dirs=[str(b)],
-        runtime_library_dirs=[str(b)],
+        library_dirs=[str(build_dir)],
+        runtime_library_dirs=[str(build_dir)],
         libraries=["sansreplace"],
         extra_compile_args=['-std=c11'],
-        extra_link_args=[f"-Wl,-rpath,{b}"])
-    ffi.compile(tmpdir=str(b))
-    sys.path.append(str(b))
+        extra_link_args=[f"-Wl,-rpath,{build_dir}"])
+    ffi.compile(tmpdir=str(build_dir))
+    sys.path.append(str(build_dir))
     sansreplace = importlib.import_module("sansreplace")
     sansreplace.lib.rand_init()
     return sansreplace
@@ -91,8 +92,9 @@ class Timeable:
         n, k = params
         return self._module.lib.timefunc_s(self._fpointer, n, k, iters)
 
-def get_timeables(topdir):
-    module = setup_module(topdir / "cpp", [f[2] for f in list_functions()])
+def get_timeables(topdir, args):
+    module = setup_module(topdir / "cpp", args.build_dir,
+        [f[2] for f in list_functions()])
     res = {}
     for prefix, t, funcname in list_functions():
         res.setdefault(prefix, {})[t] = Timeable(module, funcname)

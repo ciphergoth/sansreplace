@@ -15,9 +15,11 @@
 # limitations under the License.
 
 import importlib
+import pathlib
 
 def add_arguments(p):
     p.add_argument("--language", default="cpp")
+    p.add_argument("--build-dir", type=pathlib.Path)
 
 def get_timeables(args, topdir):
-    return importlib.import_module(f"load_{args.language}").get_timeables(topdir)
+    return importlib.import_module(f"load_{args.language}").get_timeables(topdir, args)

@@ -34,7 +34,7 @@ class Timeable:
         gc.enable()
         return finish - start
 
-def get_timeables(topdir):
+def get_timeables(topdir, args):
     res = {}
     for m in ['cardchoose', 'donothing', 'fisheryates', 'floydf2',
         'iterativechoose', 'quadraticreject', 'rejectionsample',
