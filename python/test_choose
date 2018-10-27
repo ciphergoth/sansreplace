@@ -30,7 +30,7 @@ def binomial(n, k):
 
 def test_choose(args, choose):
     counts = {}
-    for _ in range(args.tests):
+    for _ in range(args.num_tests):
         r = tuple(choose((args.n, args.k)))
         counts[r] = 1 + counts.get(r, 0)
     if len(counts) <= args.show_max:
@@ -43,10 +43,14 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('n', type=int)
     p.add_argument('k', type=int)
-    p.add_argument('--tests', type=int, default=100000)
-    p.add_argument('--show-max', type=int, default=21)
-    p.add_argument("--sorttype", default="sorted")
-    p.add_argument('--algorithm', default='cardchoose')
+    p.add_argument('--num-tests', type=int, default=100000,
+        help="Number of tests to run")
+    p.add_argument('--show-max', type=int, default=21,
+        help="Maximum number of result rows to show")
+    p.add_argument("--sorttype", default="sorted", choices=['sorted', 'random'],
+        help="Algorithm variant to test")
+    p.add_argument('--algorithm', default='cardchoose',
+        help="Algorithm to test")
     impl_load.add_arguments(p)
     return p.parse_args()
 

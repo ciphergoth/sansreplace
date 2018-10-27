@@ -18,7 +18,7 @@ import importlib
 import pathlib
 
 def add_arguments(p):
-    p.add_argument("--language", default="cpp")
+    p.add_argument("--language", default="cpp", choices=["cpp", "python"])
     p.add_argument("--build-dir", type=pathlib.Path)
 
 def get_timeables(args, topdir):

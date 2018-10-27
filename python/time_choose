@@ -125,7 +125,8 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--time-for", type=float, default=0.1)
     p.add_argument("--algorithm",  action='append')
-    p.add_argument("--sorttype", default="random")
+    p.add_argument("--sorttype", default="sorted", choices=['sorted', 'random'],
+        help="Algorithm variant to test")
     p.add_argument("--values", action='append')
     p.add_argument("--csv", type=pathlib.Path)
     impl_load.add_arguments(p)
