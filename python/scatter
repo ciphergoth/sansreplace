@@ -39,21 +39,19 @@ def main():
     for item in read_results.read(args.csv):
         data.setdefault((item.n, item.k), []).append(item)
     points = {}
+    markermap = {
+        'reservoirsample': 'D',
+        'floydf2': 'X',
+    }
     for l in data.values():
-        l.sort(key=lambda it: it.time)
-        winner = l[0]
+        winner = min((it for it in l if it.alg in markermap), default=None, key=lambda it: it.time)
+        if winner is None:
+            continue
         points.setdefault(winner.alg, []).append(winner)
     fig = plt.figure()
     ax = plt.gca()
     ax.set_xscale('log')
     ax.set_yscale('log')
-    markermap = {
-        'quadraticreject': '.',
-        'cardchoose': '^',
-        'iterativechoose': '+',
-        'fisheryates': 'x',
-        'reservoirsample': 'D',
-    }
     for k, l in points.items():
         plt.scatter([it.n for it in l], [it.k for it in l], marker=markermap[k])
     if args.png_output is not None:
