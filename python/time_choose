@@ -19,8 +19,6 @@ import csv
 import subprocess
 import pathlib
 
-import cffi
-
 import impl_load
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
@@ -126,7 +124,7 @@ def parse_args():
         description="Time multiple algorithms against multiple n,k values")
     p.add_argument("--time-for", type=float, default=0.1)
     p.add_argument("--algorithm",  action='append')
-    p.add_argument("--sorttype", default="sorted", choices=['sorted', 'random'],
+    p.add_argument("--sorttype", default="random", choices=['sorted', 'random'],
         help="Algorithm variant to test")
     p.add_argument("--values", action='append')
     p.add_argument("--csv", type=pathlib.Path)
