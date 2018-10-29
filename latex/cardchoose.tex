@@ -1,0 +1,272 @@
+% Copyright 2018 Google LLC
+%
+% Licensed under the Apache License, Version 2.0 (the "License");
+% you may not use this file except in compliance with the License.
+% You may obtain a copy of the License at
+%
+%     https://www.apache.org/licenses/LICENSE-2.0
+%
+% Unless required by applicable law or agreed to in writing, software
+% distributed under the License is distributed on an "AS IS" BASIS,
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+% See the License for the specific language governing permissions and
+% limitations under the License.
+
+%!TeX spellcheck = en-US
+
+\documentclass[letterpaper,luatex,11pt]{article}
+
+\usepackage{fontspec}
+\usepackage[hmargin=4cm,vmargin=3cm,nohead]{geometry}
+\usepackage{parskip}
+\usepackage[style]{abstract}
+\usepackage{titling}
+\usepackage{sectsty}
+\usepackage{authblk}
+\usepackage{floatrow}
+\usepackage[svgnames]{xcolor}
+\usepackage[breaklinks,colorlinks,urlcolor=DarkBlue,linkcolor=DarkRed,citecolor=DarkGreen]{hyperref}
+\usepackage[style=alphabetic,backend=biber]{biblatex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[landau,operators,probability,sets]{cryptocode}
+\usepackage[cachedir=build/_minted-cardchoose]{minted}
+
+\addbibresource{bib.bib}
+
+\setmainfont{TeX Gyre Pagella}
+\setsansfont{TeX Gyre Heros}
+\setmathrm{Latin Modern Roman}
+\defaultfontfeatures{}
+\setmonofont{TeX Gyre Cursor}[Ligatures={NoCommon,NoRequired,NoContextual},Scale=0.9]
+
+\pretitle{\begin{center}\LARGE\bfseries\sffamily} % sf title
+\renewcommand{\abstitlestyle}{\sffamily\bfseries\centering} % sf abstract
+\allsectionsfont{\sffamily} % sf sections
+
+\raggedright
+\raggedbottom
+
+\DeclareMathOperator{\Supp}{Supp}
+
+\title{A new algorithm for sampling with replacement}
+\author{Paul~Crowley}
+\affil{Google LLC}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+Many ways of fairly choosing $k$ distinct integers from $[0 \ldots n-1]$ are in the literature.
+Here I introduce a method which as far as I know is novel; in my tests it is the most efficient
+for most values of $k, n$, while requiring no complex data structure such as an efficient
+set or dictionary, just an integer sort taking $\bigO{k \log k}$ time.
+
+To gain an intuition for the method, we use the ``stars and bars'' method. There are
+$\binom{6 + 5}{6}$ ways of arranging
+6 stars and 5 bars into a sequence.
+To choose one of these ways fairly, we start with a sequence of 5 bars and choose where to put
+the first star; there are six possible places.
+
+\begin{displaymath}
+\begin{array}{ c c c c c }
+    \big| & \big| & \big| & \big| & \big| \\
+\end{array}
+\end{displaymath}
+
+We place the first star in the fourth position.
+
+\begin{displaymath}
+\begin{array}{ c c c c c c }
+    \big| & \big| & \big| & \star & \big| & \big| \\
+\end{array}
+\end{displaymath}
+
+We record that there are three bars to its left.
+There are now seven places we can place the second star. It may end up with anything from zero to
+five bars to its left, but because there's a space either side of the first star, it's
+twice as likely it'll have three bars to its left as four or any other number.
+
+\begin{displaymath}
+\begin{array}{ c c c c c c c }
+    \star & \big| & \big| & \big| & \star & \big| & \big| \\
+\end{array}
+\end{displaymath}
+
+We place the next star at the beginning and record that there are 0 bars to its left. If we had
+recorded the position of the first star, that would now be out of date as everything moves one
+position to the right, but the number of bars to its left stays constant at three.
+
+By the time all but the last star is placed, it's four times as likely that a star will be placed
+with no bars to its left than with five bars.
+
+\begin{displaymath}
+\begin{array}{ c c c c c c c c c c }
+    \star & \star & \star & \big| & \star & \big| & \big| & \star & \big| & \big| \\
+\end{array}
+\end{displaymath}
+
+After placing the last star, we sort the list counting bars to the left for each star. The
+position of each stars is just the number of bars or stars to its left, so to each we add its index
+in the list to learn the positions; our final answer is $\{0, 1, 2, 4, 5, 8\}$.
+
+\begin{displaymath}
+\begin{array}{ c c c c c c c c c c c }
+    0 & 0 & 0 & & 1 & 1 & & & 3 & & \\
+    \star & \star & \star & \big| & \star & \star & \big| & \big| & \star & \big| & \big| \\
+    0 & 1 & 2 & & 4 & 5 & & & 8 & & \\
+\end{array}
+\end{displaymath}
+
+Thus to get a sequence without duplicates, we start with a procedure that deliberately
+biases towards duplicates.
+
+\section{Choosing a multiset}
+
+A multiset is an extension of a set in which elements can appear more than once.
+$[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but distinct from $[0, 0, 1]$.
+
+We represent multisets as functions $m: U \rightarrow \NN$; the set $U$ is the \emph{universe},
+and in what follows we consider only finite universes. For any $y \in U$ we call
+$m(y)$ the \emph{multiplicity} of $y$ in $m$.
+A multiset has a \emph{cardinality} $|m| = \sum_{x \in U} m(x)$
+and a \emph{support} set $\Supp(m) = \{x \in U: m(x) > 0\}$.
+Where $U$ is clear from context, for any set $S \subseteq U$ we consider
+$\overline{S}$ to be $S$ viewed as a multiset, ie the multiset
+such that $\Supp(\overline{S}) = S$ and $|\overline{S}| = |S|$:
+\begin{displaymath}
+    \overline{S}(x) =
+    \begin{cases}
+        1 & \text{if $x \in S$} \\
+        0 & \text{otherwise} \\
+    \end{cases}
+\end{displaymath}
+
+The sum of multisets
+$m = m_1 \uplus m_2$ is the multiset such that $m(x) = m_1(x) + m_2(x)$ for all $x \in U$.
+$m =m_1 \ominus m_2$ is the unique multiset such that $m_1 = m \uplus m_2$,
+and is defined only if this exists.
+
+Define $\mathcal{M}(U, k) = \{m \in U \rightarrow \mathbb{N}: |m| = k\}$; we prove later that
+$|\mathcal{M}(U, k)| = \binom{|U| + k - 1}{k}$.
+In what follows we consider the problem of choosing an element from $\mathcal{M}(U, k)$ fairly.
+For example, $\mathcal{M}(\bin, 3) = \{[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]\}$; for each of
+these four, our algorithm should output it with probability $\frac{1}{4}$. Simply choosing three
+independent elements from $U$ and adding them together to make a multiset won't work; in accordance
+with the binomial theorem, $[0, 0, 0]$ will be drawn with probability $\frac{1}{8}$, while
+$[0, 0, 1]$ will be drawn with probability $\frac{3}{8}$, reflecting the three ways this multiset
+can be written as a sequence. It is straightforward to show by
+induction that in general, this naive method chooses $m \in \mathcal{M}(U, k)$
+with probability
+
+\begin{displaymath}
+    \frac{k!}{{|U|}^k \prod_{x \in U} m(x)!}
+\end{displaymath}
+
+\begin{algorithm}
+\caption{Good multiset choosing}
+\begin{algorithmic}[0]
+\Procedure{ChooseMultiset}{$U, k$}
+    \If{k = 0}
+        \State \textbf{return} $\overline{\varnothing}$
+    \Else
+        \State $m' \leftarrow \textproc{ChooseMultiset}(U, k-1)$
+        \State $x \sample \overline{U} \uplus m'$
+        \State \textbf{return} $m' \uplus \overline{\{x\}}$
+    \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+To address this, in \textproc{ChooseMultiset}
+we introduce a counter-bias in the selection of $x$, which favours duplicates.
+We define random sampling from a finite multiset to be analogous to drawing from a set,
+where each element's probability of being drawn is proportional to its multiplicity:
+$\prob{x = y |x \sample m} = \frac{m(y)}{|m|}$.
+\textproc{ChooseMultiset} is trivially fair for $k = 0$, so
+we assume it is fair for $k - 1$ and proceed by induction.
+For a multiset $m \in \mathcal{M}(U, k)$:
+
+\begin{align*}
+    &\prob{\textproc{ChooseMultiset}(U, k) \rightarrow m}
+    \\
+    =&
+    \prob{m' \uplus \overline{\{x\}} = m
+        | m' \leftarrow \textproc{ChooseMultiset}(U, k-1), x \sample \overline{U} \uplus m'}
+    \\
+    =&
+    \prob{m' \uplus \overline{\{x\}} = m
+        | m' \sample \mathcal{M}(U, k-1), x \sample \overline{U} \uplus m'}
+    \\
+    =&
+    \sum_{y \in \Supp(m)}
+    \prob{m' = m \ominus \overline{\{y\}} | m' \sample \mathcal{M}(U, k-1)}
+    \prob{x = y | x \sample \overline{U} \uplus (m \ominus \overline{\{y\}})}
+    \\
+    =&
+    \sum_{y \in \Supp(m)}
+    \frac{1}{|\mathcal{M}(U, k-1)|}
+    \frac{(U \uplus (m \ominus \overline{\{y\}}))(y)}{|U \uplus (m \ominus \overline{\{y\}})|}
+    \\
+    =&
+    \frac{1}{|\mathcal{M}(U, k-1)|}
+    \sum_{y \in \Supp(m)}
+    \frac{1 + (m \ominus \overline{\{y\}})(y)}{|U| + |m \ominus \overline{\{y\}}|}
+    \\
+    =&
+    \frac{1}{|\mathcal{M}(U, k-1)|}
+    \sum_{y \in \Supp(m)}
+    \frac{m(y)}{|U| + k -1}
+    \\
+    =& \frac{k}{(|U| + k -1)|\mathcal{M}(U, k-1)|}
+    = \frac{k}{(|U| + k -1)\binom{|U| + k - 2}{k-1}}
+    = \frac{1}{\binom{|U| + k - 1}{k}}
+    = \frac{1}{|\mathcal{M}(U, k)|}
+\end{align*}
+
+This algorithm is straightforward to implement. This Python implementation takes integers
+$n, k$ and returns a sorted list of integers in $[0 \ldots n-1]$.
+
+\inputminted{Python}{choose_multiset.py}
+
+\section{Multisets and choices}
+
+For a set $U$, define $\binom{U}{k} = \{S \subseteq U: |S| = k\}$;
+then $\left|\binom{U}{k}\right| = \binom{|U|}{k}$. Using the method of ``stars and bars'', we
+will use our solution to the multiset choosing problem to choose fairly at random from
+$\binom{U}{k}$.
+
+Consider a sequence that contains $k$ stars and $b$ bars in any order.
+
+\begin{displaymath}
+\begin{array}{ c c c c c c c c c c c }
+    0 & 1 & 2 & & 4 & 5 & & & 8 & & \\
+    \star & \star & \star & \big| & \star & \star & \big| & \big| & \star & \big| & \big| \\
+    0 & 0 & 0 & & 1 & 1 & & & 3 & & \\
+\end{array}
+\end{displaymath}
+
+If we label each star with its position in the sequence, we get an element of
+$\binom{[0 \ldots (b + k -1)]}{k}$;
+if we label each star with the number of bars to its left, we get an element of
+$\mathcal{M}([0 \ldots b], k)$. In each case, this relation is a bijection with the possible
+sequences, demonstrating a bijection between the two sets. It trivially follows that
+$|\mathcal{M}(U, k)| = \binom{|U| + k - 1}{k}$ as stated above.
+
+Our implementation of \textproc{ChooseMultiset}
+represents its result in $\mathcal{M}([0 \ldots b], k)$ as a sorted list of integers.
+In ``stars and bars'' representation,
+each entry in the list represents a star, and the integer is the number of bars to its left.
+Converting this to a sorted element of $\binom{|U| + k - 1}{k}$ simply means adding to each
+the number of stars to its left, which is equal to its position in the sequence; the Python code
+below returns a sorted list of $k$ distinct integers in $[0 \ldots n-1]$ fairly among all ways
+of doing so.
+
+\inputminted{Python}{choose_binom.py}
+
+\printbibliography
+
+\end{document}
