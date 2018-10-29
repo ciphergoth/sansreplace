@@ -17,7 +17,9 @@ import importlib
 import time
 
 class Timeable:
-    def __init__(self, choose):
+    def __init__(self, sorttype, alg, choose):
+        self.sorttype = sorttype
+        self.alg = alg
         self._choose = choose
 
     def call(self, params):
@@ -34,13 +36,13 @@ class Timeable:
 
 def get_timeables(topdir, args):
     res = {}
-    for m in ['cardchoose', 'donothing', 'fisheryates', 'floydf2',
+    for alg in ['cardchoose', 'donothing', 'fisheryates', 'floydf2',
         'iterativechoose', 'quadraticreject', 'rejectionsample',
         'reservoirsample', 'selby_fy']:
-        md = importlib.import_module(f"algorithms.{m}")
-        for prefix in ["donothing", "random", "sorted"]:
-            name = f"{prefix}_choose"
+        md = importlib.import_module(f"algorithms.{alg}")
+        for sorttype in ["donothing", "random", "sorted"]:
+            name = f"{sorttype}_choose"
             f = getattr(md, name, None)
             if f is not None:
-                res.setdefault(prefix, {})[m] = Timeable(f)
+                res.setdefault(sorttype, {})[alg] = Timeable(sorttype, alg, f)
     return res

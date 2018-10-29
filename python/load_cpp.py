@@ -70,14 +70,15 @@ def setup_module(cppdir, build_dir, functions):
 
 def list_functions():
     yield ("donothing", "donothing", "donothing")
-    for prefix in ["sorted", "random"]:
+    for sorttype in ["sorted", "random"]:
         for t in samplers:
-            yield (prefix, t, f"{prefix}_{t}")
+            yield (sorttype, t, f"{sorttype}_{t}")
 
 class Timeable:
-    def __init__(self, module, funcname):
+    def __init__(self, sorttype, alg, module, funcname):
+        self.sorttype = sorttype
+        self.alg = alg
         self._module = module
-        self._funcname = funcname
         self._fpointer = getattr(module.lib, funcname)
 
     def call(self, params):
@@ -94,6 +95,7 @@ def get_timeables(topdir, args):
     module = setup_module(topdir / "cpp", args.build_dir,
         [f[2] for f in list_functions()])
     res = {}
-    for prefix, t, funcname in list_functions():
-        res.setdefault(prefix, {})[t] = Timeable(module, funcname)
+    for sorttype, alg, funcname in list_functions():
+        res.setdefault(sorttype, {})[alg] = Timeable(sorttype, alg,
+            module, funcname)
     return res
