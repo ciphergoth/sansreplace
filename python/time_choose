@@ -16,9 +16,9 @@
 
 import argparse
 import csv
-import subprocess
 import pathlib
 
+import gitstate
 import impl_load
 import nkvalues
 
@@ -74,16 +74,6 @@ def run_timings(args, vitr, totime):
             print(f"{t*mul:12.1f}{unit} {name:20}")
         print()
 
-def get_gitstate():
-    rp = subprocess.run(["git", "rev-parse", "HEAD"], cwd=topdir, check=True,
-        stdout=subprocess.PIPE, errors='strict')
-    gitstate = rp.stdout.strip()
-    di = subprocess.run(["git", "diff-index", "--quiet", "HEAD", "--"],
-        cwd=topdir)
-    if di.returncode != 0:
-        gitstate += "+"
-    return gitstate
-
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Time multiple algorithms against multiple n,k values")
@@ -100,20 +90,25 @@ def main():
     args = parse_args()
     if args.values is None:
         args.values = ["small", "power10"]
-    if args.csv is not None:
-        args.csv.parent.mkdir(parents=True, exist_ok=True)
-        with args.csv.open("w") as csvf:
-            writer = csv.writer(csvf)
-            writer.writerow(['config', 'version', get_gitstate()])
-            for k, v in sorted(vars(args).items()):
-                writer.writerow(['config', k, v])
     timeables = impl_load.get_timeables(args, topdir)
-    t = timefunc_for(args.time_for, (0, 0), timeables["donothing"]["donothing"])
-    print(f"donothing: {t*1E9:7.1f}ns")
     if args.algorithm is None:
         totime = timeables[args.sorttype]
     else:
         totime = {k:timeables[args.sorttype][k] for k in args.algorithm}
+    if args.csv is not None:
+        args.csv.parent.mkdir(parents=True, exist_ok=True)
+        with args.csv.open("w") as csvf:
+            writer = csv.writer(csvf)
+            for k, v in sorted(vars(args).items()):
+                writer.writerow(['config', k, v])
+            info = {
+                'version': gitstate.get(topdir),
+                'donothing_s': timefunc_for(args.time_for, (0, 0),
+                    timeables["donothing"]["donothing"]),
+                'algorithms': list(totime.keys()),
+            }
+            for k, v in info.items():
+                writer.writerow(['info', k, v])
     run_timings(args, nkvalues.iter_values(args.values), totime)
 
 if __name__ == '__main__':
