@@ -60,58 +60,41 @@
 
 \section{Introduction}
 
-Many ways of fairly choosing $k$ distinct integers from $[0 \ldots n-1]$ are in the literature.
-Here I introduce a method which as far as I know is novel; in my tests it is the most efficient
-for most values of $k, n$, while requiring no complex data structure such as an efficient
-set or dictionary, just an integer sort taking $\bigO{k \log k}$ time.
+Many ways of fairly choosing $k$ distinct integers from $\{0 \ldots n-1\}$ are in the literature.
+However, they either require a hash-based data structure such as a set or dictionary, or
+show asymptotically poor performance for some values of $k, n$. We present here an algorithm
+that requires no such data structure or auxiliary storage, only an integer sort taking
+$\bigO{k \log k}$ time. In Python the algorithm works as follows:
 
-To gain an intuition for the method, we use the ``stars and bars'' method. There are
-$\binom{6 + 5}{6}$ ways of arranging
-6 stars and 5 bars into a sequence.
-To choose one of these ways fairly, we start with a sequence of 5 bars and choose where to put
-the first star; there are six possible places.
+\inputminted{Python}{cardchoose.py}
 
-\begin{displaymath}
-\begin{array}{ c c c c c }
-    \big| & \big| & \big| & \big| & \big| \\
-\end{array}
-\end{displaymath}
+\section{Intuition behind the algorithm}
 
-We place the first star in the fourth position.
+Every way of choosing 6 integers from the range $\{0 \ldots 10\}$ is equivalent to a way of
+arranging 6 stars and 5 bars into a sequence;
+there are $\binom{6 + 5}{6}$ ways of doing so.
+To choose one fairly, we start with a sequence of five bars \(|||||\) and insert six stars,
+one after another, in randomly chosen positions.
 
-\begin{displaymath}
-\begin{array}{ c c c c c c }
-    \big| & \big| & \big| & \star & \big| & \big| \\
-\end{array}
-\end{displaymath}
+For the first star, there are six possible places it can go, and we choose one at random:
+\(|||\star||\). We record that it has three bars to its left \(\{3\}\).
 
-We record that there are three bars to its left.
-There are now seven places we can place the second star. It may end up with anything from zero to
-five bars to its left, but because there's a space either side of the first star, it's
-twice as likely it'll have three bars to its left as four or any other number.
+There are now six items in the sequence, and thus seven possible places to place the second star.
+In two of those seven cases---before the existing star, and after it---it will have three bars
+to its left. Let's suppose we choose the first position: \(\star|||\star||\). We append
+the number of bars to the left of the new star to our record, which becomes \(\{3, 0\}\).
+The positions have changed from \(\{3\}\)
+to \(\{4, 0\}\) but because we're not recording positions, only bars to the left, we don't need to
+update the first entry.
 
-\begin{displaymath}
-\begin{array}{ c c c c c c c }
-    \star & \big| & \big| & \big| & \star & \big| & \big| \\
-\end{array}
-\end{displaymath}
-
-We place the next star at the beginning and record that there are 0 bars to its left. If we had
-recorded the position of the first star, that would now be out of date as everything moves one
-position to the right, but the number of bars to its left stays constant at three.
-
-By the time all but the last star is placed, it's four times as likely that a star will be placed
-with no bars to its left than with five bars.
-
-\begin{displaymath}
-\begin{array}{ c c c c c c c c c c }
-    \star & \star & \star & \big| & \star & \big| & \big| & \star & \big| & \big| \\
-\end{array}
-\end{displaymath}
-
-After placing the last star, we sort the list counting bars to the left for each star. The
-position of each stars is just the number of bars or stars to its left, so to each we add its index
-in the list to learn the positions; our final answer is $\{0, 1, 2, 4, 5, 8\}$.
+We place three more stars in random positions, ending up with \(\star\star\star|\star||\star||\)
+and a record of \(\{3, 0, 0, 1, 0\}\). Now there's one star left to place; there is one
+position it can be placed after the last bar, but four before the first bar, so it is four times
+more likely to be placed before the first bar than after the last. Let's suppose it's placed
+at the fifth position: \(\star\star\star|\star\star||\star||\), \(\{3, 0, 0, 1, 0, 1\}\) We now
+want to know the position of each star; we find this by sorting the list \(\{0, 0, 0, 1, 1, 3\}\)
+and adding to each entry its index so that the value reflects the stars as well as the bars to its
+left, returning the answer $\{0, 1, 2, 4, 5, 8\}$
 
 \begin{displaymath}
 \begin{array}{ c c c c c c c c c c c }
@@ -124,16 +107,19 @@ in the list to learn the positions; our final answer is $\{0, 1, 2, 4, 5, 8\}$.
 Thus to get a sequence without duplicates, we start with a procedure that deliberately
 biases towards duplicates.
 
-\section{Choosing a multiset}
+\section{Multisets}
 
-A multiset is an extension of a set in which elements can appear more than once.
+A \emph{multiset} is an extension of a set in which elements can appear more than once.
 $[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but distinct from $[0, 0, 1]$.
+The algorithm works by choosing a multiset at random, then converting that to a choice
+of subset.
 
 We represent multisets as functions $m: U \rightarrow \NN$; the set $U$ is the \emph{universe},
 and in what follows we consider only finite universes. For any $y \in U$ we call
 $m(y)$ the \emph{multiplicity} of $y$ in $m$.
 A multiset has a \emph{cardinality} $|m| = \sum_{x \in U} m(x)$
 and a \emph{support} set $\Supp(m) = \{x \in U: m(x) > 0\}$.
+
 Where $U$ is clear from context, for any set $S \subseteq U$ we consider
 $\overline{S}$ to be $S$ viewed as a multiset, ie the multiset
 such that $\Supp(\overline{S}) = S$ and $|\overline{S}| = |S|$:
@@ -145,29 +131,43 @@ such that $\Supp(\overline{S}) = S$ and $|\overline{S}| = |S|$:
     \end{cases}
 \end{displaymath}
 
-The sum of multisets
-$m = m_1 \uplus m_2$ is the multiset such that $m(x) = m_1(x) + m_2(x)$ for all $x \in U$.
-$m =m_1 \ominus m_2$ is the unique multiset such that $m_1 = m \uplus m_2$,
+The sum of multisets $m_1 \uplus m_2$ is the multiset such that
+$(m_1 \uplus m_2)(x) = m_1(x) + m_2(x)$ for all $x \in U$.
+$m = m_1 \ominus m_2$ is the unique multiset such that $m_1 = m \uplus m_2$,
 and is defined only if this exists.
 
-Define $\mathcal{M}(U, k) = \{m \in U \rightarrow \mathbb{N}: |m| = k\}$; we prove later that
-$|\mathcal{M}(U, k)| = \binom{|U| + k - 1}{k}$.
-In what follows we consider the problem of choosing an element from $\mathcal{M}(U, k)$ fairly.
+We define random sampling from a multiset to be analogous to drawing from a set,
+where each element's probability of being drawn is proportional to its multiplicity:
+$\prob{x = y |x \sample m} = \frac{m(y)}{|m|}$.
+
+Define $\mathcal{M}(U, k) = \{m \in U \rightarrow \mathbb{N}: |m| = k\}$ the set of multisets over
+universe \(U\) of cardinality \(k\). The ``stars and bars'' method
+shows that for a set \(S\) and for any \(U\) and \(k\) such that \(|S| = |U| + k - 1\), 
+there is a bijection between \(\mathcal{M}(U, k)\) and the set of 
+cardinality \(k\) subsets of \(S\), from which we infer that 
+$|\mathcal{M}(U, k)| = \binom{|U| + k - 1}{k}$ wherever \(|U| + k > 0\).
+
+\section{Multiset choosing}
+
+We consider the problem of choosing an element from $\mathcal{M}(U, k)$ fairly.
 For example, $\mathcal{M}(\bin, 3) = \{[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]\}$; for each of
-these four, our algorithm should output it with probability $\frac{1}{4}$. Simply choosing three
-independent elements from $U$ and adding them together to make a multiset won't work; in accordance
+these four, our algorithm should output it with probability $\frac{1}{4}$. If we choose
+three independent elements from $U$ and add them together to make a multiset, our answer
+will favour multisets with lower multiplicities; in accordance
 with the binomial theorem, $[0, 0, 0]$ will be drawn with probability $\frac{1}{8}$, while
 $[0, 0, 1]$ will be drawn with probability $\frac{3}{8}$, reflecting the three ways this multiset
-can be written as a sequence. It is straightforward to show by
-induction that in general, this naive method chooses $m \in \mathcal{M}(U, k)$
-with probability
+can be written as a sequence.
 
-\begin{displaymath}
-    \frac{k!}{{|U|}^k \prod_{x \in U} m(x)!}
-\end{displaymath}
+%It is straightforward to show by
+%induction that in general, this naive method chooses $m \in \mathcal{M}(U, k)$
+%with probability
+
+%\begin{displaymath}
+%    \frac{k!}{{|U|}^k \prod_{x \in U} m(x)!}
+%\end{displaymath}
 
 \begin{algorithm}
-\caption{Good multiset choosing}
+\caption{Fair multiset choosing}
 \begin{algorithmic}[0]
 \Procedure{ChooseMultiset}{$U, k$}
     \If{k = 0}
@@ -183,9 +183,6 @@ with probability
 
 To address this, in \textproc{ChooseMultiset}
 we introduce a counter-bias in the selection of $x$, which favours duplicates.
-We define random sampling from a finite multiset to be analogous to drawing from a set,
-where each element's probability of being drawn is proportional to its multiplicity:
-$\prob{x = y |x \sample m} = \frac{m(y)}{|m|}$.
 \textproc{ChooseMultiset} is trivially fair for $k = 0$, so
 we assume it is fair for $k - 1$ and proceed by induction.
 For a multiset $m \in \mathcal{M}(U, k)$:
@@ -222,45 +219,31 @@ For a multiset $m \in \mathcal{M}(U, k)$:
     \frac{m(y)}{|U| + k -1}
     \\
     =& \frac{k}{(|U| + k -1)|\mathcal{M}(U, k-1)|}
-    = \frac{k}{(|U| + k -1)\binom{|U| + k - 2}{k-1}}
-    = \frac{1}{\binom{|U| + k - 1}{k}}
-    = \frac{1}{|\mathcal{M}(U, k)|}
+    \\
+    =& \frac{k}{(|U| + k -1)\binom{|U| + k - 2}{k-1}}
+    \\
+    =& \frac{1}{\binom{|U| + k - 1}{k}}
+    \\
+    =& \frac{1}{|\mathcal{M}(U, k)|}
 \end{align*}
 
 This algorithm is straightforward to implement. This Python implementation takes integers
-$n, k$ and returns a sorted list of integers in $[0 \ldots n-1]$.
+$n, k$ and returns a sorted list of integers in $\{0 \ldots n-1\}$.
 
 \inputminted{Python}{choose_multiset.py}
 
 \section{Multisets and choices}
 
-For a set $U$, define $\binom{U}{k} = \{S \subseteq U: |S| = k\}$;
-then $\left|\binom{U}{k}\right| = \binom{|U|}{k}$. Using the method of ``stars and bars'', we
-will use our solution to the multiset choosing problem to choose fairly at random from
-$\binom{U}{k}$.
 
-Consider a sequence that contains $k$ stars and $b$ bars in any order.
-
-\begin{displaymath}
-\begin{array}{ c c c c c c c c c c c }
-    0 & 1 & 2 & & 4 & 5 & & & 8 & & \\
-    \star & \star & \star & \big| & \star & \star & \big| & \big| & \star & \big| & \big| \\
-    0 & 0 & 0 & & 1 & 1 & & & 3 & & \\
-\end{array}
-\end{displaymath}
-
-If we label each star with its position in the sequence, we get an element of
-$\binom{[0 \ldots (b + k -1)]}{k}$;
-if we label each star with the number of bars to its left, we get an element of
-$\mathcal{M}([0 \ldots b], k)$. In each case, this relation is a bijection with the possible
-sequences, demonstrating a bijection between the two sets. It trivially follows that
-$|\mathcal{M}(U, k)| = \binom{|U| + k - 1}{k}$ as stated above.
+To generate a random \(k\)-element subset of \(\{0 \ldots n-1\}\),
+we can apply this method to generate a random multiset from the universe \(\{0 \ldots n-k\}\)
+and use the ``stars and bars'' bijection to convert to the desired subset.
 
 Our implementation of \textproc{ChooseMultiset}
-represents its result in $\mathcal{M}([0 \ldots b], k)$ as a sorted list of integers.
+represents its result in $\mathcal{M}([0 \ldots n-k], k)$ as a sorted list of integers.
 In ``stars and bars'' representation,
 each entry in the list represents a star, and the integer is the number of bars to its left.
-Converting this to a sorted element of $\binom{|U| + k - 1}{k}$ simply means adding to each
+Converting this to a sorted \(k\)-element subset of \(\{0 \ldots n-1\}\) simply means adding to each
 the number of stars to its left, which is equal to its position in the sequence; the Python code
 below returns a sorted list of $k$ distinct integers in $[0 \ldots n-1]$ fairly among all ways
 of doing so.
