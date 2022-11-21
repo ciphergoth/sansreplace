@@ -51,20 +51,25 @@
 
 \DeclareMathOperator{\Supp}{Supp}
 
-\title{A new algorithm for sampling with replacement}
+\title{A new algorithm for sampling without replacement}
 \author{Paul~Crowley}
 \affil{Google LLC}
 
 \begin{document}
 \maketitle
+\begin{abstract}
+    Many ways of fairly choosing $k$ distinct integers from $\{0 \ldots n-1\}$ are in the literature.
+    However, they either require a hash-based data structure such as a set or dictionary, or
+    show asymptotically poor performance for some values of $k, n$. We present here an algorithm
+    that requires no such data structure or auxiliary storage, only an integer sort taking
+    $\bigO{k \log k}$ time; the algorithm is based on a method of fair multiset choosing.
+    In our benchmarks the algorithm outperforms all we compare it to wherever
+    \(k > 100\) and \(n > 100k\), and has acceptable performace for all values of \(k, n\).
+\end{abstract}
 
 \section{Introduction}
 
-Many ways of fairly choosing $k$ distinct integers from $\{0 \ldots n-1\}$ are in the literature.
-However, they either require a hash-based data structure such as a set or dictionary, or
-show asymptotically poor performance for some values of $k, n$. We present here an algorithm
-that requires no such data structure or auxiliary storage, only an integer sort taking
-$\bigO{k \log k}$ time. In Python the algorithm works as follows:
+In Python the algorithm works as follows:
 
 \inputminted{Python}{cardchoose.py}
 
@@ -214,11 +219,9 @@ For a multiset $m \in \mathcal{M}(U, k)$:
     \frac{1 + (m \ominus \overline{\{y\}})(y)}{|U| + |m \ominus \overline{\{y\}}|}
     \\
     =&
-    \frac{1}{|\mathcal{M}(U, k-1)|}
+    \frac{1}{\binom{|U| + k - 2}{k-1}}
     \sum_{y \in \Supp(m)}
     \frac{m(y)}{|U| + k -1}
-    \\
-    =& \frac{k}{(|U| + k -1)|\mathcal{M}(U, k-1)|}
     \\
     =& \frac{k}{(|U| + k -1)\binom{|U| + k - 2}{k-1}}
     \\
