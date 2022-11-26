@@ -34,6 +34,16 @@
 \usepackage[landau,operators,probability,sets]{cryptocode}
 \usepackage[cachedir=build/_minted-cardchoose]{minted}
 
+\newcommand{\multichoose}[2]{
+\left.\mathchoice
+  {\left(\kern-0.48em\binom{#1}{#2}\kern-0.48em\right)}
+  {\big(\kern-0.30em\binom{\smash{#1}}{\smash{#2}}\kern-0.30em\big)}
+  {\left(\kern-0.30em\binom{\smash{#1}}{\smash{#2}}\kern-0.30em\right)}
+  {\left(\kern-0.30em\binom{\smash{#1}}{\smash{#2}}\kern-0.30em\right)}
+\right.}
+
+\newcommand*{\defeq}{\stackrel{\text{def}}{=}}
+
 \addbibresource{bib.bib}
 
 \setmainfont{TeX Gyre Pagella}
@@ -58,24 +68,87 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    Many ways of fairly choosing $k$ distinct integers from $\{0 \ldots n-1\}$ are in the literature.
+    Several algorithms for fairly choosing $k$ distinct integers from $\{0 \ldots n-1\}$ are in the literature.
     However, they either require a hash-based data structure such as a set or dictionary, or
     show asymptotically poor performance for some values of $k, n$. We present here an algorithm
     that requires no such data structure or auxiliary storage, only an integer sort taking
     $\bigO{k \log k}$ time; the algorithm is based on a method of fair multiset choosing.
     In our benchmarks the algorithm outperforms all we compare it to wherever
-    \(k > 100\) and \(n > 100k\), and has acceptable performace for all values of \(k, n\).
+    \(k > 100\) and \(n > 100k\), and has acceptable performance for all values of \(k, n\).
 \end{abstract}
 
 \section{Introduction}
+
+The problem of choosing a subset of $\{0 \ldots n-1\}$ such that every \(k\)-element subset is
+equally likely arises in several contexts; one may for example wish to apply some statistical
+test to the set, in which case testing the same element multiple times is wasteful.
+In \autoref{priorwork} we discuss several known algorithms to this end; these all have
+their strengths, but all suffer from one of two disadvantages. Some are fast for certain
+values of \(k, n\), eg where \(k\) is small or where \(\frac{n}{k}\) is small, but very slow
+for other values. Others achieve much better asymptotic performance, but at the cost of
+updating a hash-based data structure such as a set or dictionary for each of the \(k\) values
+generated, adding a significant constant multiplier to the overall runtime as well as memory cost.
+
+We here present an algorithm which requires no storage beyond the array in which the result
+is written but achieves a \(\bigO{k \log k}\) runtime; the extra \(\log k\) term is due to
+an integer sort over the results array.
 
 In Python the algorithm works as follows:
 
 \inputminted{Python}{cardchoose.py}
 
+\section{Notation and mathematical background}
+
+Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural numbers less than \(n\)
+where \(\NN = \{0, 1, 2, \ldots\}\). 
+Let \(\binom{S}{k} \defeq \{s \subseteq S: |s| = k\}\), the set of all \(k\)-element subsets
+of \(S\); note that \(\left|\binom{S}{k}\right| = \binom{|S|}{k}\).
+
+A \emph{multiset} is an extension of a set in which elements can appear more than once;
+we use brackets to delimit the elements of a multiset, so
+$[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but distinct from $[0, 0, 1]$.
+We represent multisets as functions $m: U \rightarrow \NN$; the set $U$ is the \emph{universe},
+and in what follows we consider only finite universes. For any $y \in U$ we call
+$m(y)$ the \emph{multiplicity} of $y$ in $m$.
+A multiset has a \emph{cardinality} $|m| \defeq \sum_{x \in U} m(x)$
+and a \emph{support} set $\Supp(m) \defeq \{x \in U: m(x) > 0\}$.
+
+Where $U$ is clear from context, for any set $S \subseteq U$ we consider
+$\overline{S}$ to be $S$ viewed as a multiset, ie the multiset
+such that $\Supp(\overline{S}) = S$ and $|\overline{S}| = |S|$:
+\begin{displaymath}
+    \overline{S}(x) =
+    \begin{cases}
+        1 & \text{if $x \in S$} \\
+        0 & \text{otherwise} \\
+    \end{cases}
+\end{displaymath}
+
+The sum of multisets $m_1 \uplus m_2$ is the multiset such that
+$(m_1 \uplus m_2)(x) = m_1(x) + m_2(x)$ for all $x \in U$.
+$m = m_1 \ominus m_2$ is the unique multiset such that $m_1 = m \uplus m_2$,
+and is defined only if this exists.
+
+We define random sampling from a multiset to be analogous to drawing from a set,
+where each element's probability of being drawn is proportional to its multiplicity:
+$\prob{x = y |x \sample m} = \frac{m(y)}{|m|}$.
+
+Define $\multichoose{U}{k} \defeq \{m \in U \rightarrow \NN: |m| = k\}$ the set of multisets over
+universe \(U\) of cardinality \(k\), and \(\multichoose{|U|}{k} \defeq \left|\multichoose{U}{k}\right|\),
+which is well defined since it depends only on the number of elements in \(U\).
+
+\section{Prior work}\label{priorwork}
+\section{Stars and bars}
+
+The ``stars and bars'' method
+shows that for a set \(S\) and for any \(U\) and \(k\) such that \(|S| = |U| + k - 1\), 
+there is a bijection between \(\multichoose{U}{k}\) and the set of 
+cardinality \(k\) subsets of \(S\), from which we infer that 
+$\multichoose{|U|}{k} = \binom{|U| + k - 1}{k}$ wherever \(|U| + k > 0\).
+
 \section{Intuition behind the algorithm}
 
-Every way of choosing 6 integers from the range $\{0 \ldots 10\}$ is equivalent to a way of
+Every way of choosing 6 integers from the range $\NN_{<11}$ is equivalent to a way of
 arranging 6 stars and 5 bars into a sequence;
 there are $\binom{6 + 5}{6}$ ways of doing so.
 To choose one fairly, we start with a sequence of five bars \(|||||\) and insert six stars,
@@ -112,50 +185,12 @@ left, returning the answer $\{0, 1, 2, 4, 5, 8\}$
 Thus to get a sequence without duplicates, we start with a procedure that deliberately
 biases towards duplicates.
 
-\section{Multisets}
+\section{Proof}
 
-A \emph{multiset} is an extension of a set in which elements can appear more than once.
-$[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but distinct from $[0, 0, 1]$.
-The algorithm works by choosing a multiset at random, then converting that to a choice
-of subset.
+\subsection{Multiset choosing}
 
-We represent multisets as functions $m: U \rightarrow \NN$; the set $U$ is the \emph{universe},
-and in what follows we consider only finite universes. For any $y \in U$ we call
-$m(y)$ the \emph{multiplicity} of $y$ in $m$.
-A multiset has a \emph{cardinality} $|m| = \sum_{x \in U} m(x)$
-and a \emph{support} set $\Supp(m) = \{x \in U: m(x) > 0\}$.
-
-Where $U$ is clear from context, for any set $S \subseteq U$ we consider
-$\overline{S}$ to be $S$ viewed as a multiset, ie the multiset
-such that $\Supp(\overline{S}) = S$ and $|\overline{S}| = |S|$:
-\begin{displaymath}
-    \overline{S}(x) =
-    \begin{cases}
-        1 & \text{if $x \in S$} \\
-        0 & \text{otherwise} \\
-    \end{cases}
-\end{displaymath}
-
-The sum of multisets $m_1 \uplus m_2$ is the multiset such that
-$(m_1 \uplus m_2)(x) = m_1(x) + m_2(x)$ for all $x \in U$.
-$m = m_1 \ominus m_2$ is the unique multiset such that $m_1 = m \uplus m_2$,
-and is defined only if this exists.
-
-We define random sampling from a multiset to be analogous to drawing from a set,
-where each element's probability of being drawn is proportional to its multiplicity:
-$\prob{x = y |x \sample m} = \frac{m(y)}{|m|}$.
-
-Define $\mathcal{M}(U, k) = \{m \in U \rightarrow \mathbb{N}: |m| = k\}$ the set of multisets over
-universe \(U\) of cardinality \(k\). The ``stars and bars'' method
-shows that for a set \(S\) and for any \(U\) and \(k\) such that \(|S| = |U| + k - 1\), 
-there is a bijection between \(\mathcal{M}(U, k)\) and the set of 
-cardinality \(k\) subsets of \(S\), from which we infer that 
-$|\mathcal{M}(U, k)| = \binom{|U| + k - 1}{k}$ wherever \(|U| + k > 0\).
-
-\section{Multiset choosing}
-
-We consider the problem of choosing an element from $\mathcal{M}(U, k)$ fairly.
-For example, $\mathcal{M}(\bin, 3) = \{[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]\}$; for each of
+We consider the problem of choosing an element from $\multichoose{U}{k}$ fairly.
+For example, $\multichoose{\NN_{<2}}{3} = \{[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]\}$; for each of
 these four, our algorithm should output it with probability $\frac{1}{4}$. If we choose
 three independent elements from $U$ and add them together to make a multiset, our answer
 will favour multisets with lower multiplicities; in accordance
@@ -164,7 +199,7 @@ $[0, 0, 1]$ will be drawn with probability $\frac{3}{8}$, reflecting the three w
 can be written as a sequence.
 
 %It is straightforward to show by
-%induction that in general, this naive method chooses $m \in \mathcal{M}(U, k)$
+%induction that in general, this naive method chooses $m \in \multichoose{U}{k}$
 %with probability
 
 %\begin{displaymath}
@@ -190,10 +225,10 @@ To address this, in \textproc{ChooseMultiset}
 we introduce a counter-bias in the selection of $x$, which favours duplicates.
 \textproc{ChooseMultiset} is trivially fair for $k = 0$, so
 we assume it is fair for $k - 1$ and proceed by induction.
-For a multiset $m \in \mathcal{M}(U, k)$:
+For a multiset $m \in \multichoose{U}{k}$:
 
 \begin{align*}
-    &\prob{\textproc{ChooseMultiset}(U, k) \rightarrow m}
+    &\prob{m' = m | m' \leftarrow \textproc{ChooseMultiset}(U, k)}
     \\
     =&
     \prob{m' \uplus \overline{\{x\}} = m
@@ -201,20 +236,20 @@ For a multiset $m \in \mathcal{M}(U, k)$:
     \\
     =&
     \prob{m' \uplus \overline{\{x\}} = m
-        | m' \sample \mathcal{M}(U, k-1), x \sample \overline{U} \uplus m'}
+        | m' \sample \multichoose{U}{k - 1}, x \sample \overline{U} \uplus m'}
     \\
     =&
     \sum_{y \in \Supp(m)}
-    \prob{m' = m \ominus \overline{\{y\}} | m' \sample \mathcal{M}(U, k-1)}
+    \prob{m' = m \ominus \overline{\{y\}} | m' \sample \multichoose{U}{k - 1}}
     \prob{x = y | x \sample \overline{U} \uplus (m \ominus \overline{\{y\}})}
     \\
     =&
     \sum_{y \in \Supp(m)}
-    \frac{1}{|\mathcal{M}(U, k-1)|}
+    \frac{1}{\multichoose{|U|}{k - 1}}
     \frac{(U \uplus (m \ominus \overline{\{y\}}))(y)}{|U \uplus (m \ominus \overline{\{y\}})|}
     \\
     =&
-    \frac{1}{|\mathcal{M}(U, k-1)|}
+    \frac{1}{\multichoose{|U|}{k - 1}}
     \sum_{y \in \Supp(m)}
     \frac{1 + (m \ominus \overline{\{y\}})(y)}{|U| + |m \ominus \overline{\{y\}}|}
     \\
@@ -227,28 +262,28 @@ For a multiset $m \in \mathcal{M}(U, k)$:
     \\
     =& \frac{1}{\binom{|U| + k - 1}{k}}
     \\
-    =& \frac{1}{|\mathcal{M}(U, k)|}
+    =& \frac{1}{\multichoose{|U|}{k}}
 \end{align*}
 
 This algorithm is straightforward to implement. This Python implementation takes integers
-$n, k$ and returns a sorted list of integers in $\{0 \ldots n-1\}$.
+$n, k$ and returns a sorted list of integers in \(\NN_{<n}\).
 
 \inputminted{Python}{choose_multiset.py}
 
-\section{Multisets and choices}
+\subsection{Multisets and choices}
 
 
-To generate a random \(k\)-element subset of \(\{0 \ldots n-1\}\),
-we can apply this method to generate a random multiset from the universe \(\{0 \ldots n-k\}\)
+To generate a random \(k\)-element subset of \(\NN_{<n}\),
+we can apply this method to generate a random multiset from the universe \(\NN_{<n-k + 1}\)
 and use the ``stars and bars'' bijection to convert to the desired subset.
 
 Our implementation of \textproc{ChooseMultiset}
-represents its result in $\mathcal{M}([0 \ldots n-k], k)$ as a sorted list of integers.
+represents its result in \(\multichoose{\NN_{<n-k + 1}}{k}\) as a sorted list of integers.
 In ``stars and bars'' representation,
 each entry in the list represents a star, and the integer is the number of bars to its left.
-Converting this to a sorted \(k\)-element subset of \(\{0 \ldots n-1\}\) simply means adding to each
+Converting this to a sorted \(k\)-element subset of \(\NN_{<n}\) simply means adding to each
 the number of stars to its left, which is equal to its position in the sequence; the Python code
-below returns a sorted list of $k$ distinct integers in $[0 \ldots n-1]$ fairly among all ways
+below returns a sorted list of $k$ distinct integers in \(\NN_{<n}\) fairly among all ways
 of doing so.
 
 \inputminted{Python}{choose_binom.py}
