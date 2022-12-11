@@ -12,6 +12,8 @@
 % See the License for the specific language governing permissions and
 % limitations under the License.
 
+%!BIB program = biber
+%!TeX program = lualatex
 %!TeX spellcheck = en-US
 
 \documentclass[letterpaper,luatex,11pt]{article}
@@ -32,7 +34,7 @@
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage[landau,operators,probability,sets]{cryptocode}
-\usepackage[cachedir=build/_minted-cardchoose]{minted}
+\usepackage[outputdir=build/latex.out,cachedir=build/_minted-cardchoose]{minted}
 
 % https://tex.stackexchange.com/a/350287
 \newcommand{\multichoose}[2]{
