@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import importlib
-import pathlib
-
 def small_values():
     top = 11
     for n in range(top):
