@@ -34,6 +34,7 @@
 \usepackage[landau,operators,probability,sets]{cryptocode}
 \usepackage[cachedir=build/_minted-cardchoose]{minted}
 
+% https://tex.stackexchange.com/a/350287
 \newcommand{\multichoose}[2]{
 \left.\mathchoice
   {\left(\kern-0.48em\binom{#1}{#2}\kern-0.48em\right)}
@@ -134,43 +135,60 @@ where each element's probability of being drawn is proportional to its multiplic
 $\prob{x = y |x \sample m} = \frac{m(y)}{|m|}$.
 
 Define $\multichoose{U}{k} \defeq \{m \in U \rightarrow \NN: |m| = k\}$ the set of multisets over
-universe \(U\) of cardinality \(k\), and \(\multichoose{|U|}{k} \defeq \left|\multichoose{U}{k}\right|\),
-which is well defined since it depends only on the number of elements in \(U\).
+universe \(U\) of cardinality \(k\), and \(\multichoose{n}{k} \defeq \left|\multichoose{\NN_{<n}}{k}\right|\)
+the number of distinct \(k\)-cardinality multisets over an \(n\)-element universe.
 
 \section{Prior work}\label{priorwork}
-\section{Stars and bars}
+\subsection{Quadratic rejection sampling}
+\subsection{Set-based rejection sampling}
+\subsection{Algorithm S}
+\subsection{Algorithm R}
+\subsection{SAMPLE}
+\subsection{HSAMPLE}
+\subsection{F2}
 
-The ``stars and bars'' method
-shows that for a set \(S\) and for any \(U\) and \(k\) such that \(|S| = |U| + k - 1\), 
-there is a bijection between \(\multichoose{U}{k}\) and the set of 
-cardinality \(k\) subsets of \(S\), from which we infer that 
-$\multichoose{|U|}{k} = \binom{|U| + k - 1}{k}$ wherever \(|U| + k > 0\).
 
 \section{Intuition behind the algorithm}
 
-Every way of choosing 6 integers from the range $\NN_{<11}$ is equivalent to a way of
-arranging 6 stars and 5 bars into a sequence;
-there are $\binom{6 + 5}{6}$ ways of doing so.
-To choose one fairly, we start with a sequence of five bars \(|||||\) and insert six stars,
+Following \cite{feller}, we can represent an element of \(\multichoose{\NN_{<7}}{8}\)
+such as \([0,0,0,1,5,5,5,5]\) using six bars and eight stars:
+
+\begin{displaymath}
+    \begin{array}{ c c c c c c c c c c c c c c c }
+        \star & \star & \star & \big| & \star & \big| & \big| & \big| & \big| & \star & \star & \star & \star & \big| \\
+    \end{array}
+\end{displaymath}
+
+The six bars divide the line into seven ``bins'', one for each element of \(\NN_{<7}\); the
+number of stars in each bin indicates the multiplicity of that element in our multiset.
+With this technique, we define a bijection between \(\multichoose{\NN_{<n}}{k}\) and
+\(\binom{\NN_{<n + k - 1}}{k}\) wherever \(n > 0\), from which we infer that
+\(\multichoose{n}{k} = \binom{n + k - 1}{k}\) where \(n > 0\).
+
+Suppose now that we want to choose 6 integers from the range $\NN_{<11}$ 
+at random. As per the above we see that this 
+is equivalent to choosing a multiset from \(\multichoose{\NN_{<6}}{6}\)
+or a way of arranging 6 stars and 5 bars into a sequence.
+To choose fairly, we start with a sequence of five bars \(|||||\) and insert six stars,
 one after another, in randomly chosen positions.
 
 For the first star, there are six possible places it can go, and we choose one at random:
-\(|||\star||\). We record that it has three bars to its left \(\{3\}\).
+\(|||\star||\). We record that it has three bars to its left \([3]\).
 
 There are now six items in the sequence, and thus seven possible places to place the second star.
 In two of those seven cases---before the existing star, and after it---it will have three bars
 to its left. Let's suppose we choose the first position: \(\star|||\star||\). We append
-the number of bars to the left of the new star to our record, which becomes \(\{3, 0\}\).
+the number of bars to the left of the new star to our record, which becomes \([3, 0]\).
 The positions have changed from \(\{3\}\)
 to \(\{4, 0\}\) but because we're not recording positions, only bars to the left, we don't need to
 update the first entry.
 
 We place three more stars in random positions, ending up with \(\star\star\star|\star||\star||\)
-and a record of \(\{3, 0, 0, 1, 0\}\). Now there's one star left to place; there is one
+and a record of \([3, 0, 0, 1, 0]\). Now there's one star left to place; there is one
 position it can be placed after the last bar, but four before the first bar, so it is four times
 more likely to be placed before the first bar than after the last. Let's suppose it's placed
-at the fifth position: \(\star\star\star|\star\star||\star||\), \(\{3, 0, 0, 1, 0, 1\}\) We now
-want to know the position of each star; we find this by sorting the list \(\{0, 0, 0, 1, 1, 3\}\)
+at the fifth position: \(\star\star\star|\star\star||\star||\), \([3, 0, 0, 1, 0, 1]\) We now
+want to know the position of each star; we find this by sorting the list \([0, 0, 0, 1, 1, 3]\)
 and adding to each entry its index so that the value reflects the stars as well as the bars to its
 left, returning the answer $\{0, 1, 2, 4, 5, 8\}$
 
@@ -190,10 +208,10 @@ biases towards duplicates.
 \subsection{Multiset choosing}
 
 We consider the problem of choosing an element from $\multichoose{U}{k}$ fairly.
-For example, $\multichoose{\NN_{<2}}{3} = \{[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]\}$; for each of
-these four, our algorithm should output it with probability $\frac{1}{4}$. If we choose
-three independent elements from $U$ and add them together to make a multiset, our answer
-will favour multisets with lower multiplicities; in accordance
+For example, $\multichoose{\NN_{<2}}{3} = \{[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]\}$; 
+for each of these four, our algorithm should output it with probability $\frac{1}{4}$.
+If we choose three independent elements from $U$ and add them together to make a multiset,
+our answer will favour multisets with lower multiplicities; in accordance
 with the binomial theorem, $[0, 0, 0]$ will be drawn with probability $\frac{1}{8}$, while
 $[0, 0, 1]$ will be drawn with probability $\frac{3}{8}$, reflecting the three ways this multiset
 can be written as a sequence.
@@ -287,6 +305,8 @@ below returns a sorted list of $k$ distinct integers in \(\NN_{<n}\) fairly amon
 of doing so.
 
 \inputminted{Python}{choose_binom.py}
+
+\section{Benchmarks}
 
 \printbibliography
 
