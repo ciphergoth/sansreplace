@@ -154,6 +154,7 @@ Iterate in order through each candidate to add to the list in order,
 calculate for each the probability it should be part of the list given
 the number of items added so far and the number remaining, and add
 it with that probability.
+\cite{taocp2}
 
 \subsection{Algorithm R}
 \inputminted{Python}{code/reservoirsample.py}
@@ -161,6 +162,7 @@ Initialize a \(k\)-element array with the elements of \(\NN_{<k}\)
 in random order. Iterate over the elements of \(\NN_{<n} \setminus \NN_{<k}\),
 and replace a random element of the array with each element with the
 appropriate probability.
+\cite{taocp2}
 
 \subsection{SAMPLE}
 \inputminted{Python}{code/fisheryates.py}
@@ -175,6 +177,8 @@ we use a ``virtual'' array, with a hash table storing only the modified elements
 
 \subsection{F2}
 \inputminted{Python}{code/floydf2.py}
+A twist on set-based rejection that uses compensatingly biased
+samples to avoid multiple tests.
 \cite{floydf2}
 
 \section{Notation}
