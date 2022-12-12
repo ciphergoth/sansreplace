@@ -85,6 +85,9 @@
 The problem of choosing a subset of $\{0 \ldots n-1\}$ such that every \(k\)-element subset is
 equally likely arises in several contexts; one may for example wish to apply some statistical
 test to the set, in which case testing the same element multiple times is wasteful.
+Several programming languages include facilities for this in their standard libraries,
+for example Python's \mintinline{python}{random.sample()}
+or Rust's \mintinline{rust}{rand::seq::index::sample}.
 In \autoref{priorwork} we discuss several known algorithms to this end; these all have
 their strengths, but all suffer from one of two disadvantages. Some are fast for certain
 values of \(k, n\), eg where \(k\) is small or where \(\frac{n}{k}\) is small, but very slow
@@ -98,9 +101,83 @@ an integer sort over the results array.
 
 In Python the algorithm works as follows:
 
-\inputminted{Python}{cardchoose.py}
+\inputminted{Python}{code/cardchoose.py}
 
-\section{Notation and mathematical background}
+\section{Prior work}\label{priorwork}
+Someone who calls a routine that promises a fairly drawn \(k\)-element subset of
+\(\NN_{<n}\) might be expecting it to return one of three different things:
+
+\begin{itemize}
+    \item an array of integers in sorted order;
+    \item an array of integers in fair random order;
+    \item a set of integers in some kind of efficient set structure (eg a hash table).
+\end{itemize}
+
+Both Python's \mintinline{python}{random.sample()} and 
+Rust's \mintinline{python}{rand::seq::index::sample} return in a fair random order.
+
+A routine which returns one of these can straightforwardly be converted into 
+a routine that returns another, using eg a sort or a Fisher-Yates shuffle as appropriate.
+However each of these algorithms returns one of the above types ``naturally'', and
+so returning a different one will take an extra step, which means that which algorithm
+is most efficient can depend on which of the above three the caller wants to receive.
+
+\begin{center}
+    \begin{tabular}{l|l|l|l}
+    Algorithm & Order & Data structure & Time \\
+    \hline
+    Quadratic rejection sampling & Random & none & \(k^2\) \\
+    Set-based rejection sampling & Random & Set & \(k\) \\
+    Algorithm S & Sorted & none & \(n\) \\
+    Algorithm R & Random & none & \(n\) \\
+    SAMPLE & Random & \(n\)-element list & \(n\) \\
+    HSAMPLE & Random & Dictionary & \(k\) \\
+    Floyd's F2 & none & Set & \(k\) \\
+    Our work & Sorted & none & \(k \log k\)
+    \end{tabular}
+\end{center}
+
+\subsection{Quadratic rejection sampling}
+\inputminted{Python}{code/quadraticreject.py}
+Start with an empty array of integers. Generate an integer
+\(0 \leq x < n\), and check if \(x\) is already present in the array
+by iterating through the array checking every element. If it is not present,
+append it to the array. Repeat this process until the array is of the desired length.
+
+\subsection{Set-based rejection sampling}
+\inputminted{Python}{code/rejectionsample.py}
+As above, but use a data structure representing sets with an efficient membership test.
+
+\subsection{Algorithm S}
+\inputminted{Python}{code/iterativechoose.py}
+Iterate in order through each candidate to add to the list in order,
+calculate for each the probability it should be part of the list given
+the number of items added so far and the number remaining, and add
+it with that probability.
+
+\subsection{Algorithm R}
+\inputminted{Python}{code/reservoirsample.py}
+Initialize a \(k\)-element array with the elements of \(\NN_{<k}\)
+in random order. Iterate over the elements of \(\NN_{<n} \setminus \NN_{<k}\),
+and replace a random element of the array with each element with the
+appropriate probability.
+
+\subsection{SAMPLE}
+\inputminted{Python}{code/fisheryates.py}
+Use a Fisher-Yates shuffle to randomize only the first \(k\) items
+of an array of the elements of \(\NN_{<n}\).
+
+\subsection{HSAMPLE}
+\inputminted{Python}{code/selby_fy.py}
+As above, except that instead of allocating an initializing an \(n\)-element array,
+we use a ``virtual'' array, with a hash table storing only the modified elements.
+\cite{hsample}
+
+\subsection{F2}
+\inputminted{Python}{code/floydf2.py}
+\cite{floydf2}
+
+\section{Notation}
 
 Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural numbers less than \(n\)
 where \(\NN = \{0, 1, 2, \ldots\}\). 
@@ -139,16 +216,6 @@ $\prob{x = y |x \sample m} = \frac{m(y)}{|m|}$.
 Define $\multichoose{U}{k} \defeq \{m \in U \rightarrow \NN: |m| = k\}$ the set of multisets over
 universe \(U\) of cardinality \(k\), and \(\multichoose{n}{k} \defeq \left|\multichoose{\NN_{<n}}{k}\right|\)
 the number of distinct \(k\)-cardinality multisets over an \(n\)-element universe.
-
-\section{Prior work}\label{priorwork}
-\subsection{Quadratic rejection sampling}
-\subsection{Set-based rejection sampling}
-\subsection{Algorithm S}
-\subsection{Algorithm R}
-\subsection{SAMPLE}
-\subsection{HSAMPLE}
-\subsection{F2}
-
 
 \section{Intuition behind the algorithm}
 
@@ -288,10 +355,9 @@ For a multiset $m \in \multichoose{U}{k}$:
 This algorithm is straightforward to implement. This Python implementation takes integers
 $n, k$ and returns a sorted list of integers in \(\NN_{<n}\).
 
-\inputminted{Python}{choose_multiset.py}
+\inputminted{Python}{code/choose_multiset.py}
 
 \subsection{Multisets and choices}
-
 
 To generate a random \(k\)-element subset of \(\NN_{<n}\),
 we can apply this method to generate a random multiset from the universe \(\NN_{<n-k + 1}\)
@@ -306,7 +372,7 @@ the number of stars to its left, which is equal to its position in the sequence;
 below returns a sorted list of $k$ distinct integers in \(\NN_{<n}\) fairly among all ways
 of doing so.
 
-\inputminted{Python}{choose_binom.py}
+\inputminted{Python}{code/choose_binom.py}
 
 \section{Benchmarks}
 
