@@ -40,13 +40,17 @@ def main():
         data.setdefault((item.n, item.k), []).append(item)
     points = {}
     markermap = {
+        'quadraticreject': '.',
+        'cardchoose': '^',
+        'iterativechoose': '+',
+        'fisheryates': 'x',
         'reservoirsample': 'D',
-        'floydf2': 'X',
     }
     for l in data.values():
-        winner = min((it for it in l if it.alg in markermap), default=None, key=lambda it: it.time)
-        if winner is None:
-            continue
+        #winner = min((it for it in l if it.alg in markermap), default=None, key=lambda it: it.time)
+        winner = min(l, default=None, key=lambda it: it.time)
+        #if winner is None:
+        #    continue
         points.setdefault(winner.alg, []).append(winner)
     fig = plt.figure()
     ax = plt.gca()
