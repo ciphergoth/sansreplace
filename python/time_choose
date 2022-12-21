@@ -55,7 +55,7 @@ def run_timings(args, vitr, totime):
                         writer = csv.writer(csvf)
                         writer.writerow(['result', tm.alg, n, k, t])
                 res.append((t, tm.alg))
-                if t > args.time_for:
+                if t > args.time_limit:
                     print(f"hit tlim: {tm.alg}")
                     klim[tm.alg] = k
         if len(res) == 0:
@@ -77,7 +77,10 @@ def run_timings(args, vitr, totime):
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Time multiple algorithms against multiple n,k values")
-    p.add_argument("--time-for", type=float, default=0.1)
+    p.add_argument("--time-for", type=float, default=0.1,
+        help="Maximum time to iterate a given test")
+    p.add_argument("--time-limit", type=float, default=0.1,
+        help="Maximum time a single test can run")
     p.add_argument("--algorithm",  action='append')
     p.add_argument("--sorttype", default="random", choices=['sorted', 'random'],
         help="Algorithm variant to test")
