@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import argparse
+import pathlib
+
+import read_results
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+def min_or_none(v, i):
+    if v is None:
+        return i
+    return min(v, i)
+
+def comparison(args, l):
+    a = None
+    b = None
+    for item in l:
+        if item.alg in args.compare_to:
+            a = min_or_none(a, item.time)
+        elif args.algorithm is None or item.alg in args.algorithm:
+            b = min_or_none(b, item.time)
+    if a is None or b is None:
+        return None
+    else:
+        return a / b
+
+
+def parse_args():
+    p = argparse.ArgumentParser(allow_abbrev=False,
+        description="Plot some algorithms against all others")
+    p.add_argument('title')
+    p.add_argument('csv', type=pathlib.Path)
+    p.add_argument("--algorithm",  action='append')
+    p.add_argument('--gif-output', type=pathlib.Path)
+    return p.parse_args()
+
+def main():
+    args = parse_args()
+    data = {}
+    for item in read_results.read(args.csv):
+        if item.k != 0:
+            data.setdefault(item.n, {}).setdefault(item.alg, []).append((item.k, 1E9 * item.time/item.k))
+    all_algorithms = set()
+    for nv in data.values():
+        for alg, d in nv.items():
+            d.sort()
+            all_algorithms.add(alg)
+    if args.algorithm is None:
+        args.algorithm = list(sorted(all_algorithms))
+    if args.gif_output is not None:
+        import matplotlib
+        matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
+    fig = plt.figure()
+    plt.title(args.title)
+    ax = plt.gca()
+    ax.set_xscale('log')
+    ax.set_yscale('linear')
+    ax.set_xlabel("k")
+    ax.set_ylabel("time/k (ns)")
+    ax.set_xlim(1, 1E8)
+    ax.set_ylim(0, 1E2)
+    artists = []
+    lines = []
+    for alg in args.algorithm:
+        line, = ax.plot([], [])
+        line.set_label(alg)
+        artists.append(line)
+        lines.append((alg, line))
+    ax.legend()
+    artists = [l[1] for l in lines]
+    nvalues = list(sorted(data.keys()))
+    def init():
+        for alg, line in lines:
+            line.set_data([], [])
+        return artists
+    def animate(n):
+        d = data[n]
+        for alg, line in lines:
+            if alg not in d:
+                line.set_data([], [])
+            else:
+                points = d[alg]
+                line.set_data([p[0] for p in points], [p[1] for p in points])
+        return artists
+    ani = FuncAnimation(fig, animate, frames=nvalues,
+                    init_func=init, blit=True)
+    if args.gif_output:
+        ani.save(str(args.gif_output), dpi=300)
+    plt.show()
+
+if __name__ == '__main__':
+    main()
