@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import argparse
+import pathlib
+
+import read_results
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+def min_or_none(v, i):
+    if v is None:
+        return i
+    return min(v, i)
+
+def comparison(args, l):
+    a = None
+    b = None
+    for item in l:
+        if item.alg in args.compare_to:
+            a = min_or_none(a, item.time)
+        elif args.algorithm is None or item.alg in args.algorithm:
+            b = min_or_none(b, item.time)
+    if a is None or b is None:
+        return None
+    else:
+        return a / b
+
+
+def parse_args():
+    p = argparse.ArgumentParser(allow_abbrev=False,
+        description="Plot some algorithms against all others")
+    p.add_argument('csv', type=pathlib.Path)
+    p.add_argument("--algorithm",  action='append')
+    p.add_argument('--compare-to', action='append')
+    p.add_argument('--png-output', type=pathlib.Path)
+    return p.parse_args()
+
+def main():
+    args = parse_args()
+    if args.compare_to is None:
+        args.compare_to = ['cardchoose', 'iterativechoose']
+    data = {}
+    for item in read_results.read(args.csv):
+        data.setdefault(item.n, {}).setdefault(item.k, []).append(item)
+    if args.png_output is not None:
+        import matplotlib
+        matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = plt.gca()
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.set_xlabel("k")
+    ax.set_ylabel("comparison to best")
+    for (n, d) in sorted(data.items()):
+        points = [(k, comparison(args, l)) for (k, l) in sorted(d.items())]
+        line, = ax.plot([p[0] for p in points if p[1] is not None], [p[1] for p in points
+            if p[1] is not None])
+        line.set_label(n)
+    ax.legend()
+    plt.show()
+
+if __name__ == '__main__':
+    main()
