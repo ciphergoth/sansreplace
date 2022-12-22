@@ -23,6 +23,7 @@ samplers = [
     "cardchoose",
     "select",
     "floydf2",
+    "quadraticf2",
     "iterativechoose",
     "rejectionsample",
     "reservoirsample",

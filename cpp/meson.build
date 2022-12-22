@@ -49,6 +49,7 @@ libsrc = [
     'reservoirsample.cpp',
     'quadraticreject.cpp',
     'hsel.cpp',
+    'quadraticf2.cpp',
     'timing.cpp',
 ]
 if avx512 or avx2

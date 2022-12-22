@@ -38,7 +38,7 @@ def get_timeables(topdir, args):
     res = {}
     for alg in ['cardchoose', 'donothing', 'select', 'floydf2',
         'iterativechoose', 'quadraticreject', 'rejectionsample',
-        'reservoirsample', 'hsel']:
+        'reservoirsample', 'hsel', 'quadraticf2']:
         md = importlib.import_module(f"algorithms.{alg}")
         for sorttype in ["donothing", "random", "sorted"]:
             name = f"{sorttype}_choose"
