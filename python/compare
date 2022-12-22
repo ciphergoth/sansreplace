@@ -60,18 +60,29 @@ def main():
         import matplotlib
         matplotlib.use('Agg')
     import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
     fig = plt.figure()
     ax = plt.gca()
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlabel("k")
     ax.set_ylabel("comparison to best")
-    for (n, d) in sorted(data.items()):
+    ax.set_xlim(1, 1E8)
+    ax.set_ylim(0.1, 10)
+    line, = ax.plot([], [])
+    toplot = list(data.items())
+    toplot.sort()
+    def init():
+        line.set_data([], [])
+        return line,
+    def animate(i):
+        n, d = toplot[i]
         points = [(k, comparison(args, l)) for (k, l) in sorted(d.items())]
-        line, = ax.plot([p[0] for p in points if p[1] is not None], [p[1] for p in points
+        line.set_data([p[0] for p in points if p[1] is not None], [p[1] for p in points
             if p[1] is not None])
-        line.set_label(n)
-    ax.legend()
+        return line,
+    ani = FuncAnimation(fig, animate, frames=range(len(toplot)),
+                    init_func=init, blit=True)
     plt.show()
 
 if __name__ == '__main__':
