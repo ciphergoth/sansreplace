@@ -71,7 +71,7 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    Several algorithms for fairly choosing $k$ distinct integers from $\{0 \ldots n-1\}$ are in the literature.
+    Several algorithms for fairly choosing $k$ distinct natural numbers below \(n\) are in the literature.
     However, they either require a hash-based data structure such as a set or dictionary, or
     show asymptotically poor performance for some values of $k, n$. We present here an algorithm
     that requires no such data structure or auxiliary storage, only an integer sort taking
@@ -82,9 +82,8 @@
 
 \section{Introduction}
 
-The problem of choosing a subset of $\{0 \ldots n-1\}$ such that every \(k\)-element subset is
-equally likely arises in several contexts; one may for example wish to apply some statistical
-test to the set, in which case testing the same element multiple times is wasteful.
+The problem of choosing a subset of $\{0, 1, \ldots, n-1\}$ such that every \(k\)-element subset is
+equally likely arises in several contexts.
 Several programming languages include facilities for this in their standard libraries,
 for example Python's \mintinline{python}{random.sample()}
 or Rust's \mintinline{rust}{rand::seq::index::sample}.
@@ -104,7 +103,7 @@ In Python the algorithm works as follows:
 \inputminted{Python}{code/cardchoose.py}
 
 \section{Prior work}\label{priorwork}
-Someone who calls a routine that promises a fairly drawn \(k\)-element subset of
+Let \(\NN_{<n}\) denote the \(n\)-element set \(\{0, 1, \ldots, n-1\}\). Someone who calls a routine that promises a fairly drawn \(k\)-element subset of
 \(\NN_{<n}\) might be expecting it to return one of three different things:
 
 \begin{itemize}
@@ -126,14 +125,14 @@ is most efficient can depend on which of the above three the caller wants to rec
     \begin{tabular}{l|l|l|l}
     Algorithm & Order & Data structure & Time \\
     \hline
-    Quadratic rejection sampling & Random & none & \(k^2\) \\
+    Quadratic rejection sampling & Random &  & \(k^2\) \\
     Set-based rejection sampling & Random & Set & \(k\) \\
-    Algorithm S & Sorted & none & \(n\) \\
-    Algorithm R & Random & none & \(n\) \\
-    SAMPLE & Random & \(n\)-element list & \(n\) \\
+    Algorithm S & Sorted &  & \(n\) \\
+    Algorithm R & Random &  & \(n\) \\
+    SAMPLE & Random & \(n\)-element array & \(n\) \\
     HSAMPLE & Random & Dictionary & \(k\) \\
-    Floyd's F2 & none & Set & \(k\) \\
-    Our work & Sorted & none & \(k \log k\)
+    Floyd's F2 &  & Set & \(k\) \\
+    Our work & Sorted &  & \(k \log k\)
     \end{tabular}
 \end{center}
 
