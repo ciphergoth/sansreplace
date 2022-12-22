@@ -8,14 +8,25 @@ Fisher-Yates shuffle.
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
 quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
+rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
 iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
 reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
-Python-style Fisher-Yates | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
-HSAMPLE | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
+SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
+HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
 "[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+
+## Quadratic rejection sampling
+
+Algorithm | Python | C++ | Order guarantee | Data structures | Time
+----|----|----|----|----|----
+quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
+
+For each output, try choosing
+an integer in [0, _n_), but check every integer already in the output to see if
+it's the same, and reject and re-draw if so. This is quadratic in _k_, but for small
+_k_ the small constants can mean this algorithm does very well.
 
 ## Rejection sampling
 
@@ -30,17 +41,6 @@ already-produced values.
 
 One of the simplest possible algorithms, but the cost of set lookups and insertions
 is high.
-
-## Quadratic rejection sampling
-
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
-
-Even simpler than rejection sampling. For each output, try choosing
-an integer in [0, _n_), but check every integer already in the output to see if
-it's the same, and reject and re-draw if so. This is quadratic in _k_, but for small
-_k_ the small constants can mean this algorithm does very well.
 
 ## Iterative random choosing
 
@@ -78,29 +78,28 @@ Fast for producing random output where _k_ is a large fraction of _n_.
     * Page 138
     * "Algorithm R"
 
-## Python-style Fisher-Yates
+## SELECT
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-Python-style Fisher-Yates | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
+SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
 
 Initialize an array of the values [0, _n_). Pick out values at random to include
 in the output, and delete them by replacing them with a value from one end and
 shortening the array.
 
-This is known as SAMPLE in Ernvall and Nevalainen, though in a slight variation
+This is known as SELECT in Ernvall and Nevalainen, though in a slight variation
 we pick off the array at the start, rather than the end.
 
-## Ernvall-Nevalainen HSAMPLE
+## Ernvall-Nevalainen HSEL
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-HSAMPLE | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
+HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 
 This is a variation of the above in which we use a hash table to simulate the array
-of values [0, _n_), and store only where we change it. I called this hsel in my
-code because my friend Alex Selby first suggested it to me, but it turns out to have been
-first proposed by Ernvall and Nevalainen in 1982:
+of values [0, _n_), and store only where we change it. 
+First proposed by Ernvall and Nevalainen in 1982:
 
 * Jarmo Ernvall and Olli Nevalainen
     * An algorithm for unbiased random sampling
