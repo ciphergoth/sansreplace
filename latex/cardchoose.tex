@@ -150,6 +150,7 @@ append it to the array. Repeat this process until the array is of the desired le
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
 As above, but use a data structure representing sets with an efficient membership test.
+\cite{goodman1985introduction}
 
 \subsection{Algorithm S}
 \inputminted{Python}{code/iterativechoose.py}
@@ -167,16 +168,16 @@ and replace a random element of the array with each element with the
 appropriate probability.
 \cite{taocp2}
 
-\subsection{SAMPLE}
+\subsection{SELECT}
 \inputminted{Python}{code/select.py}
 Use a Fisher-Yates shuffle to randomize only the first \(k\) items
-of an array of the elements of \(\NN_{<n}\).
+of an array of the elements of \(\NN_{<n}\). \cite{goodman1985introduction}
 
-\subsection{HSAMPLE}
+\subsection{HSEL}
 \inputminted{Python}{code/hsel.py}
 As above, except that instead of allocating and initializing an \(n\)-element array,
 we use a ``virtual'' array, with a hash table storing only the modified elements.
-\cite{hsample}
+\cite{hsel}
 
 \subsection{F2}
 \inputminted{Python}{code/floydf2.py}
