@@ -12,7 +12,7 @@ rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/
 quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
 iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
 reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
-Python-style Fisher-Yates | [Python](python/algorithms/fisheryates.py) | [C++](cpp/fisheryates.cpp) | Random | n-sized list | _n_
+Python-style Fisher-Yates | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
 HSAMPLE | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
 "[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
@@ -82,7 +82,7 @@ Fast for producing random output where _k_ is a large fraction of _n_.
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-Python-style Fisher-Yates | [Python](python/algorithms/fisheryates.py) | [C++](cpp/fisheryates.cpp) | Random | n-sized list | _n_
+Python-style Fisher-Yates | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
 
 Initialize an array of the values [0, _n_). Pick out values at random to include
 in the output, and delete them by replacing them with a value from one end and

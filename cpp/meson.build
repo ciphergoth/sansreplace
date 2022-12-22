@@ -41,7 +41,7 @@ avx2 = compiler.compiles(code, name : 'avx2 check', args: '-march=native')
 libsrc = [
     'cardchoose.cpp',
     'donothing.cpp',
-    'fisheryates.cpp',
+    'select.cpp',
     'floydf2.cpp',
     'iterativechoose.cpp',
     'randbelow.c',

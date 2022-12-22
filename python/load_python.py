@@ -36,7 +36,7 @@ class Timeable:
 
 def get_timeables(topdir, args):
     res = {}
-    for alg in ['cardchoose', 'donothing', 'fisheryates', 'floydf2',
+    for alg in ['cardchoose', 'donothing', 'select', 'floydf2',
         'iterativechoose', 'quadraticreject', 'rejectionsample',
         'reservoirsample', 'hsel']:
         md = importlib.import_module(f"algorithms.{alg}")

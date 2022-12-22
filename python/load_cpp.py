@@ -21,7 +21,7 @@ import cffi
 samplers = [
     "quadraticreject",
     "cardchoose",
-    "fisheryates",
+    "select",
     "floydf2",
     "iterativechoose",
     "rejectionsample",

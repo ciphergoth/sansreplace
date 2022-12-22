@@ -15,7 +15,7 @@ to compare their performance.
 
 In [my C++ tests](results.md), `cardchoose` outperforms `rejectionsample`,
 `floydf2`, and `hsel` for all values of _n_ and _k_. `quadraticreject` is
-best where _k_ < 100 or so, and `fisheryates` and `iterativechoose` perform well
+best where _k_ < 100 or so, and `select` and `iterativechoose` perform well
 when _k_/_n_ is large.  `cardchoose` always performs within an acceptable factor of other algorithms.
 
 * [Guide to algorithms tested](algorithms.md)

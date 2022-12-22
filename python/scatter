@@ -43,7 +43,7 @@ def main():
         'quadraticreject': '.',
         'cardchoose': '^',
         'iterativechoose': '+',
-        'fisheryates': 'x',
+        'select': 'x',
         'reservoirsample': 'D',
     }
     for l in data.values():
