@@ -1,6 +1,6 @@
 # C++ results
 
-`cardchoose` outperforms `rejectionsample`, `floydf2`, and `selby_fy` for all
+`cardchoose` outperforms `rejectionsample`, `floydf2`, and `hsel` for all
 values of _n_ and _k_. `quadraticreject` is good where _k_ < 100 or so, and
 `fisheryates`, `iterativechoose`, and `reservoirsample`
 perform well when _k_/_n_ is large.

@@ -48,7 +48,7 @@ libsrc = [
     'rejectionsample.cpp',
     'reservoirsample.cpp',
     'quadraticreject.cpp',
-    'selby_fy.cpp',
+    'hsel.cpp',
     'timing.cpp',
 ]
 if avx512 or avx2

@@ -14,7 +14,7 @@ _k_) time. I've implemented this and other algorithms in C++ and Python
 to compare their performance.
 
 In [my C++ tests](results.md), `cardchoose` outperforms `rejectionsample`,
-`floydf2`, and `selby_fy` for all values of _n_ and _k_. `quadraticreject` is
+`floydf2`, and `hsel` for all values of _n_ and _k_. `quadraticreject` is
 best where _k_ < 100 or so, and `fisheryates` and `iterativechoose` perform well
 when _k_/_n_ is large.  `cardchoose` always performs within an acceptable factor of other algorithms.
 

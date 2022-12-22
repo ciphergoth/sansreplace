@@ -26,7 +26,7 @@ samplers = [
     "iterativechoose",
     "rejectionsample",
     "reservoirsample",
-    "selby_fy"
+    "hsel"
 ]
 
 def setup_module(cppdir, build_dir, functions):

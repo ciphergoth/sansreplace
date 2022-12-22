@@ -13,7 +13,7 @@ quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | 
 iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
 reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
 Python-style Fisher-Yates | [Python](python/algorithms/fisheryates.py) | [C++](cpp/fisheryates.cpp) | Random | n-sized list | _n_
-HSAMPLE | [Python](python/algorithms/selby_fy.py) | [C++](cpp/selby_fy.cpp) | Random | Dictionary | _k_
+HSAMPLE | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
 "[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
 
@@ -95,10 +95,10 @@ we pick off the array at the start, rather than the end.
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-HSAMPLE | [Python](python/algorithms/selby_fy.py) | [C++](cpp/selby_fy.cpp) | Random | Dictionary | _k_
+HSAMPLE | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 
 This is a variation of the above in which we use a hash table to simulate the array
-of values [0, _n_), and store only where we change it. I called this selby_fy in my
+of values [0, _n_), and store only where we change it. I called this hsel in my
 code because my friend Alex Selby first suggested it to me, but it turns out to have been
 first proposed by Ernvall and Nevalainen in 1982:
 
