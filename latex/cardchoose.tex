@@ -71,7 +71,7 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    Several algorithms for fairly choosing $k$ distinct natural numbers below \(n\) are in the literature.
+    The literature contains several algorithms for fairly choosing $k$ distinct natural numbers below \(n\).
     However, they either require a hash-based data structure such as a set or dictionary, or
     show asymptotically poor performance for some values of $k, n$. We present here an algorithm
     that requires no such data structure or auxiliary storage, only an integer sort taking
@@ -88,11 +88,15 @@ Several programming languages include facilities for this in their standard libr
 for example Python's \mintinline{python}{random.sample()}
 or Rust's \mintinline{rust}{rand::seq::index::sample}.
 In \autoref{priorwork} we discuss several known algorithms to this end; these all have
-their strengths, but all suffer from one of two disadvantages. Some are fast for certain
-values of \(k, n\), eg where \(k\) is small or where \(\frac{n}{k}\) is small, but very slow
-for other values. Others achieve much better asymptotic performance, but at the cost of
-updating a hash-based data structure such as a set or dictionary for each of the \(k\) values
-generated, adding a significant constant multiplier to the overall runtime as well as memory cost.
+their strengths, but all suffer from one of two disadvantages:
+\begin{itemize}
+    \item Some are fast for certain
+    values of \(k, n\), e.g. where \(k\) is small or where \(\frac{n}{k}\) is small, but very slow
+    for other values.
+    \item Others achieve much better asymptotic performance, but at the cost of
+    updating a hash-based data structure such as a set or dictionary for each of the \(k\) values
+    generated, adding a significant constant multiplier to the overall runtime as well as memory cost.
+\end{itemize}
 
 We here present an algorithm which requires no storage beyond the array in which the result
 is written but achieves a \(\bigO{k \log k}\) runtime; the extra \(\log k\) term is due to
@@ -109,14 +113,14 @@ Let \(\NN_{<n}\) denote the \(n\)-element set \(\{0, 1, \ldots, n-1\}\). Someone
 \begin{itemize}
     \item an array of integers in sorted order;
     \item an array of integers in fair random order;
-    \item a set of integers in some kind of efficient set structure (eg a hash table).
+    \item a set of integers in some kind of efficient set structure (e.g. a hash table).
 \end{itemize}
 
 Both Python's \mintinline{python}{random.sample()} and 
 Rust's \mintinline{python}{rand::seq::index::sample} return in a fair random order.
 
 A routine which returns one of these can straightforwardly be converted into 
-a routine that returns another, using eg a sort or a Fisher-Yates shuffle as appropriate.
+a routine that returns another, using e.g. a sort or a Fisher-Yates shuffle as appropriate.
 However each of these algorithms returns one of the above types ``naturally'', and
 so returning a different one will take an extra step, which means that which algorithm
 is most efficient can depend on which of the above three the caller wants to receive.
@@ -149,7 +153,7 @@ As above, but use a data structure representing sets with an efficient membershi
 
 \subsection{Algorithm S}
 \inputminted{Python}{code/iterativechoose.py}
-Iterate in order through each candidate to add to the list in order,
+Iterate in order through each candidate to add to the list,
 calculate for each the probability it should be part of the list given
 the number of items added so far and the number remaining, and add
 it with that probability.
@@ -170,7 +174,7 @@ of an array of the elements of \(\NN_{<n}\).
 
 \subsection{HSAMPLE}
 \inputminted{Python}{code/selby_fy.py}
-As above, except that instead of allocating an initializing an \(n\)-element array,
+As above, except that instead of allocating and initializing an \(n\)-element array,
 we use a ``virtual'' array, with a hash table storing only the modified elements.
 \cite{hsample}
 
@@ -197,7 +201,7 @@ A multiset has a \emph{cardinality} $|m| \defeq \sum_{x \in U} m(x)$
 and a \emph{support} set $\Supp(m) \defeq \{x \in U: m(x) > 0\}$.
 
 Where $U$ is clear from context, for any set $S \subseteq U$ we consider
-$\overline{S}$ to be $S$ viewed as a multiset, ie the multiset
+$\overline{S}$ to be $S$ viewed as a multiset, i.e. the multiset
 such that $\Supp(\overline{S}) = S$ and $|\overline{S}| = |S|$:
 \begin{displaymath}
     \overline{S}(x) =
