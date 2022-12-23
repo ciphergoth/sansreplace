@@ -16,25 +16,23 @@ import random
 
 def set_choose(n, k):
     "k distinct integers 0 <= x < n"
-    d = set()
-    for i in range(n - k, n):
-        j = random.randrange(i+1)
+    d = []
+    for m in range(n - k, n):
+        j = random.randrange(m + 1)
         if j in d:
-            d.add(i)
+            d.append(m)
         else:
-            d.add(j)
+            d.append(j)
     return d
 
 def random_choose(n, k):
     d = set_choose(n, k)
-    rd = [None] * k
-    for i, v in enumerate(d):
+    for i in range(k):
         j = random.randrange(i+1)
-        rd[i] = rd[j]
-        rd[j] = v
-    return rd
+        d[i], d[j] = d[j], d[i]
+    return d
 
 def sorted_choose(n, k):
-    d = list(set_choose(n, k))
+    d = set_choose(n, k)
     d.sort()
     return d

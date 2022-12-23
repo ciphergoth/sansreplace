@@ -1,9 +1,9 @@
 def set_choose(n, k):
-    d = set()
+    d = []
     for m in range(n - k, n):
-        j = random.randrange(m+1)
+        j = random.randrange(m + 1)
         if j in d:
-            d.add(m)
+            d.append(m)
         else:
-            d.add(j)
+            d.append(j)
     return d

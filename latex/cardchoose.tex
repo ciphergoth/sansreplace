@@ -117,7 +117,7 @@ Let \(\NN_{<n}\) denote the \(n\)-element set \(\{0, 1, \ldots, n-1\}\). Someone
 \end{itemize}
 
 Both Python's \mintinline{python}{random.sample()} and 
-Rust's \mintinline{python}{rand::seq::index::sample} return in a fair random order.
+Rust's \mintinline{rust}{rand::seq::index::sample} return in a fair random order.
 
 A routine which returns one of these can straightforwardly be converted into 
 a routine that returns another, using e.g. a sort or a Fisher-Yates shuffle as appropriate.
@@ -136,6 +136,7 @@ is most efficient can depend on which of the above three the caller wants to rec
     SELECT & Random & \(n\)-element array & \(n\) \\
     HSEL & Random & Dictionary & \(k\) \\
     Floyd's F2 &  & Set & \(k\) \\
+    Quadratic F2 &  & & \(k^2\) \\
     Our work & Sorted &  & \(k \log k\)
     \end{tabular}
 \end{center}
@@ -183,6 +184,11 @@ we use a ``virtual'' array, with a hash table storing only the modified elements
 \inputminted{Python}{code/floydf2.py}
 A twist on set-based rejection that uses compensatingly biased
 samples to avoid multiple tests.
+\cite{floydf2}
+
+\subsection{Quadratic F2}
+\inputminted{Python}{code/quadraticf2.py}
+Quadratic variant on Floyd's F2 which needs no external data structure.
 \cite{floydf2}
 
 \section{Notation}
