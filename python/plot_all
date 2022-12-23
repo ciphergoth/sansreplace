@@ -21,25 +21,6 @@ import read_results
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
-def min_or_none(v, i):
-    if v is None:
-        return i
-    return min(v, i)
-
-def comparison(args, l):
-    a = None
-    b = None
-    for item in l:
-        if item.alg in args.compare_to:
-            a = min_or_none(a, item.time)
-        elif args.algorithm is None or item.alg in args.algorithm:
-            b = min_or_none(b, item.time)
-    if a is None or b is None:
-        return None
-    else:
-        return a / b
-
-
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Plot some algorithms against all others")
@@ -68,15 +49,18 @@ def main():
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
     fig = plt.figure()
-    plt.title(args.title)
+    #plt.title(args.title)
     ax = plt.gca()
     ax.set_xscale('log')
     ax.set_yscale('linear')
     ax.set_xlabel("k")
     ax.set_ylabel("time/k (ns)")
     ax.set_xlim(1, 1E8)
-    ax.set_ylim(0, 1E2)
-    artists = []
+    ax.set_ylim(0, 2E2)
+    #ttl = ax.set_title(args.title, animated=True)
+    ttl = ax.text(.5, 1.01, args.title, 
+        horizontalalignment='center', transform = ax.transAxes)
+    artists = [ttl]
     lines = []
     for alg in args.algorithm:
         line, = ax.plot([], [])
@@ -87,10 +71,15 @@ def main():
     artists = [l[1] for l in lines]
     nvalues = list(sorted(data.keys()))
     def init():
-        for alg, line in lines:
+        ttl.set_text(args.title)
+        for _, line in lines:
             line.set_data([], [])
         return artists
     def animate(n):
+        if n < 100:
+            ttl.set_text(f"{args.title} n={n}")
+        else:
+            ttl.set_text(f"{args.title} n={n:.1E}")
         d = data[n]
         for alg, line in lines:
             if alg not in d:
@@ -100,7 +89,7 @@ def main():
                 line.set_data([p[0] for p in points], [p[1] for p in points])
         return artists
     ani = FuncAnimation(fig, animate, frames=nvalues,
-                    init_func=init, blit=True)
+                    init_func=init)
     if args.gif_output:
         ani.save(str(args.gif_output), dpi=300)
     plt.show()
