@@ -48,11 +48,16 @@ extern "C" void sorted_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
 }
 
 extern "C" void random_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
-    quadraticf2(n, k, result);
-    for (uint32_t i = 1; i < k; i++) {
-        uint32_t r = randbelow(i + 1);
-        auto t = result[i];
-        result[i] = result[r];
-        result[r] = t;
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t m = n + i - k;
+        uint32_t r = randbelow(m + 1);
+        uint32_t p = randbelow(i + 1);
+        if (r == m || contains(r, i, result)) {
+            result[i] = 0;
+            result[i] = result[p];
+            result[p] = m;
+        } else {
+            result[i] = r;
+        }
     }
 }
