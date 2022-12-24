@@ -17,27 +17,27 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <unordered_set>
 
 #include "randbelow.h"
 
-static inline bool contains(uint32_t needle, uint32_t size, const uint32_t* haystack) {
+static inline uint32_t indexof(uint32_t needle, uint32_t size, const uint32_t* haystack) {
     for (uint32_t i = 0; i < size; i++) {
         if (haystack[i] == needle) {
-            return true;
+            return i;
         }
     }
-    return false;
+    return -1;
 }
 
 static void quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
-        if (contains(r, i, result)) {
-            result[i] = m;
-        } else {
+        uint32_t ix = indexof(r, i, result);
+        if (ix == -1) {
             result[i] = r;
+        } else {
+            result[i] = m;
         }
     }
 }
@@ -51,13 +51,10 @@ extern "C" void random_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
-        uint32_t p = randbelow(i + 1);
-        if (r == m || contains(r, i, result)) {
-            result[i] = 0;
-            result[i] = result[p];
-            result[p] = m;
-        } else {
-            result[i] = r;
+        result[i] = r;
+        uint32_t ix = indexof(r, i, result);
+        if (ix != -1) {
+            result[ix] = m;
         }
     }
 }
