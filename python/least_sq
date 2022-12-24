@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+# Copyright 2022 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import argparse
+import math
+import pathlib
+
+import numpy as np
+
+import plot_anim
+import read_results
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+def parse_args():
+    p = argparse.ArgumentParser(allow_abbrev=False,
+        description="Model performance using least squares")
+    p.add_argument('csv', type=pathlib.Path)
+    p.add_argument('--output-dir', type=pathlib.Path)
+    return p.parse_args()
+
+def main():
+    args = parse_args()
+    data = {}
+    for item in read_results.read(args.csv):
+        data.setdefault(item.alg, []).append(item)
+    for alg, items in data.items():
+        print(alg)
+        gooditems = [item for item in items if item.k >= 10 and item.k != item.n]
+        t = np.fromiter((item.time for item in gooditems), dtype=np.float64)
+        n = np.fromiter((item.n for item in gooditems), dtype=np.float64)
+        k = np.fromiter((item.k for item in gooditems), dtype=np.float64)
+        ones = np.ones(len(gooditems))
+        a = np.vstack([ones, n, k, 
+            np.square(k), np.multiply(k, np.log(k))])
+        trecip = np.reciprocal(t)
+        a = np.multiply(a, np.tile(trecip, (5, 1)))
+        #print(a.T)
+        #print(t)
+        x, residuals, rank, singvals = np.linalg.lstsq(a.T, ones, rcond=-1)
+        print(x)
+        print(math.sqrt(residuals[0]/len(gooditems)))
+        plotdata = {}
+        for item in items:
+            if item.k == 0:
+                continue
+            nrow = plotdata.setdefault(item.n, {'predicted': [], 'actual': []})
+            prediction = (x[0] + item.n * x[1] + item.k * x[2]
+                + item.k**2 * x[3] + item.k * math.log(item.k) * x[4])
+            nrow['actual'].append((item.k, 1E9 * item.time/item.k))
+            nrow['predicted'].append((item.k, 1E9 * prediction/item.k))
+        for nv in plotdata.values():
+            for v in nv.values():
+                v.sort()
+        plotdata = list(plotdata.items())
+        plotdata.sort()
+        plot_anim.plot(["predicted", "actual"], plotdata, alg, None)
+
+if __name__ == '__main__':
+    main()
