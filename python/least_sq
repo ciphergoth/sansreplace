@@ -67,7 +67,11 @@ def main():
                 v.sort()
         plotdata = list(plotdata.items())
         plotdata.sort()
-        plot_anim.plot(["predicted", "actual"], plotdata, alg, None)
+        if args.output_dir is None:
+            output = None
+        else:
+            output = str(args.output_dir / f"{alg}.gif")
+        plot_anim.plot(["predicted", "actual"], plotdata, alg, output)
 
 if __name__ == '__main__':
     main()
