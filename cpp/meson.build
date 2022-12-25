@@ -17,12 +17,17 @@ project('sansreplace', ['c', 'cpp'],
 'cpp_std=c++14'])
 
 add_project_arguments(
-    '-fno-strict-aliasing', 
-    #'-march=native', '-mtune=native',
+    '-fno-strict-aliasing', '-Ofast',
     language : ['c', 'cpp'])
 include_dirs = [
     include_directories('../third_party/SIMDxorshift/include')
 ]
+
+if host_machine.cpu_family() == 'x86_64'
+    add_project_arguments(
+        '-march=native', '-mtune=native',
+        language : ['c', 'cpp'])
+endif
 
 compiler = meson.get_compiler('cpp')
 
