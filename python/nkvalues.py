@@ -45,6 +45,11 @@ def fib_values():
         for pk, k in enumerate(fib(n + 1)):
             yield f"n = F_{pn} = {n}, k = F_{pk} = {k}", n, k
 
+def largen_values():
+    n = 10_000_000
+    for k in range(0, n+1, 100_000):
+        yield f"n = {n}, k = {k}", n, k
+
 def iter_values(names):
     done = set()
     for name in names:
