@@ -12,9 +12,9 @@ we graph time/_k_ to show the cost in ns per number we output. Since
 we are plotting a linear/log graph of time/_k_, the _k_ log _k_
 performance of the algorithm is visible as a straight line.
 
-[Full results](results/2022-12-24/)
+[Full results](results/latest/)
 
-![graph](results/2022-12-24/random.webp)
+![graph](results/latest/random.webp)
 
-![graph](results/2022-12-24/sorted.webp)
+![graph](results/latest/sorted.webp)
 
