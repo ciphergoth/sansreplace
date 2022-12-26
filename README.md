@@ -40,7 +40,7 @@ def sorted_choose(n, k):
     return d
 ```
 
-![graph](results/2022-12-22/sorted.gif)
+![graph](results/latest/sorted.webp)
 
 
 This is not an officially supported Google product.
