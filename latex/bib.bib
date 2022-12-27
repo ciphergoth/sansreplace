@@ -10,20 +10,20 @@
 }
 
 @article{floydf2,
-author = {Bentley, Jon and Floyd, Bob},
-title = {Programming Pearls: A Sample of Brilliance},
-year = {1987},
-issue_date = {Sept. 1987},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-volume = {30},
-number = {9},
-issn = {0001-0782},
-doi = {10.1145/30401.315746},
-journal = {Commun. ACM},
-month = {9},
-pages = {754--757},
-numpages = {4}
+  author = {Bentley, Jon and Floyd, Bob},
+  title = {Programming Pearls: A Sample of Brilliance},
+  year = {1987},
+  issue_date = {Sept. 1987},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {30},
+  number = {9},
+  issn = {0001-0782},
+  doi = {10.1145/30401.315746},
+  journal = {Commun. ACM},
+  month = {9},
+  pages = {754--757},
+  numpages = {4}
 }
 
 @article{hsel,
@@ -51,7 +51,7 @@ publisher = {Addison-Wesley Longman Publishing Co., Inc.},
 address = {USA}
 }
 
-@book{goodman1985introduction,
+@book{goodman,
   title={Introduction to the Design and Analysis of Algorithms},
   author={Seymour Evan Goodman and Stephen T. Hedetniemi},
   isbn={0-07-023753-0},
@@ -60,15 +60,142 @@ address = {USA}
 }
 
 @article{fanetal,
-    author = {C. T. Fan and Mervin E. Muller and Ivan Rezucha},
-    title = {Development of Sampling Plans by Using Sequential (Item by Item) Selection Techniques and Digital Computers},
-    journal = {Journal of the American Statistical Association},
-    volume = {57},
-    number = {298},
-    pages = {387-402},
-    year  = {1962},
-    publisher = {Taylor & Francis},
-    doi = {10.1080/01621459.1962.10480667},
+  author = {C. T. Fan and Mervin E. Muller and Ivan Rezucha},
+  title = {Development of Sampling Plans by Using Sequential (Item by Item) Selection Techniques and Digital Computers},
+  journal = {Journal of the American Statistical Association},
+  volume = {57},
+  number = {298},
+  pages = {387-402},
+  year  = {1962},
+  publisher = {Taylor & Francis},
+  doi = {10.1080/01621459.1962.10480667},
 }
 
+@article{vitterD,
+  author = {Vitter, Jeffrey Scott},
+  title = {An Efficient Algorithm for Sequential Random Sampling},
+  year = {1987},
+  issue_date = {March 1987},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {13},
+  number = {1},
+  issn = {0098-3500},
+  doi = {10.1145/23002.23003},
+  abstract = {We examine several methods for drawing a sequential random sample of n records from a file containing N records. Method D is recommended for general use. The algorithm is on-line (so that CPU time can be overlapped with I/O), has a small constant memory requirement, and is easy to program. An improved implementation is detailed in the Appendix.},
+  journal = {ACM Trans. Math. Softw.},
+  month = {3},
+  pages = {58--67},
+  numpages = {10}
+}
 
+@article{ahrensd,
+  author = {Ahrens, J. H. and Dieter, U.},
+  title = {Sequential Random Sampling},
+  year = {1985},
+  issue_date = {June 1985},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {11},
+  number = {2},
+  issn = {0098-3500},
+  doi = {10.1145/214392.214402},
+  abstract = {Fast algorithms for selecting a random set of exactly k records from a file of n records are constructed. Selection is sequential: the sample records are chosen in the same order in which they occur in the file. All procedures run in O(k) time. The “geometric” method has two versions: with or without O(k) auxiliary space. A further procedure uses hashing techniques and requires O(k) space.},
+  journal = {ACM Trans. Math. Softw.},
+  month = {6},
+  pages = {157--169},
+  numpages = {13},
+  keywords = {geometric distribution, hash techniques, random sampling}
+}
+
+@article{vitterZ,
+  author = {Vitter, Jeffrey S.},
+  title = {Random Sampling with a Reservoir},
+  year = {1985},
+  issue_date = {March 1985},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {11},
+  number = {1},
+  issn = {0098-3500},
+  doi = {10.1145/3147.3165},
+  abstract = {We introduce fast algorithms for selecting a random sample of n records without replacement from a pool of N records, where the value of N is unknown beforehand. The main result of the paper is the design and analysis of Algorithm Z; it does the sampling in one pass using constant space and in O(n(1 + log(N/n))) expected time, which is optimum, up to a constant factor. Several optimizations are studied that collectively improve the speed of the naive version of the algorithm by an order of magnitude. We give an efficient Pascal-like implementation that incorporates these modifications and that is suitable for general use. Theoretical and empirical results indicate that Algorithm Z outperforms current methods by a significant margin.},
+  journal = {ACM Trans. Math. Softw.},
+  month = {3},
+  pages = {37--57},
+  numpages = {21}
+}
+
+@misc{rust-random,
+  author = {Diggory Hardy},
+  title = {Rand},
+  year = {2018},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/rust-random/rand/blob/master/src/seq/index.rs}},
+  commit = {19897e53c1908c5a193e2aacff59170e3e72b8de}
+}
+
+@misc{ting,
+  doi = {10.48550/ARXIV.2104.05091},
+  url = {https://arxiv.org/abs/2104.05091},
+  author = {Ting, Daniel},
+  keywords = {Data Structures and Algorithms (cs.DS), Computation (stat.CO), FOS: Computer and information sciences, FOS: Computer and information sciences},
+  title = {Simple, Optimal Algorithms for Random Sampling Without Replacement},
+  publisher = {arXiv},
+  year = {2021},
+  copyright = {arXiv.org perpetual, non-exclusive license}
+}
+
+@article{RouzankinVoytishek,
+  title = {On the cost of algorithms for random selection},
+  author = {P.S. Rouzankin and A.V. Voytishek},
+  pages = {39--54},
+  volume = {5},
+  number = {1},
+  doi = {10.1515/mcma.1999.5.1.39},
+  year = {1999},
+  lastchecked = {2022-12-27}
+}
+
+@article{teuhola,
+  author = {J.Teuhola and O. Nevalainen},
+  title = {Two efficient algorithms for random sampling without replacement},
+  journal = {International Journal of Computer Mathematics},
+  volume = {11},
+  number = {2},
+  pages = {127--140},
+  year  = {1982},
+  publisher = {Taylor & Francis},
+  doi = {10.1080/00207168208803304},
+}
+
+@article{vitterfaster,
+  author = {Vitter, Jeffrey Scott},
+  title = {Faster Methods for Random Sampling},
+  year = {1984},
+  issue_date = {July 1984},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {27},
+  number = {7},
+  issn = {0001-0782},
+  doi = {10.1145/358105.893},
+  abstract = {Several new methods are presented for selecting n records at random without replacement from a file containing N records. Each algorithm selects the records for the sample in a sequential manner—in the same order the records appear in the file. The algorithms are online in that the records for the sample are selected iteratively with no preprocessing. The algorithms require a constant amount of space and are short and easy to implement. The main result of this paper is the design and analysis of Algorithm D, which does the sampling in O(n) time, on the average; roughly n uniform random variates are generated, and approximately n exponentiation operations (of the form ab, for real numbers a and b) are performed during the sampling. This solves an open problem in the literature. CPU timings on a large mainframe computer indicate that Algorithm D is significantly faster than the sampling algorithms in use today.},
+  journal = {Commun. ACM},
+  month = {7},
+  pages = {703--718},
+  numpages = {16}
+}
+
+@article{gupta,
+  author = {P. Gupta and G. P. Bhattacharjee},
+  title = {An efficient algorithm for random sampling without replacement},
+  journal = {International Journal of Computer Mathematics},
+  volume = {16},
+  number = {4},
+  pages = {201--209},
+  year  = {1984},
+  publisher = {Taylor & Francis},
+  doi = {10.1080/00207168408803438},
+}
