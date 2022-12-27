@@ -14,25 +14,19 @@
 
 import random
 
-def set_choose(n, k):
-    "k distinct integers 0 <= x < n"
-    d = []
-    for m in range(n - k, n):
-        j = random.randrange(m + 1)
-        if j in d:
-            d.append(m)
-        else:
-            d.append(j)
-    return d
-
 def random_choose(n, k):
-    d = set_choose(n, k)
+    d = []
     for i in range(k):
-        j = random.randrange(i+1)
-        d[i], d[j] = d[j], d[i]
+        m = n - k + i
+        r = random.randrange(m + 1)
+        for j in range(i):
+            if d[j] == r:
+                d[j] = m
+                break
+        d.append(r)
     return d
 
 def sorted_choose(n, k):
-    d = set_choose(n, k)
+    d = random_choose(n, k)
     d.sort()
     return d

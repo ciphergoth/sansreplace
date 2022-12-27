@@ -1,9 +1,11 @@
-def set_choose(n, k):
+def random_choose(n, k):
     d = []
-    for m in range(n - k, n):
-        j = random.randrange(m + 1)
-        if j in d:
-            d.append(m)
-        else:
-            d.append(j)
+    for i in range(k):
+        m = n - k + i
+        r = random.randrange(m + 1)
+        for j in range(i):
+            if d[j] == r:
+                d[j] = m
+                break
+        d.append(r)
     return d
