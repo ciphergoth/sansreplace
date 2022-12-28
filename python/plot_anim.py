@@ -4,7 +4,16 @@ from matplotlib.animation import FuncAnimation
 def plot(toplot, data, title, output):
     if output is not None:
         import matplotlib
-        matplotlib.use('Agg')
+        if output.endswith(".pgf"):
+            matplotlib.use("pgf")
+            matplotlib.rcParams.update({
+                "pgf.texsystem": "lualatex",
+                'font.family': 'serif',
+                'text.usetex': True,
+                'pgf.rcfonts': False,
+            })
+        else:
+            matplotlib.use('Agg')
     fig = plt.figure()
     #plt.title(args.title)
     ax = plt.gca()
@@ -44,9 +53,16 @@ def plot(toplot, data, title, output):
                 points = d[alg]
                 line.set_data([p[0] for p in points], [p[1] for p in points])
         return artists
-    ani = FuncAnimation(fig, animate, frames=list(range(len(data))),
-                    init_func=init)
-    if output is None:
-        plt.show()
+    if len(data) == 1:
+        animate(0)
+        if output is None:
+            plt.show()
+        else:
+            plt.savefig(output)
     else:
-        ani.save(output, dpi=300)
+        ani = FuncAnimation(fig, animate, frames=list(range(len(data))),
+                        init_func=init)
+        if output is None:
+            plt.show()
+        else:
+            ani.save(output, dpi=300)

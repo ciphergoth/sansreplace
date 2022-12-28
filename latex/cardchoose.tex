@@ -35,6 +35,7 @@
 \usepackage{algpseudocode}
 \usepackage[landau,operators,probability,sets]{cryptocode}
 \usepackage[outputdir=build/latex.out,cachedir=build/_minted-cardchoose]{minted}
+\usepackage{pgf}
 
 % https://tex.stackexchange.com/a/350287
 \newcommand{\multichoose}[2]{
@@ -394,7 +395,24 @@ of doing so.
 C++ implementations of all of these algorithms can be found at 
 \url{https://github.com/ciphergoth/sansreplace/cpp}. I benchmarked
 all of these for a variety of values of values of \(n\) and \(k\),
-for both sorted output and random output. 
+for both sorted output and random output. Below we graph time/\(k\)
+in ns against \(k\) for two different values of \(n\).
+Animated graphs showing many values of \(n\) up to 701,408,733
+(the 44th Fibonacci number) can be seen at
+\url{https://github.com/ciphergoth/sansreplace/results.md}.
+The broad pattern is that for random output, quadraticf2
+is the best algorithm where \(k \leq 100\) and \(k \leq n/k\), select
+is the best where \(n/k \leq 100\) and \(n/k \leq k\), and cardchoose
+is best otherwise. For sorted output, cardchoose is always the
+best algorithm unless \(n/k \leq 10\), in which case iterativechoose
+is best.
+
+%\input{random_10946.pgf}
+
+\input{random_1346269.pgf}
+
+%\input{random_102334155.pgf}
+\input{random_701408733.pgf}
 
 \printbibliography
 
