@@ -20,6 +20,7 @@ import pathlib
 
 import numpy as np
 
+import pclasses
 import plot_anim
 import read_results
 
@@ -34,54 +35,39 @@ def parse_args():
     p.add_argument('--output')
     return p.parse_args()
 
-def main():
-    args = parse_args()
+def read_data(csv, algorithm):
     items = []
-    for item in read_results.read(args.csv):
-        if item.alg == args.algorithm:
+    for item in read_results.read(csv):
+        if item.alg == algorithm:
             items.append(item)
+    return items
+
+def gen_fit(items, models):
     gooditems = [item for item in items if item.k >= 10 and item.k != item.n]
     t = np.fromiter((item.time for item in gooditems), dtype=np.float64)
     n = np.fromiter((item.n for item in gooditems), dtype=np.float64)
     k = np.fromiter((item.k for item in gooditems), dtype=np.float64)
     ones = np.ones(len(gooditems))
-    if args.model is None:
-        args.model = ['n', 'k', 'k2', 'klogk']
-    args.model.insert(0, '1')
     vstack = []
-    funcs = []
-    for m in args.model:
-        if m == '1':
-            vstack.append(ones)
-            funcs.append(lambda item: 1)
-        elif m == 'n':
-            vstack.append(n)
-            funcs.append(lambda item: item.n)
-        elif m == 'k':
-            vstack.append(k)
-            funcs.append(lambda item: item.k)
-        elif m == 'k2':
-            vstack.append(np.square(k))
-            funcs.append(lambda item: item.k ** 2)
-        elif m == 'klogk':
-            vstack.append(np.multiply(k, np.log(k)))            
-            funcs.append(lambda item: item.k * math.log(item.k))
-        else:
-            raise Exception(f"Unknown method: {m}")
+    for m in models:
+        vstack.append(m.vector(n, k))
     a = np.vstack(vstack)
     trecip = np.reciprocal(t)
     a = np.multiply(a, np.tile(trecip, (len(vstack), 1)))
     #print(a.T)
     #print(t)
-    x, residuals, rank, singvals = np.linalg.lstsq(a.T, ones, rcond=-1)
-    print(x)
+    fit, residuals, rank, singvals = np.linalg.lstsq(a.T, ones, rcond=-1)
+    print(fit)
     print(math.sqrt(residuals[0]/len(gooditems)))
+    return fit
+
+def gen_plotdata(items, models, fit):
     plotdata = {}
     for item in items:
         if item.k == 0:
             continue
         nrow = plotdata.setdefault(item.n, {'predicted': [], 'actual': []})
-        prediction = sum(c * f(item) for (c, f) in zip(x, funcs))
+        prediction = sum(c * m.val(item) for (c, m) in zip(fit, models))
         nrow['actual'].append((item.k, 1E9 * item.time/item.k))
         nrow['predicted'].append((item.k, 1E9 * prediction/item.k))
     for nv in plotdata.values():
@@ -89,6 +75,14 @@ def main():
             v.sort()
     plotdata = list(plotdata.items())
     plotdata.sort()
+    return plotdata
+
+def main():
+    args = parse_args()
+    models = list(pclasses.lookup_models(args.model))
+    items = read_data(args.csv, args.algorithm)
+    fit = gen_fit(items, models)
+    plotdata = gen_plotdata(items, models, fit)
     plot_anim.plot(["predicted", "actual"], plotdata, args.algorithm, args.output)
 
 if __name__ == '__main__':
