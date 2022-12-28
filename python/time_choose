@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import atexit
 import csv
 import pathlib
 
@@ -23,6 +24,21 @@ import impl_load
 import nkvalues
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
+
+def fix_freq():
+    governors = []
+    def reset():
+        for p, v in governors:
+            p.write_bytes(v)
+    atexit.register(reset)
+    cpufreq = pathlib.Path('/sys/devices/system/cpu/cpufreq')
+    for child in cpufreq.iterdir():
+        if not child.name.startswith("policy"):
+            continue
+        sg = child / "scaling_governor"
+        old = sg.read_bytes()
+        governors.append((sg, old))
+        sg.write_bytes(b"performance")
 
 def timefunc_for(time, params, timeable):
     iters = 1
@@ -85,12 +101,15 @@ def parse_args():
     p.add_argument("--sorttype", default="random", choices=['sorted', 'random'],
         help="Algorithm variant to test")
     p.add_argument("--values", action='append')
+    p.add_argument("--fix-freq", action='store_true')
     p.add_argument("--csv", type=pathlib.Path)
     impl_load.add_arguments(p)
     return p.parse_args()
 
 def main():
     args = parse_args()
+    if args.fix_freq:
+        fix_freq()
     if args.values is None:
         args.values = ["small", "power10"]
     timeables = impl_load.get_timeables(args, topdir)
