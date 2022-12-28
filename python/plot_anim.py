@@ -1,9 +1,10 @@
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 def plot(toplot, data, title, output):
     if output is not None:
-        import matplotlib
+        output = str(output)
         if output.endswith(".pgf"):
             matplotlib.use("pgf")
             matplotlib.rcParams.update({

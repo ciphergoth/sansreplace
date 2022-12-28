@@ -23,25 +23,19 @@ import read_results
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
 def parse_args():
-    p = argparse.ArgumentParser(allow_abbrev=False,
-        description="Plot all algorithms")
-    p.add_argument('title')
-    p.add_argument('csv', type=pathlib.Path)
-    p.add_argument("--algorithm",  action='append')
-    p.add_argument('--output')
-    p.add_argument('--n', type=int)
+    p = argparse.ArgumentParser(allow_abbrev=False)
     return p.parse_args()
 
 def main():
     args = parse_args()
-    all_algorithms, data = read_results.read_for_plot(args.csv)
-    if args.algorithm is None:
-        args.algorithm = all_algorithms
-    if args.n is None:
-        print([d[0] for d in data])
-    else:
-        data = [d for d in data if d[0] == args.n]
-    plot_anim.plot(args.algorithm, data, args.title, args.output)
+    results = topdir / "results/latest"
+    all_algorithms, data = read_results.read_for_plot(results / "random.csv")
+    plot_anim.plot(all_algorithms, data, "Random order", results / "random.webp")
+    for n in [1346269, 701408733]:
+        plot_anim.plot(all_algorithms, [d for d in data if d[0] == n],
+            "Random order", topdir / "latex" / f"random_{n}.pgf")
+    all_algorithms, data = read_results.read_for_plot(results / "sorted.csv")
+    plot_anim.plot(all_algorithms, data, "Sorted order", results / "sorted.webp")
 
 if __name__ == '__main__':
     main()

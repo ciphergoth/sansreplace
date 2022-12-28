@@ -13,9 +13,9 @@
 # limitations under the License.
 
 import csv
-import attr
+import dataclasses
 
-@attr.s(auto_attribs=True)
+@dataclasses.dataclass
 class Test:
     alg: str
     n: int
@@ -27,3 +27,17 @@ def read(fname):
         for row in csv.reader(f):
             if row[0] == 'result':
                 yield Test(row[1], int(row[2]), int(row[3]), float(row[4]))
+
+def read_for_plot(fname):
+    data = {}
+    for item in read(fname):
+        if item.k != 0:
+            data.setdefault(item.n, {}).setdefault(item.alg, []).append((item.k, 1E9 * item.time/item.k))
+    all_algorithms = set()
+    for nv in data.values():
+        for alg, d in nv.items():
+            d.sort()
+            all_algorithms.add(alg)
+    data = list(data.items())
+    data.sort()
+    return list(sorted(all_algorithms)), data
