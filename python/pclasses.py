@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 def num2tex(f):
-    mant, exp = f"{f:.3E}".split("E")
+    mant, exp = f"{f:.2E}".split("E")
     exp = int(exp)
     if exp == 0:
         return mant
