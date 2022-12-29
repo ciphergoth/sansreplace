@@ -20,6 +20,7 @@ import pathlib
 
 import numpy as np
 
+import lstsq
 import pclasses
 import plot_anim
 import read_results
@@ -42,47 +43,15 @@ def read_data(csv, algorithm):
             items.append(item)
     return items
 
-def gen_fit(items, models):
-    gooditems = [item for item in items if item.k >= 10 and item.k != item.n]
-    t = np.fromiter((item.time for item in gooditems), dtype=np.float64)
-    n = np.fromiter((item.n for item in gooditems), dtype=np.float64)
-    k = np.fromiter((item.k for item in gooditems), dtype=np.float64)
-    ones = np.ones(len(gooditems))
-    vstack = []
-    for m in models:
-        vstack.append(m.vector(n, k))
-    a = np.vstack(vstack)
-    trecip = np.reciprocal(t)
-    a = np.multiply(a, np.tile(trecip, (len(vstack), 1)))
-    #print(a.T)
-    #print(t)
-    fit, residuals, rank, singvals = np.linalg.lstsq(a.T, ones, rcond=-1)
-    print(fit)
-    print(math.sqrt(residuals[0]/len(gooditems)))
-    return fit
-
-def gen_plotdata(items, models, fit):
-    plotdata = {}
-    for item in items:
-        if item.k == 0:
-            continue
-        nrow = plotdata.setdefault(item.n, {'predicted': [], 'actual': []})
-        prediction = sum(c * m.val(item) for (c, m) in zip(fit, models))
-        nrow['actual'].append((item.k, 1E9 * item.time/item.k))
-        nrow['predicted'].append((item.k, 1E9 * prediction/item.k))
-    for nv in plotdata.values():
-        for v in nv.values():
-            v.sort()
-    plotdata = list(plotdata.items())
-    plotdata.sort()
-    return plotdata
-
 def main():
     args = parse_args()
     models = list(pclasses.lookup_models(args.model))
     items = read_data(args.csv, args.algorithm)
-    fit = gen_fit(items, models)
-    plotdata = gen_plotdata(items, models, fit)
+    fit = lstsq.gen_fit(items, models)
+    z = " + ".join(m.tex(c) for m, c in zip(models, fit))
+    z = z.replace("+ -", "- ")
+    print(z)
+    plotdata = lstsq.gen_plotdata(items, models, fit)
     plot_anim.plot(["predicted", "actual"], plotdata, args.algorithm, args.output)
 
 if __name__ == '__main__':
