@@ -4,4 +4,4 @@ This site exists only to share this:
 
 - [draft explanation why it works](cardchoose.pdf)
 
-taken from revision 8384398867afff4de2ec43410c5ba7980587be6a
+taken from revision cecc9a3cb53e480124d19a3fd1978710c6c3ad96
