@@ -154,7 +154,7 @@ append it to the array. Repeat this process until the array is of the desired le
 As above, but use a data structure representing sets with an efficient membership test.
 \cite{goodman}
 
-\subsection{Algorithm S}
+\subsection{Iterative choosing (``Algorithm S'')}
 \inputminted{Python}{code/iterativechoose.py}
 Iterate in order through each candidate to add to the list,
 calculate for each the probability it should be part of the list given
@@ -163,7 +163,7 @@ it with that probability.
 \cite{taocp2}
 \cite[Method 1, p.391]{fanetal}
 
-\subsection{Algorithm R}
+\subsection{Reservoir sampling (``Algorithm R'')}
 \inputminted{Python}{code/reservoirsample.py}
 Initialize a \(k\)-element array with the elements of \(\NN_{<k}\)
 in random order. Iterate over the elements of \(\NN_{<n} \setminus \NN_{<k}\),
@@ -182,7 +182,7 @@ As above, except that instead of allocating and initializing an \(n\)-element ar
 we use a ``virtual'' array, with a hash table storing only the modified elements.
 \cite{hsel}
 
-\subsection{F2}
+\subsection{Floyd's F2}
 \inputminted{Python}{code/floydf2.py}
 A twist on set-based rejection that uses compensatingly biased
 samples to avoid multiple tests.
@@ -392,27 +392,86 @@ of doing so.
 
 \section{Benchmarks}
 
-C++ implementations of all of these algorithms can be found at 
-\url{https://github.com/ciphergoth/sansreplace/cpp}. I benchmarked
-all of these for a variety of values of values of \(n\) and \(k\),
-for both sorted output and random output. Below we graph time/\(k\)
-in ns against \(k\) for two different values of \(n\).
+(\url{https://github.com/ciphergoth/sansreplace/cpp})
+includes C++ implementations of these algorithms, which 
+were benchmarked for a variety of values of \(n\) and \(k\),
+for both sorted output and random output, on a Hewlett-Packard Z840 workstation:
+
+\begin{itemize}
+    \item CPU: Intel Xeon E5-2690 v3
+    \item Frequency: 3.5GHz
+    \item Cache: 768kiB L1, 3 MiB L2, 30MiB L3
+    \item Compiler: gcc 12.2, \verb|-Ofast|
+\end{itemize}
+
+In \autoref{randomsmalln} and \autoref{randomlargen} we graph time/\(k\)
+in ns against \(k\) for two different values of \(n\)
+for random order output, and in \autoref{sortedlargen} a single value of \(n\) for sorted output.
 Animated graphs showing many values of \(n\) up to 701,408,733
 (the 44th Fibonacci number) can be seen at
-\url{https://github.com/ciphergoth/sansreplace/results.md}.
-The broad pattern is that for random output, quadraticf2
-is the best algorithm where \(k \leq 100\) and \(k \leq n/k\), select
-is the best where \(n/k \leq 100\) and \(n/k \leq k\), and cardchoose
-is best otherwise. For sorted output, cardchoose is always the
-best algorithm unless \(n/k \leq 10\), in which case iterativechoose
-is best.
+\url{https://github.com/ciphergoth/sansreplace/blob/master/results.md},
+and complete benchmark data at \url{https://github.com/ciphergoth/sansreplace/blob/master/results/latest}
 
-%\input{random_10946.pgf}
+\begin{figure}
+    \input{random_1346269.pgf}
+    \caption{Random order, \(n=1.3 \times 10^{6}\)}
+    \label{randomsmalln}
+\end{figure}
 
-\input{random_1346269.pgf}
+\begin{figure}
+    \input{random_701408733.pgf}
+    \caption{Random order, \(n=7.0 \times 10^{9}\)}
+    \label{randomlargen}
+\end{figure}
 
-%\input{random_102334155.pgf}
-\input{random_701408733.pgf}
+\begin{figure}
+    \input{sorted_701408733.pgf}
+    \caption{Sorted order, \(n=7.0 \times 10^{9}\)}
+    \label{sortedlargen}
+\end{figure}
+
+Our algorithm outperforms all hash- and set-based algorithms for all
+values of \(n\) and \(k\) tested.
+In theory, the \(\bigO{k}\) performance of these algorithms compared to the
+\(\bigO{k \log k}\) performance of our algorithm should mean that
+there is a value of \(k\) at which these algorithms perform better.
+However, the poor cache coherence of these algorithms means that their
+performance more closely resembles \(\bigO{k \log k}\) in practice.
+For very large \(k\), a parallel algorithm such as
+\cite{sandersetal} should generally be used; this algorithm calls
+a sequential algorithm at the leaves of the parallel tree it builds.
+
+Quadratic rejection and quadratic F2, both outperform our algorithm
+for small \(k\), while SELECT, reservoir sampling, and iterative choosing
+all outperform our algorithm for small \(n/k\). However all of these
+behave pathologically for other values of \(n, k\); ours is the fastest
+of all of the algorithms that perform reasonably for all values of
+\(n, k\).
+
+A good implementation will implement multiple algorithms, and choose which
+one to use based on the values of \(n\) and \(k\). For random
+order output, a combination of quadratic F2, our algorithm, and SELECT
+is likely to be near-optimal for all values, or if allocating extra
+memory on demand is not an option then reservoir sampling can be
+substituted for SELECT. For sorted order output, a combination of 
+our algorithm and iterative choosing should suffice. 
+Based on a least-squares curve fitting, 
+the runtime estimates from \autoref{randomtable} and \autoref{sortedtable}
+can be used to select which algorithm to use.
+
+\begin{table}
+    \begin{tabular}{ lr }
+        \input{random_table.tex}
+    \end{tabular}
+    \caption{Time estimates for random order algorithms}\label{randomtable}
+\end{table}
+
+\begin{table}
+    \begin{tabular}{ lr } 
+        \input{sorted_table.tex}
+    \end{tabular}
+    \caption{Time estimates for sorted order algorithms}\label{sortedtable}
+\end{table}
 
 \printbibliography
 
