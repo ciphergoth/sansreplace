@@ -72,59 +72,64 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    The literature contains several algorithms for fairly choosing $k$ distinct natural numbers below \(n\).
-    However, they either require a hash-based data structure such as a set or dictionary, or
-    show asymptotically poor performance for some values of $k, n$. We present here an algorithm
-    that requires no such data structure or auxiliary storage, only an integer sort taking
-    $\bigO{k \log k}$ time; the algorithm is based on a method of fair multiset choosing.
-    In our benchmarks the algorithm outperforms all we compare it to wherever
-    \(k > 100\) and \(n > 100k\), and has acceptable performance for all values of \(k, n\).
+    A variety of algorithms exist for fairly choosing $k$ distinct
+    natural numbers below \(n\). However, they either require a
+    hash-based data structure such as a set or dictionary, or show
+    asymptotically poor performance for some values of $k, n$. We
+    present here an algorithm that requires no such data structure or
+    auxiliary storage, only an integer sort taking $\bigO{k \log k}$
+    time; the algorithm is based on a method of fair multiset
+    choosing. In our benchmarks the algorithm outperforms all we
+    compare it to wherever \(k > 100\) and \(n > 100k\), and has
+    acceptable performance for all values of \(k, n\).
 \end{abstract}
 
 \section{Introduction}
 
-The problem of choosing a subset of $\{0, 1, \ldots, n-1\}$ such that every \(k\)-element subset is
-equally likely arises in several contexts.
-Several programming languages include facilities for this in their standard libraries,
-for example Python's \mintinline{python}{random.sample()}
-or Rust's \mintinline{rust}{rand::seq::index::sample}.
-In \autoref{priorwork} we discuss several known algorithms to this end; these all have
-their strengths, but all suffer from one of two disadvantages:
+We consider the problem of choosing a subset of $\{0, 1, \ldots,
+n-1\}$ such that every \(k\)-element subset is equally likely to be
+returned. Many programming languages include facilities for this in
+their standard libraries, for example Python's
+\mintinline{python}{random.sample()} or Rust's
+\mintinline{rust}{rand::seq::index::sample}. In \autoref{otheralgs} we
+discuss several known algorithms to this end; these all have their
+strengths, but all suffer from one of two disadvantages:
 \begin{itemize}
-    \item Some are fast for certain
-    values of \(k, n\), e.g. where \(k\) is small or where \(\frac{n}{k}\) is small, but very slow
+    \item Some are fast for certain values of \(k, n\), e.g. where
+    \(k\) is small or where \(\frac{n}{k}\) is small, but very slow
     for other values.
-    \item Others achieve much better asymptotic performance, but at the cost of
-    updating a hash-based data structure such as a set or dictionary for each of the \(k\) values
-    generated, adding a significant constant multiplier to the overall runtime as well as memory cost.
+    \item Others achieve much better asymptotic performance, but at
+    the cost of updating a hash-based data structure such as a set or
+    dictionary for each of the \(k\) values generated, adding a
+    significant constant multiplier to the overall runtime as well as
+    memory cost.
 \end{itemize}
 
-We here present an algorithm which requires no storage beyond the array in which the result
-is written but achieves a \(\bigO{k \log k}\) runtime; the extra \(\log k\) term is due to
-an integer sort over the results array.
+We here present an algorithm which requires no storage beyond the array in which
+the result is written but achieves a \(\bigO{k \log k}\) runtime.
 
 In Python the algorithm works as follows:
 
 \inputminted{Python}{code/cardchoose.py}
 
-\section{Comparison algorithms}\label{priorwork}
-Let \(\NN_{<n}\) denote the \(n\)-element set \(\{0, 1, \ldots, n-1\}\). Someone who calls a routine that promises a fairly drawn \(k\)-element subset of
-\(\NN_{<n}\) might be expecting it to return one of three different things:
+\section{Comparison algorithms}\label{otheralgs}
+Let \(\NN_{<n}\) denote the \(n\)-element set \(\{0, 1, \ldots,
+n-1\}\). Though the literature includes algorithms that return an
+iterator, we here focus on algorithms that return an array of \(k\)
+elements. Some applications require that the returned elements be in
+sorted order, while others need the order of the elements to be a fair
+random draw. Both Python's \mintinline{python}{random.sample()} and
+Rust's \mintinline{rust}{rand::seq::index::sample} return in a fair
+random order.
 
-\begin{itemize}
-    \item an array of integers in sorted order;
-    \item an array of integers in fair random order;
-    \item a set of integers in some kind of efficient set structure (e.g. a hash table).
-\end{itemize}
-
-Both Python's \mintinline{python}{random.sample()} and 
-Rust's \mintinline{rust}{rand::seq::index::sample} return in a fair random order.
-
-A routine which returns one of these can straightforwardly be converted into 
-a routine that returns another, using e.g. a sort or a Fisher-Yates shuffle as appropriate.
-However each of these algorithms returns one of the above types ``naturally'', and
-so returning a different one will take an extra step, which means that which algorithm
-is most efficient can depend on which of the above three the caller wants to receive.
+A routine which returns one of these can straightforwardly be
+converted into a routine that returns another, using a sort or a
+Fisher-Yates shuffle as appropriate. However each of these algorithms
+returns one of the above types ``naturally'', and so returning a
+different one will take an extra step, which means that which
+algorithm is most efficient can depend on which of the above three the
+caller wants to receive. In our benchmarks, we time both a ``random''
+and a ``sorted'' variant of each algorithm.
 
 \begin{center}
     \begin{tabular}{l|l|l|l}
@@ -137,17 +142,18 @@ is most efficient can depend on which of the above three the caller wants to rec
     SELECT & Random & \(n\)-element array & \(n\) \\
     HSEL & Random & Dictionary & \(k\) \\
     Floyd's F2 &  & Set & \(k\) \\
-    Quadratic F2 &  & & \(k^2\) \\
+    Quadratic F2 & Random & & \(k^2\) \\
     Our work & Sorted &  & \(k \log k\)
     \end{tabular}
 \end{center}
 
 \subsection{Quadratic rejection sampling}
 \inputminted{Python}{code/quadraticreject.py}
-Start with an empty array of integers. Generate an integer
-\(0 \leq x < n\), and check if \(x\) is already present in the array
-by iterating through the array checking every element. If it is not present,
-append it to the array. Repeat this process until the array is of the desired length.
+Start with an empty array of integers. Generate an integer \(0 \leq x
+< n\), and check if \(x\) is already present in the array by iterating
+through the array checking every element. If it is not present, append
+it to the array. Repeat this process until the array is of the desired
+length.
 
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
@@ -173,45 +179,50 @@ appropriate probability.
 
 \subsection{SELECT}
 \inputminted{Python}{code/select.py}
-Use a Fisher-Yates shuffle to randomize only the first \(k\) items
-of an array of the elements of \(\NN_{<n}\). \cite{goodman}
+Use a Fisher-Yates shuffle to randomize only the first \(k\) items of
+an array of the elements of \(\NN_{<n}\). \cite{goodman}
 
 \subsection{HSEL}
 \inputminted{Python}{code/hsel.py}
-As above, except that instead of allocating and initializing an \(n\)-element array,
-we use a ``virtual'' array, with a hash table storing only the modified elements.
+As above, except that instead of allocating and initializing an
+\(n\)-element array, we use a ``virtual'' array, with a hash table
+storing only the modified elements.
 \cite{hsel}
 
 \subsection{Floyd's F2}
 \inputminted{Python}{code/floydf2.py}
-A twist on set-based rejection that uses compensatingly biased
-samples to avoid multiple tests.
+A twist on set-based rejection that uses compensatingly biased samples
+to avoid multiple tests.
 \cite{floydf2}
 
 \subsection{Quadratic F2}
 \inputminted{Python}{code/quadraticf2.py}
-Quadratic variant on Floyd's F2 which needs no external data structure.
-Inspired by the implementation in \cite{rust-random} but with some optimizations.
+Quadratic variant on Floyd's F2 which needs no external data
+structure. Inspired by the implementation in \cite{rust-random} but
+with some optimizations.
 
 \section{Notation}
 
-Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural numbers less than \(n\)
-where \(\NN = \{0, 1, 2, \ldots\}\). 
-Let \(\binom{S}{k} \defeq \{s \subseteq S: |s| = k\}\), the set of all \(k\)-element subsets
-of \(S\); note that \(\left|\binom{S}{k}\right| = \binom{|S|}{k}\).
+Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural
+numbers less than \(n\) where \(\NN = \{0, 1, 2, \ldots\}\). Let
+\(\binom{S}{k} \defeq \{s \subseteq S: |s| = k\}\), the set of all
+\(k\)-element subsets of \(S\); note that \(\left|\binom{S}{k}\right|
+= \binom{|S|}{k}\).
 
-A \emph{multiset} is an extension of a set in which elements can appear more than once;
-we use brackets to delimit the elements of a multiset, so
-$[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but distinct from $[0, 0, 1]$.
-We represent multisets as functions $m: U \rightarrow \NN$; the set $U$ is the \emph{universe},
-and in what follows we consider only finite universes. For any $y \in U$ we call
-$m(y)$ the \emph{multiplicity} of $y$ in $m$.
-A multiset has a \emph{cardinality} $|m| \defeq \sum_{x \in U} m(x)$
-and a \emph{support} set $\Supp(m) \defeq \{x \in U: m(x) > 0\}$.
+A \emph{multiset} is an extension of a set in which elements can
+appear more than once; we use brackets to delimit the elements of a
+multiset, so $[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but
+distinct from $[0, 0, 1]$. We represent multisets as functions $m: U
+\rightarrow \NN$; the set $U$ is the \emph{universe}, and in what
+follows we consider only finite universes. For any $y \in U$ we call
+$m(y)$ the \emph{multiplicity} of $y$ in $m$. A multiset has a
+\emph{cardinality} $|m| \defeq \sum_{x \in U} m(x)$ and a
+\emph{support} set $\Supp(m) \defeq \{x \in U: m(x) > 0\}$.
 
-Where $U$ is clear from context, for any set $S \subseteq U$ we consider
-$\overline{S}$ to be $S$ viewed as a multiset, i.e. the multiset
-such that $\Supp(\overline{S}) = S$ and $|\overline{S}| = |S|$:
+Where $U$ is clear from context, for any set $S \subseteq U$ we
+consider $\overline{S}$ to be $S$ viewed as a multiset, i.e. the
+multiset such that $\Supp(\overline{S}) = S$ and $|\overline{S}| =
+|S|$:
 \begin{displaymath}
     \overline{S}(x) =
     \begin{cases}
@@ -220,23 +231,27 @@ such that $\Supp(\overline{S}) = S$ and $|\overline{S}| = |S|$:
     \end{cases}
 \end{displaymath}
 
-The sum of multisets $m_1 \uplus m_2$ is the multiset such that
-$(m_1 \uplus m_2)(x) = m_1(x) + m_2(x)$ for all $x \in U$.
-$m = m_1 \ominus m_2$ is the unique multiset such that $m_1 = m \uplus m_2$,
-and is defined only if this exists.
+The sum of multisets $m_1 \uplus m_2$ is the multiset such that $(m_1
+\uplus m_2)(x) = m_1(x) + m_2(x)$ for all $x \in U$. $m = m_1 \ominus
+m_2$ is the unique multiset such that $m_1 = m \uplus m_2$, and is
+defined only if this exists.
 
-We define random sampling from a multiset to be analogous to drawing from a set,
-where each element's probability of being drawn is proportional to its multiplicity:
-$\prob{x = y |x \sample m} = \frac{m(y)}{|m|}$.
+We define random sampling from a multiset to be analogous to drawing
+from a set, where each element's probability of being drawn is
+proportional to its multiplicity: $\prob{x = y |x \sample m} =
+\frac{m(y)}{|m|}$.
 
-Define $\multichoose{U}{k} \defeq \{m \in U \rightarrow \NN: |m| = k\}$ the set of multisets over
-universe \(U\) of cardinality \(k\), and \(\multichoose{n}{k} \defeq \left|\multichoose{\NN_{<n}}{k}\right|\)
-the number of distinct \(k\)-cardinality multisets over an \(n\)-element universe.
+Define $\multichoose{U}{k} \defeq \{m \in U \rightarrow \NN: |m| =
+k\}$ the set of multisets over universe \(U\) of cardinality \(k\),
+and \(\multichoose{n}{k} \defeq
+\left|\multichoose{\NN_{<n}}{k}\right|\) the number of distinct
+\(k\)-cardinality multisets over an \(n\)-element universe.
 
 \section{Intuition behind the algorithm}
 
-Following \cite{feller}, we can represent an element of \(\multichoose{\NN_{<7}}{8}\)
-such as \([0,0,0,1,5,5,5,5]\) using six bars and eight stars:
+Following \cite{feller}, we can represent an element of
+\(\multichoose{\NN_{<7}}{8}\) such as \([0,0,0,1,5,5,5,5]\) using six
+bars and eight stars:
 
 \begin{displaymath}
     \begin{array}{ c c c c c c c c c c c c c c c }
@@ -244,38 +259,45 @@ such as \([0,0,0,1,5,5,5,5]\) using six bars and eight stars:
     \end{array}
 \end{displaymath}
 
-The six bars divide the line into seven ``bins'', one for each element of \(\NN_{<7}\); the
-number of stars in each bin indicates the multiplicity of that element in our multiset.
-With this technique, we define a bijection between \(\multichoose{\NN_{<n}}{k}\) and
-\(\binom{\NN_{<n + k - 1}}{k}\) wherever \(n > 0\), from which we infer that
-\(\multichoose{n}{k} = \binom{n + k - 1}{k}\) where \(n > 0\).
+The six bars divide the line into seven ``bins'', one for each element
+of \(\NN_{<7}\); the number of stars in each bin indicates the
+multiplicity of that element in our multiset. With this technique, we
+define a bijection between \(\multichoose{\NN_{<n}}{k}\) and
+\(\binom{\NN_{<n + k - 1}}{k}\) wherever \(n > 0\), from which we
+infer that \(\multichoose{n}{k} = \binom{n + k - 1}{k}\) where \(n >
+0\).
 
-Suppose now that we want to choose 6 integers from the range $\NN_{<11}$ 
-at random. As per the above we see that this 
-is equivalent to choosing a multiset from \(\multichoose{\NN_{<6}}{6}\)
-or a way of arranging 6 stars and 5 bars into a sequence.
-To choose fairly, we start with a sequence of five bars \(|||||\) and insert six stars,
-one after another, in randomly chosen positions.
+Suppose now that we want to choose 6 integers from the range
+$\NN_{<11}$ at random. As per the above we see that this is equivalent
+to choosing a multiset from \(\multichoose{\NN_{<6}}{6}\) or a way of
+arranging 6 stars and 5 bars into a sequence. To choose fairly, we
+start with a sequence of five bars \(|||||\) and insert six stars, one
+after another, in randomly chosen positions.
 
-For the first star, there are six possible places it can go, and we choose one at random:
-\(|||\star||\). We record that it has three bars to its left \([3]\).
+For the first star, there are six possible places it can go, and we
+choose one at random: \(|||\star||\). We record that it has three bars
+to its left \([3]\).
 
-There are now six items in the sequence, and thus seven possible places to place the second star.
-In two of those seven cases---before the existing star, and after it---it will have three bars
-to its left. Let's suppose we choose the first position: \(\star|||\star||\). We append
-the number of bars to the left of the new star to our record, which becomes \([3, 0]\).
-The positions have changed from \(\{3\}\)
-to \(\{4, 0\}\) but because we're not recording positions, only bars to the left, we don't need to
-update the first entry.
+There are now six items in the sequence, and thus seven possible
+places to place the second star. In two of those seven cases---before
+the existing star, and after it---it will have three bars to its left.
+Let's suppose we choose the first position: \(\star|||\star||\). We
+append the number of bars to the left of the new star to our record,
+which becomes \([3, 0]\). The positions have changed from \(\{3\}\) to
+\(\{4, 0\}\) but because we're not recording positions, only bars to
+the left, we don't need to update the first entry.
 
-We place three more stars in random positions, ending up with \(\star\star\star|\star||\star||\)
-and a record of \([3, 0, 0, 1, 0]\). Now there's one star left to place; there is one
-position it can be placed after the last bar, but four before the first bar, so it is four times
-more likely to be placed before the first bar than after the last. Let's suppose it's placed
-at the fifth position: \(\star\star\star|\star\star||\star||\), \([3, 0, 0, 1, 0, 1]\) We now
-want to know the position of each star; we find this by sorting the list \([0, 0, 0, 1, 1, 3]\)
-and adding to each entry its index so that the value reflects the stars as well as the bars to its
-left, returning the answer $\{0, 1, 2, 4, 5, 8\}$
+We place three more stars in random positions, ending up with
+\(\star\star\star|\star||\star||\) and a record of \([3, 0, 0, 1,
+0]\). Now there's one star left to place; there is one position it can
+be placed after the last bar, but four before the first bar, so it is
+four times more likely to be placed before the first bar than after
+the last. Let's suppose it's placed at the fifth position:
+\(\star\star\star|\star\star||\star||\), \([3, 0, 0, 1, 0, 1]\) We now
+want to know the position of each star; we find this by sorting the
+list \([0, 0, 0, 1, 1, 3]\) and adding to each entry its index so that
+the value reflects the stars as well as the bars to its left,
+returning the answer $\{0, 1, 2, 4, 5, 8\}$
 
 \begin{displaymath}
 \begin{array}{ c c c c c c c c c c c }
@@ -285,21 +307,23 @@ left, returning the answer $\{0, 1, 2, 4, 5, 8\}$
 \end{array}
 \end{displaymath}
 
-Thus to get a sequence without duplicates, we start with a procedure that deliberately
-biases towards duplicates.
+Thus to get a sequence without duplicates, we start with a procedure
+that deliberately biases towards duplicates.
 
 \section{Proof}
 
 \subsection{Multiset choosing}
 
-We consider the problem of choosing an element from $\multichoose{U}{k}$ fairly.
-For example, $\multichoose{\NN_{<2}}{3} = \{[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]\}$; 
-for each of these four, our algorithm should output it with probability $\frac{1}{4}$.
-If we choose three independent elements from $U$ and add them together to make a multiset,
-our answer will favour multisets with lower multiplicities; in accordance
-with the binomial theorem, $[0, 0, 0]$ will be drawn with probability $\frac{1}{8}$, while
-$[0, 0, 1]$ will be drawn with probability $\frac{3}{8}$, reflecting the three ways this multiset
-can be written as a sequence.
+We consider the problem of choosing an element from
+$\multichoose{U}{k}$ fairly. For example, $\multichoose{\NN_{<2}}{3} =
+\{[0, 0, 0], [0, 0, 1], [0, 1, 1], [1, 1, 1]\}$; for each of these
+four, our algorithm should output it with probability $\frac{1}{4}$.
+If we choose three independent elements from $U$ and add them together
+to make a multiset, our answer will favour multisets with lower
+multiplicities; in accordance with the binomial theorem, $[0, 0, 0]$
+will be drawn with probability $\frac{1}{8}$, while $[0, 0, 1]$ will
+be drawn with probability $\frac{3}{8}$, reflecting the three ways
+this multiset can be written as a sequence.
 
 %It is straightforward to show by
 %induction that in general, this naive method chooses $m \in \multichoose{U}{k}$
@@ -324,11 +348,11 @@ can be written as a sequence.
 \end{algorithmic}
 \end{algorithm}
 
-To address this, in \textproc{ChooseMultiset}
-we introduce a counter-bias in the selection of $x$, which favours duplicates.
-\textproc{ChooseMultiset} is trivially fair for $k = 0$, so
-we assume it is fair for $k - 1$ and proceed by induction.
-For a multiset $m \in \multichoose{U}{k}$:
+To address this, in \textproc{ChooseMultiset} we introduce a
+counter-bias in the selection of $x$, which favours duplicates.
+\textproc{ChooseMultiset} is trivially fair for $k = 0$, so we assume
+it is fair for $k - 1$ and proceed by induction. For a multiset $m \in
+\multichoose{U}{k}$:
 
 \begin{align*}
     &\prob{m' = m | m' \leftarrow \textproc{ChooseMultiset}(U, k)}
@@ -368,34 +392,37 @@ For a multiset $m \in \multichoose{U}{k}$:
     =& \frac{1}{\multichoose{|U|}{k}}
 \end{align*}
 
-This algorithm is straightforward to implement. This Python implementation takes integers
-$n, k$ and returns a sorted list of integers in \(\NN_{<n}\).
+This algorithm is straightforward to implement. This Python
+implementation takes integers $n, k$ and returns a sorted list of
+integers in \(\NN_{<n}\).
 
 \inputminted{Python}{code/choose_multiset.py}
 
 \subsection{Multisets and choices}
 
-To generate a random \(k\)-element subset of \(\NN_{<n}\),
-we can apply this method to generate a random multiset from the universe \(\NN_{<n-k + 1}\)
-and use the ``stars and bars'' bijection to convert to the desired subset.
+To generate a random \(k\)-element subset of \(\NN_{<n}\), we can
+apply this method to generate a random multiset from the universe
+\(\NN_{<n-k + 1}\) and use the ``stars and bars'' bijection to convert
+to the desired subset.
 
-Our implementation of \textproc{ChooseMultiset}
-represents its result in \(\multichoose{\NN_{<n-k + 1}}{k}\) as a sorted list of integers.
-In ``stars and bars'' representation,
-each entry in the list represents a star, and the integer is the number of bars to its left.
-Converting this to a sorted \(k\)-element subset of \(\NN_{<n}\) simply means adding to each
-the number of stars to its left, which is equal to its position in the sequence; the Python code
-below returns a sorted list of $k$ distinct integers in \(\NN_{<n}\) fairly among all ways
-of doing so.
+Our implementation of \textproc{ChooseMultiset} represents its result
+in \(\multichoose{\NN_{<n-k + 1}}{k}\) as a sorted list of integers.
+In ``stars and bars'' representation, each entry in the list
+represents a star, and the integer is the number of bars to its left.
+Converting this to a sorted \(k\)-element subset of \(\NN_{<n}\)
+simply means adding to each the number of stars to its left, which is
+equal to its position in the sequence; the Python code below returns a
+sorted list of $k$ distinct integers in \(\NN_{<n}\) fairly among all
+ways of doing so.
 
 \inputminted{Python}{code/choose_binom.py}
 
 \section{Benchmarks}
 
-(\url{https://github.com/ciphergoth/sansreplace/cpp})
-includes C++ implementations of these algorithms, which 
-were benchmarked for a variety of values of \(n\) and \(k\),
-for both sorted output and random output, on a Hewlett-Packard Z840 workstation:
+(\url{https://github.com/ciphergoth/sansreplace/cpp}) includes C++
+implementations of these algorithms, which were benchmarked for a
+variety of values of \(n\) and \(k\), for both sorted output and
+random output, on a Hewlett-Packard Z840 workstation:
 
 \begin{itemize}
     \item CPU: Intel Xeon E5-2690 v3
@@ -404,13 +431,14 @@ for both sorted output and random output, on a Hewlett-Packard Z840 workstation:
     \item Compiler: gcc 12.2, \verb|-Ofast|
 \end{itemize}
 
-In \autoref{randomsmalln} and \autoref{randomlargen} we graph time/\(k\)
-in ns against \(k\) for two different values of \(n\)
-for random order output, and in \autoref{sortedlargen} a single value of \(n\) for sorted output.
-Animated graphs showing many values of \(n\) up to 701,408,733
-(the 44th Fibonacci number) can be seen at
+In \autoref{randomsmalln} and \autoref{randomlargen} we graph
+time/\(k\) in ns against \(k\) for two different values of \(n\) for
+random order output, and in \autoref{sortedlargen} a single value of
+\(n\) for sorted output. Animated graphs showing many values of \(n\)
+up to 701,408,733 (the 44th Fibonacci number) can be seen at
 \url{https://github.com/ciphergoth/sansreplace/blob/master/results.md},
-and complete benchmark data at \url{https://github.com/ciphergoth/sansreplace/blob/master/results/latest}
+and complete benchmark data at
+\url{https://github.com/ciphergoth/sansreplace/blob/master/results/latest}
 
 \begin{figure}
     \input{random_1346269.pgf}
@@ -431,33 +459,33 @@ and complete benchmark data at \url{https://github.com/ciphergoth/sansreplace/bl
 \end{figure}
 
 Our algorithm outperforms all hash- and set-based algorithms for all
-values of \(n\) and \(k\) tested.
-In theory, the \(\bigO{k}\) performance of these algorithms compared to the
-\(\bigO{k \log k}\) performance of our algorithm should mean that
-there is a value of \(k\) at which these algorithms perform better.
-However, the poor cache coherence of these algorithms means that their
-performance more closely resembles \(\bigO{k \log k}\) in practice.
-For very large \(k\), a parallel algorithm such as
-\cite{sandersetal} should generally be used; this algorithm calls
-a sequential algorithm at the leaves of the parallel tree it builds.
+values of \(n\) and \(k\) tested. In theory, the \(\bigO{k}\)
+performance of these algorithms compared to the \(\bigO{k \log k}\)
+performance of our algorithm should mean that there is a value of
+\(k\) at which these algorithms perform better. However, the poor
+cache coherence of these algorithms means that their performance more
+closely resembles \(\bigO{k \log k}\) in practice. For very large
+\(k\), a parallel algorithm such as \cite{sandersetal} should
+generally be used; this algorithm calls a sequential algorithm at the
+leaves of the parallel tree it builds.
 
-Quadratic rejection and quadratic F2, both outperform our algorithm
-for small \(k\), while SELECT, reservoir sampling, and iterative choosing
+Quadratic rejection and quadratic F2 both outperform our algorithm for
+small \(k\), while SELECT, reservoir sampling, and iterative choosing
 all outperform our algorithm for small \(n/k\). However all of these
-behave pathologically for other values of \(n, k\); ours is the fastest
-of all of the algorithms that perform reasonably for all values of
-\(n, k\).
+behave pathologically for other values of \(n, k\); ours is the
+fastest of all of the algorithms that perform reasonably for all
+values of \(n, k\).
 
-A good implementation will implement multiple algorithms, and choose which
-one to use based on the values of \(n\) and \(k\). For random
+A good implementation will implement multiple algorithms, and choose
+which one to use based on the values of \(n\) and \(k\). For random
 order output, a combination of quadratic F2, our algorithm, and SELECT
 is likely to be near-optimal for all values, or if allocating extra
 memory on demand is not an option then reservoir sampling can be
-substituted for SELECT. For sorted order output, a combination of 
-our algorithm and iterative choosing should suffice. 
-Based on a least-squares curve fitting, 
-the runtime estimates from \autoref{randomtable} and \autoref{sortedtable}
-can be used to select which algorithm to use.
+substituted for SELECT. For sorted order output, a combination of our
+algorithm and iterative choosing should suffice. Based on a
+least-squares curve fitting, the runtime estimates from
+\autoref{randomtable} and \autoref{sortedtable} can be used to select
+which algorithm to use.
 
 \begin{table}
     \begin{tabular}{ lr }
