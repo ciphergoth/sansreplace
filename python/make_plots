@@ -22,12 +22,7 @@ import read_results
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
-def parse_args():
-    p = argparse.ArgumentParser(allow_abbrev=False)
-    return p.parse_args()
-
 def main():
-    args = parse_args()
     results = topdir / "results/latest"
     all_algorithms, data = read_results.read_for_plot(results / "random.csv")
     plot_anim.plot(all_algorithms, data, "Random order", results / "random.webp")
@@ -36,6 +31,9 @@ def main():
             "Random order", topdir / "latex" / f"random_{n}.pgf")
     all_algorithms, data = read_results.read_for_plot(results / "sorted.csv")
     plot_anim.plot(all_algorithms, data, "Sorted order", results / "sorted.webp")
+    for n in [701408733]:
+        plot_anim.plot(all_algorithms, [d for d in data if d[0] == n],
+            "Sorted order", topdir / "latex" / f"sorted_{n}.pgf")
 
 if __name__ == '__main__':
     main()
