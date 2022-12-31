@@ -37,6 +37,12 @@
 \usepackage[outputdir=build/latex.out,cachedir=build/_minted-cardchoose]{minted}
 \usepackage{pgf}
 
+\renewcommand{\supportname}{supp}
+% work around cryptocode bug
+\makeatletter 
+\renewcommand{\supp}[1]{\ensuremath{\operatorname{\supportname}\pc@olrk*{#1}}}
+\makeatother
+
 % https://tex.stackexchange.com/a/350287
 \newcommand{\multichoose}[2]{
 \left.\mathchoice
@@ -62,8 +68,6 @@
 
 \raggedright
 \raggedbottom
-
-\DeclareMathOperator{\Supp}{Supp}
 
 \title{A new algorithm for sampling without replacement}
 \author{Paul~Crowley}
@@ -217,11 +221,11 @@ distinct from $[0, 0, 1]$. We represent multisets as functions $m: U
 follows we consider only finite universes. For any $y \in U$ we call
 $m(y)$ the \emph{multiplicity} of $y$ in $m$. A multiset has a
 \emph{cardinality} $|m| \defeq \sum_{x \in U} m(x)$ and a
-\emph{support} set $\Supp(m) \defeq \{x \in U: m(x) > 0\}$.
+\emph{support} set $\supp{m} \defeq \{x \in U: m(x) > 0\}$.
 
 Where $U$ is clear from context, for any set $S \subseteq U$ we
 consider $\overline{S}$ to be $S$ viewed as a multiset, i.e. the
-multiset such that $\Supp(\overline{S}) = S$ and $|\overline{S}| =
+multiset such that $\supp{\overline{S}} = S$ and $|\overline{S}| =
 |S|$:
 \begin{displaymath}
     \overline{S}(x) =
@@ -366,23 +370,28 @@ it is fair for $k - 1$ and proceed by induction. For a multiset $m \in
         | m' \sample \multichoose{U}{k - 1}, x \sample \overline{U} \uplus m'}
     \\
     =&
-    \sum_{y \in \Supp(m)}
+    \sum_{y \in \supp{m}}
+    \prob{x = y, m' \uplus \overline{\{y\}} = m
+        | m' \sample \multichoose{U}{k - 1}, x \sample \overline{U} \uplus m'}
+    \\
+    =&
+    \sum_{y \in \supp{m}}
     \prob{m' = m \ominus \overline{\{y\}} | m' \sample \multichoose{U}{k - 1}}
     \prob{x = y | x \sample \overline{U} \uplus (m \ominus \overline{\{y\}})}
     \\
     =&
-    \sum_{y \in \Supp(m)}
+    \sum_{y \in \supp{m}}
     \frac{1}{\multichoose{|U|}{k - 1}}
     \frac{(U \uplus (m \ominus \overline{\{y\}}))(y)}{|U \uplus (m \ominus \overline{\{y\}})|}
     \\
     =&
     \frac{1}{\multichoose{|U|}{k - 1}}
-    \sum_{y \in \Supp(m)}
+    \sum_{y \in \supp{m}}
     \frac{1 + (m \ominus \overline{\{y\}})(y)}{|U| + |m \ominus \overline{\{y\}}|}
     \\
     =&
     \frac{1}{\binom{|U| + k - 2}{k-1}}
-    \sum_{y \in \Supp(m)}
+    \sum_{y \in \supp{m}}
     \frac{m(y)}{|U| + k -1}
     \\
     =& \frac{k}{(|U| + k -1)\binom{|U| + k - 2}{k-1}}
