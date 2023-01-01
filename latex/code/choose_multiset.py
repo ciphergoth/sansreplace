@@ -1,10 +1,9 @@
 def choose_multiset(n, k):
-    d = []
+    m = []
     for i in range(k):
         r = random.randrange(n + i)
         if r < n:
-            d.append(r)
+            m.append(r)
         else:
-            d.append(d[r - n])
-    d.sort()
-    return d
+            m.append(m[r - n])
+    return m

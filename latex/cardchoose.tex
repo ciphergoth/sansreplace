@@ -338,7 +338,7 @@ this multiset can be written as a sequence.
 %\end{displaymath}
 
 \begin{algorithm}
-\caption{Fair multiset choosing}
+\caption{Fair multiset choosing}\label{ChooseMultiset}
 \begin{algorithmic}[0]
 \Procedure{ChooseMultiset}{$U, k$}
     \If{k = 0}
@@ -401,9 +401,13 @@ it is fair for $k - 1$ and proceed by induction. For a multiset $m \in
     =& \frac{1}{\multichoose{|U|}{k}}
 \end{align*}
 
-This algorithm is straightforward to implement. This Python
-implementation takes integers $n, k$ and returns a sorted list of
-integers in \(\NN_{<n}\).
+A direct translation of \autoref{ChooseMultiset} into recursive 
+Python, taking integers $n, k$ and returning a list of
+integers in \(\NN_{<n}\), might be:
+
+\inputminted{Python}{code/choose_multiset_recursive.py}
+
+This is easily converted to an iterative form:
 
 \inputminted{Python}{code/choose_multiset.py}
 
@@ -415,14 +419,14 @@ apply this method to generate a random multiset from the universe
 to the desired subset.
 
 Our implementation of \textproc{ChooseMultiset} represents its result
-in \(\multichoose{\NN_{<n-k + 1}}{k}\) as a sorted list of integers.
-In ``stars and bars'' representation, each entry in the list
+in \(\multichoose{\NN_{<n-k + 1}}{k}\) as an unordered list of
+integers. In ``stars and bars'' representation, each entry in the list
 represents a star, and the integer is the number of bars to its left.
-Converting this to a sorted \(k\)-element subset of \(\NN_{<n}\)
-simply means adding to each the number of stars to its left, which is
-equal to its position in the sequence; the Python code below returns a
-sorted list of $k$ distinct integers in \(\NN_{<n}\) fairly among all
-ways of doing so.
+If we sort this list, then converting this to a sorted \(k\)-element
+subset of \(\NN_{<n}\) simply means adding to each the number of stars
+to its left, which is equal to its position in the sequence; the
+Python code below returns a sorted list of $k$ distinct integers in
+\(\NN_{<n}\) fairly among all ways of doing so.
 
 \inputminted{Python}{code/choose_binom.py}
 

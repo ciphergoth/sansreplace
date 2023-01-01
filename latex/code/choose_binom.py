@@ -1,5 +1,6 @@
 def choose_binom(n, k):
-    d = choose_multiset(n - k + 1, k)
+    m = choose_multiset(n - k + 1, k)
+    m.sort()
     for i in range(k):
-        d[i] += i
-    return d
+        m[i] += i
+    return m
