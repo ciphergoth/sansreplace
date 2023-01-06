@@ -66,6 +66,21 @@ where
 }
 
 fn main() {
-    dbg!(time_test(quadratic_f2, 10000, 320));
-    dbg!(time_test(quadratic_reject, 10000, 320));
+    let totest: &[(&str, Box<dyn Fn(&mut SmallRng, usize, &mut [usize])>)]
+     = &[
+        ("quadratic_f2", Box::new(quadratic_f2)), 
+        ("quadratic_reject", Box::new(quadratic_reject)),
+    ];
+    let mut nn = (1, 1);
+    while nn.1 < 1_000_000_000 {
+        let mut kk = (1, 1);
+        while kk.1 <= nn.1 {
+            for (name, f) in totest.iter() {
+                let t = time_test(f, nn.1, kk.1);
+                println!("{} {} {}: {:?}", name, nn.1, kk.1, t);
+            }
+            kk = (kk.1, kk.0 + kk.1);
+        } 
+        nn = (nn.1, nn.0 + nn.1);
+    }
 }
