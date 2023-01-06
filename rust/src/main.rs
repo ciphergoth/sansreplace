@@ -1,4 +1,7 @@
-use std::{hint::black_box, time::{Instant, Duration}};
+use std::{
+    hint::black_box,
+    time::{Duration, Instant},
+};
 
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
@@ -30,6 +33,24 @@ where
             res[pos] = j;
         }
         res[i] = t;
+    }
+}
+
+fn reject<R>(rng: &mut R, length: usize, res: &mut [usize])
+where
+    R: Rng + ?Sized,
+{
+    let amount = res.len();
+    let mut done = std::collections::HashSet::with_capacity(amount);
+    for i in 0..amount {
+        loop {
+            let t = rng.gen_range(0..length);
+            if !done.contains(&t) {
+                res[i] = t;
+                done.insert(t);
+                break;
+            }
+        }
     }
 }
 
@@ -67,6 +88,7 @@ where
 
 fn main() {
     let totest: &[(&str, Box<dyn Fn(&mut SmallRng, usize, &mut [usize])>)] = &[
+        ("reject", Box::new(reject)),
         ("quadratic_f2", Box::new(quadratic_f2)),
         ("quadratic_reject", Box::new(quadratic_reject)),
     ];
