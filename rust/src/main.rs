@@ -1,6 +1,22 @@
 use std::{hint::black_box, time::Instant};
 
-use rand::{Rng, SeedableRng};
+use rand::{rngs::SmallRng, Rng, SeedableRng};
+
+fn quadratic_reject<R>(rng: &mut R, length: usize, res: &mut [usize])
+where
+    R: Rng + ?Sized,
+{
+    let amount = res.len();
+    for i in 0..amount {
+        loop {
+            let t = rng.gen_range(0..length);
+            if !res[..i].contains(&t) {
+                res[i] = t;
+                break;
+            }
+        }
+    }
+}
 
 fn quadratic_f2<R>(rng: &mut R, length: usize, res: &mut [usize])
 where
@@ -17,16 +33,19 @@ where
     }
 }
 
-fn time_test(length: usize, amount: usize) -> std::time::Duration {
+fn time_test<F>(f: F, length: usize, amount: usize) -> std::time::Duration
+where
+    F: Fn(&mut SmallRng, usize, &mut [usize]),
+{
     assert!(amount <= length);
-    let mut rng = rand::rngs::SmallRng::from_entropy();
+    let mut rng = SmallRng::from_entropy();
     let mut v = vec![0; amount];
     let mut iters = 1;
-    let mut remaining = std::time::Duration::from_secs(5);
+    let mut remaining = std::time::Duration::from_secs(2);
     loop {
         let now = Instant::now();
         for _ in 0..iters {
-            quadratic_f2(&mut rng, length, &mut v);
+            f(&mut rng, length, &mut v);
             black_box(&v);
         }
         let t = now.elapsed();
@@ -47,5 +66,6 @@ fn time_test(length: usize, amount: usize) -> std::time::Duration {
 }
 
 fn main() {
-    dbg!(time_test(10000, 320));
+    dbg!(time_test(quadratic_f2, 10000, 320));
+    dbg!(time_test(quadratic_reject, 10000, 320));
 }
