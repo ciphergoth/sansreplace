@@ -1,4 +1,4 @@
-use std::{hint::black_box, time::Instant};
+use std::{hint::black_box, time::{Instant, Duration}};
 
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
@@ -41,7 +41,7 @@ where
     let mut rng = SmallRng::from_entropy();
     let mut v = vec![0; amount];
     let mut iters = 1;
-    let mut remaining = std::time::Duration::from_secs(2);
+    let mut remaining = std::time::Duration::from_millis(500);
     loop {
         let now = Instant::now();
         for _ in 0..iters {
@@ -66,21 +66,29 @@ where
 }
 
 fn main() {
-    let totest: &[(&str, Box<dyn Fn(&mut SmallRng, usize, &mut [usize])>)]
-     = &[
-        ("quadratic_f2", Box::new(quadratic_f2)), 
+    let totest: &[(&str, Box<dyn Fn(&mut SmallRng, usize, &mut [usize])>)] = &[
+        ("quadratic_f2", Box::new(quadratic_f2)),
         ("quadratic_reject", Box::new(quadratic_reject)),
     ];
-    let mut nn = (1, 1);
-    while nn.1 < 1_000_000_000 {
+    const MAX: usize = 1_000;
+    const MAXTIME: Duration = Duration::from_secs(1);
+    for (name, f) in totest.iter() {
         let mut kk = (1, 1);
-        while kk.1 <= nn.1 {
-            for (name, f) in totest.iter() {
+        'kk: while kk.1 < MAX {
+            let mut nn = kk;
+            while nn.1 < MAX {
                 let t = time_test(f, nn.1, kk.1);
                 println!("{} {} {}: {:?}", name, nn.1, kk.1, t);
+                if t > MAXTIME {
+                    if nn == kk {
+                        break 'kk;
+                    } else {
+                        break;
+                    }
+                }
+                nn = (nn.1, nn.0 + nn.1);
             }
             kk = (kk.1, kk.0 + kk.1);
-        } 
-        nn = (nn.1, nn.0 + nn.1);
+        }
     }
 }
