@@ -1,8 +1,12 @@
 use std::{
+    fs::OpenOptions,
     hint::black_box,
+    path::Path,
     time::{Duration, Instant},
 };
 
+use anyhow::{Context, Result};
+use csv::WriterBuilder;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
 
 fn quadratic_reject<R>(rng: &mut R, length: usize, res: &mut [usize])
@@ -86,7 +90,19 @@ where
     }
 }
 
-fn main() {
+fn write_row(name: &str, n: usize, k: usize, t: Duration) -> Result<()> {
+    let path = Path::new("/tmp/FIXME.csv");
+    let f = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .with_context(|| format!("Opening file {}", path.display()))?;
+    let mut wtr = WriterBuilder::new().from_writer(f);
+    wtr.serialize(("result", name, n, k, t.as_secs_f64()))?;
+    Ok(())
+}
+
+fn main() -> Result<()> {
     let totest: &[(&str, Box<dyn Fn(&mut SmallRng, usize, &mut [usize])>)] = &[
         ("reject", Box::new(reject)),
         ("quadratic_f2", Box::new(quadratic_f2)),
@@ -100,6 +116,7 @@ fn main() {
             let mut nn = kk;
             while nn.1 < MAX {
                 let t = time_test(f, nn.1, kk.1);
+                write_row(name, nn.1, kk.1, t)?;
                 println!("{} {} {}: {:?}", name, nn.1, kk.1, t);
                 if t > MAXTIME {
                     if nn == kk {
@@ -113,4 +130,5 @@ fn main() {
             kk = (kk.1, kk.0 + kk.1);
         }
     }
+    Ok(())
 }
