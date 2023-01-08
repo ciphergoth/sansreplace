@@ -49,12 +49,54 @@ where
     for i in 0..amount {
         loop {
             let t = rng.gen_range(0..length);
-            if !done.contains(&t) {
+            if done.insert(t) {
                 res[i] = t;
-                done.insert(t);
                 break;
             }
         }
+    }
+}
+
+fn floyd_f2<R>(rng: &mut R, length: usize, res: &mut [usize])
+where
+    R: Rng + ?Sized,
+{
+    let amount = res.len();
+    let mut done = std::collections::HashSet::with_capacity(amount);
+    for i in 0..amount {
+        let j = length - amount + i;
+        let t = rng.gen_range(0..=j);
+        if done.insert(t) {
+            res[i] = t;
+        } else {
+            let ix = rng.gen_range(0..i);
+            res[i] = res[ix];
+            res[ix] = j;
+            done.insert(j);
+        }
+    }
+}
+
+fn cardchoose<R>(rng: &mut R, length: usize, res: &mut [usize])
+where
+    R: Rng + ?Sized,
+{
+    let amount = res.len();
+    let t = length - amount + 1;
+    for i in 0..amount {
+        let r = rng.gen_range(0..t + i);
+        if r < t {
+            res[i] = r;
+        } else {
+            res[i] = res[r - t];
+        }
+    }
+    res.sort();
+    for i in 0..amount {
+        let r = rng.gen_range(0..=i);
+        let t = res[i] + i;
+        res[i] = res[r];
+        res[r] = t;
     }
 }
 
@@ -104,12 +146,14 @@ fn write_row(name: &str, n: usize, k: usize, t: Duration) -> Result<()> {
 
 fn main() -> Result<()> {
     let totest: &[(&str, Box<dyn Fn(&mut SmallRng, usize, &mut [usize])>)] = &[
+        ("cardchoose", Box::new(cardchoose)),
+        ("floyd_f2", Box::new(floyd_f2)),
         ("reject", Box::new(reject)),
         ("quadratic_f2", Box::new(quadratic_f2)),
         ("quadratic_reject", Box::new(quadratic_reject)),
     ];
-    const MAX: usize = 1_000;
-    const MAXTIME: Duration = Duration::from_secs(1);
+    const MAX: usize = 1_000_000_000;
+    const MAXTIME: Duration = Duration::from_secs(3);
     for (name, f) in totest.iter() {
         let mut kk = (1, 1);
         'kk: while kk.1 < MAX {
