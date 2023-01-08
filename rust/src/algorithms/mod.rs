@@ -4,10 +4,10 @@ mod quadratic_f2;
 mod quadratic_reject;
 mod reject;
 
-pub fn algorithms() -> Vec<(
-    &'static str,
-    Box<dyn Fn(&mut rand::rngs::SmallRng, usize, &mut [usize])>,
-)> {
+pub fn algorithms<R>() -> Vec<(&'static str, Box<dyn Fn(&mut R, usize, &mut [usize])>)>
+where
+    R: rand::Rng + ?Sized + 'static,
+{
     vec![
         ("cardchoose", Box::new(cardchoose::random_order)),
         ("floyd_f2", Box::new(floyd_f2::random_order)),
