@@ -1,15 +1,21 @@
 use std::{
     fs::OpenOptions,
     hint::black_box,
-    path::Path,
+    path::{Path, PathBuf},
     time::{Duration, Instant},
 };
 
 use anyhow::{Context, Result};
+use clap::Parser;
 use csv::WriterBuilder;
 use rand::{rngs::SmallRng, SeedableRng};
 
 mod algorithms;
+
+#[derive(clap::Parser, Debug)]
+struct Args {
+    csv: PathBuf,
+}
 
 fn time_test<F>(f: F, length: usize, amount: usize) -> std::time::Duration
 where
@@ -43,8 +49,7 @@ where
     }
 }
 
-fn write_row(name: &str, n: usize, k: usize, t: Duration) -> Result<()> {
-    let path = Path::new("/tmp/FIXME.csv");
+fn write_row(path: &Path, name: &str, n: usize, k: usize, t: Duration) -> Result<()> {
     let f = OpenOptions::new()
         .create(true)
         .append(true)
@@ -55,7 +60,7 @@ fn write_row(name: &str, n: usize, k: usize, t: Duration) -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
+fn time_all(csv: &Path) -> Result<()> {
     const MAX: usize = 1_000_000_000;
     const MAXTIME: Duration = Duration::from_secs(3);
     for (name, f) in algorithms::algorithms().iter() {
@@ -64,7 +69,7 @@ fn main() -> Result<()> {
             let mut nn = kk;
             while nn.1 < MAX {
                 let t = time_test(f, nn.1, kk.1);
-                write_row(name, nn.1, kk.1, t)?;
+                write_row(csv, name, nn.1, kk.1, t)?;
                 println!("{} {} {}: {:?}", name, nn.1, kk.1, t);
                 if t > MAXTIME {
                     if nn == kk {
@@ -78,5 +83,14 @@ fn main() -> Result<()> {
             kk = (kk.1, kk.0 + kk.1);
         }
     }
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    let args = Args::parse();
+    if args.csv.is_file() {
+        std::fs::remove_file(&args.csv)?;
+    }
+    time_all(&args.csv)?;
     Ok(())
 }

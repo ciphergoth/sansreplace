@@ -9,6 +9,10 @@ edition = "2021"
 csv = "1.1"
 anyhow = "1.0.68"
 
+[dependencies.clap]
+version = "4.0.32"
+features = ["derive"]
+
 [dependencies.serde]
 version = "1"
 features = ["derive"]
