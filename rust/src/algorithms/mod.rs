@@ -1,5 +1,3 @@
-use rand::rngs::SmallRng;
-
 mod cardchoose;
 mod floyd_f2;
 mod quadratic_f2;
@@ -8,7 +6,7 @@ mod reject;
 
 pub fn algorithms() -> Vec<(
     &'static str,
-    Box<dyn Fn(&mut SmallRng, usize, &mut [usize])>,
+    Box<dyn Fn(&mut rand::rngs::SmallRng, usize, &mut [usize])>,
 )> {
     vec![
         ("cardchoose", Box::new(cardchoose::random_order)),

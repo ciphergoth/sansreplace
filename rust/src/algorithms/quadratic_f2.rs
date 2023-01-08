@@ -1,8 +1,6 @@
-use rand::Rng;
-
 pub fn random_order<R>(rng: &mut R, length: usize, res: &mut [usize])
 where
-    R: Rng + ?Sized,
+    R: rand::Rng + ?Sized,
 {
     let amount = res.len();
     for i in 0..amount {

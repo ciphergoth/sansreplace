@@ -1,20 +1,14 @@
-use std::{
-    fs::OpenOptions,
-    hint::black_box,
-    path::{Path, PathBuf},
-    time::{Duration, Instant},
-};
+use std::{path::Path, time::Duration};
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use csv::WriterBuilder;
 use rand::{rngs::SmallRng, SeedableRng};
 
 mod algorithms;
 
-#[derive(clap::Parser, Debug)]
+#[derive(Parser, Debug)]
 struct Args {
-    csv: PathBuf,
+    csv: std::path::PathBuf,
 }
 
 fn time_test<F>(f: F, length: usize, amount: usize) -> std::time::Duration
@@ -27,10 +21,10 @@ where
     let mut iters = 1;
     let mut remaining = std::time::Duration::from_millis(500);
     loop {
-        let now = Instant::now();
+        let now = std::time::Instant::now();
         for _ in 0..iters {
             f(&mut rng, length, &mut v);
-            black_box(&v);
+            std::hint::black_box(&v);
         }
         let t = now.elapsed();
         if remaining < t {
@@ -50,12 +44,12 @@ where
 }
 
 fn write_row(path: &Path, name: &str, n: usize, k: usize, t: Duration) -> Result<()> {
-    let f = OpenOptions::new()
+    let f = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
         .open(path)
         .with_context(|| format!("Opening file {}", path.display()))?;
-    let mut wtr = WriterBuilder::new().from_writer(f);
+    let mut wtr = csv::WriterBuilder::new().from_writer(f);
     wtr.serialize(("result", name, n, k, t.as_secs_f64()))?;
     Ok(())
 }
