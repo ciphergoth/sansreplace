@@ -7,98 +7,9 @@ use std::{
 
 use anyhow::{Context, Result};
 use csv::WriterBuilder;
-use rand::{rngs::SmallRng, Rng, SeedableRng};
+use rand::{rngs::SmallRng, SeedableRng};
 
-fn quadratic_reject<R>(rng: &mut R, length: usize, res: &mut [usize])
-where
-    R: Rng + ?Sized,
-{
-    let amount = res.len();
-    for i in 0..amount {
-        loop {
-            let t = rng.gen_range(0..length);
-            if !res[..i].contains(&t) {
-                res[i] = t;
-                break;
-            }
-        }
-    }
-}
-
-fn quadratic_f2<R>(rng: &mut R, length: usize, res: &mut [usize])
-where
-    R: Rng + ?Sized,
-{
-    let amount = res.len();
-    for i in 0..amount {
-        let j = length - amount + i;
-        let t = rng.gen_range(0..=j);
-        if let Some(pos) = res[..i].iter().position(|&x| x == t) {
-            res[pos] = j;
-        }
-        res[i] = t;
-    }
-}
-
-fn reject<R>(rng: &mut R, length: usize, res: &mut [usize])
-where
-    R: Rng + ?Sized,
-{
-    let amount = res.len();
-    let mut done = std::collections::HashSet::with_capacity(amount);
-    for i in 0..amount {
-        loop {
-            let t = rng.gen_range(0..length);
-            if done.insert(t) {
-                res[i] = t;
-                break;
-            }
-        }
-    }
-}
-
-fn floyd_f2<R>(rng: &mut R, length: usize, res: &mut [usize])
-where
-    R: Rng + ?Sized,
-{
-    let amount = res.len();
-    let mut done = std::collections::HashSet::with_capacity(amount);
-    for i in 0..amount {
-        let j = length - amount + i;
-        let t = rng.gen_range(0..=j);
-        if done.insert(t) {
-            res[i] = t;
-        } else {
-            let ix = rng.gen_range(0..i);
-            res[i] = res[ix];
-            res[ix] = j;
-            done.insert(j);
-        }
-    }
-}
-
-fn cardchoose<R>(rng: &mut R, length: usize, res: &mut [usize])
-where
-    R: Rng + ?Sized,
-{
-    let amount = res.len();
-    let t = length - amount + 1;
-    for i in 0..amount {
-        let r = rng.gen_range(0..t + i);
-        if r < t {
-            res[i] = r;
-        } else {
-            res[i] = res[r - t];
-        }
-    }
-    res.sort();
-    for i in 0..amount {
-        let r = rng.gen_range(0..=i);
-        let t = res[i] + i;
-        res[i] = res[r];
-        res[r] = t;
-    }
-}
+mod algorithms;
 
 fn time_test<F>(f: F, length: usize, amount: usize) -> std::time::Duration
 where
@@ -145,16 +56,9 @@ fn write_row(name: &str, n: usize, k: usize, t: Duration) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let totest: &[(&str, Box<dyn Fn(&mut SmallRng, usize, &mut [usize])>)] = &[
-        ("cardchoose", Box::new(cardchoose)),
-        ("floyd_f2", Box::new(floyd_f2)),
-        ("reject", Box::new(reject)),
-        ("quadratic_f2", Box::new(quadratic_f2)),
-        ("quadratic_reject", Box::new(quadratic_reject)),
-    ];
     const MAX: usize = 1_000_000_000;
     const MAXTIME: Duration = Duration::from_secs(3);
-    for (name, f) in totest.iter() {
+    for (name, f) in algorithms::algorithms().iter() {
         let mut kk = (1, 1);
         'kk: while kk.1 < MAX {
             let mut nn = kk;
