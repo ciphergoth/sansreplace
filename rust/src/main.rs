@@ -11,13 +11,13 @@ struct Args {
     csv: std::path::PathBuf,
 }
 
-fn time_test<F>(f: F, length: usize, amount: usize) -> std::time::Duration
+fn time_test<F>(f: F, length: u32, amount: u32) -> std::time::Duration
 where
-    F: Fn(&mut SmallRng, usize, &mut [usize]),
+    F: Fn(&mut SmallRng, u32, &mut [u32]),
 {
     assert!(amount <= length);
     let mut rng = SmallRng::from_entropy();
-    let mut v = vec![0; amount];
+    let mut v = vec![0; amount as usize];
     let mut iters = 1;
     let mut remaining = std::time::Duration::from_millis(500);
     loop {
@@ -43,7 +43,7 @@ where
     }
 }
 
-fn write_row(path: &Path, name: &str, n: usize, k: usize, t: Duration) -> Result<()> {
+fn write_row(path: &Path, name: &str, n: u32, k: u32, t: Duration) -> Result<()> {
     let f = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
@@ -55,7 +55,7 @@ fn write_row(path: &Path, name: &str, n: usize, k: usize, t: Duration) -> Result
 }
 
 fn time_all(csv: &Path) -> Result<()> {
-    const MAX: usize = 1_000_000_000;
+    const MAX: u32 = 1_000_000_000;
     const MAXTIME: Duration = Duration::from_secs(3);
     for (name, f) in algorithms::algorithms().iter() {
         let mut kk = (1, 1);
