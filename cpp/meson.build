@@ -14,7 +14,7 @@
 
 project('sansreplace', ['c', 'cpp'],
     default_options : ['buildtype=debugoptimized', 'c_std=c11',
-'cpp_std=c++14'])
+'cpp_std=c++17'])
 
 add_project_arguments(
     '-fno-strict-aliasing', '-O3', '-ffast-math',
