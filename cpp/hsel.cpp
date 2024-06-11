@@ -21,10 +21,11 @@
 
 #include "randbelow.h"
 
-std::unordered_map<uint32_t, uint32_t> hsel_options;
 
 extern "C" void random_hsel(uint32_t n, uint32_t k, uint32_t* result) {
-    hsel_options.clear();
+    std::unordered_map<uint32_t, uint32_t> hsel_options;
+    hsel_options.reserve(1.45*k); // give 45% extra space to keep load-factor low
+
     for (uint32_t i = 0; i != k; ++i) {
       result[i] = i;
     }
