@@ -15,6 +15,7 @@ reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/
 SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
 HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
+Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | Random | none | _k_^2
 "[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
 
 ## Quadratic rejection sampling
@@ -123,6 +124,17 @@ I refer you to two excellent explanations:
 * [Robert Floyd's Tiny and Beautiful Algorithm for Sampling without Replacement](http://www.nowherenearithaca.com/2013/05/robert-floyds-tiny-and-beautiful.html)
 
 The original presentation is as one of Jon Bentley's Programming Pearls, though the algorithm is due to Robert W Floyd: [A Sample of Brilliance](https://doi.org/10.1145/30401.315746).
+
+## Quadratic F2
+
+Algorithm | Python | C++ | Order guarantee | Data structures | Time
+----|----|----|----|----|----
+Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | Random | none | _k_^2
+
+A quadratic variant on Floyd's F2 which needs no external data structure. Inspired by the
+implementation in the [Rust rand crate](https://github.com/rust-random/rand/blob/19897e53c1908c5a193e2aacff59170e3e72b8de/src/seq/index.rs#L231),
+but with some optimizations. Like quadratic rejection sampling, the small constants mean
+this does very well for small _k_.
 
 ## Cardchoose
 
