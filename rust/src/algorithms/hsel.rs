@@ -4,7 +4,7 @@ where
 {
     assert!(res.len() <= (length as usize));
     let amount = res.len() as u32;
-    let mut options = std::collections::HashMap::with_capacity(2 * amount as usize);
+    let mut options = std::collections::HashMap::with_capacity(amount as usize);
     for i in 0..amount {
         let r = rng.random_range(i..length);
         res[i as usize] = *options.get(&r).unwrap_or(&r);
