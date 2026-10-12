@@ -1,3 +1,10 @@
 scratch
 __pycache__
 .vscode
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
