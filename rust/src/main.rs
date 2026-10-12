@@ -1,6 +1,6 @@
-use std::{path::Path, time::Duration};
+use std::{collections::BTreeMap, path::Path, time::Duration};
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, anyhow};
 use clap::{Parser, Subcommand};
 use rand::rngs::SmallRng;
 
@@ -20,6 +20,20 @@ enum Command {
     Sweep { csv: std::path::PathBuf },
     /// Time every algorithm for a single n, k
     Time { n: u32, k: u32 },
+    /// Test one algorithm for fairness by counting how often each output occurs
+    Test {
+        n: u32,
+        k: u32,
+        /// Number of tests to run
+        #[arg(long, default_value_t = 100_000)]
+        num_tests: u64,
+        /// Maximum number of result rows to show
+        #[arg(long, default_value_t = 21)]
+        show_max: usize,
+        /// Algorithm to test
+        #[arg(long, default_value = "cardchoose")]
+        algorithm: String,
+    },
 }
 
 fn time_test<F>(f: F, length: u32, amount: u32) -> std::time::Duration
@@ -102,6 +116,50 @@ fn time_one(sort_type: algorithms::SortType, n: u32, k: u32) {
     }
 }
 
+fn binomial(n: u32, k: u32) -> Result<u128> {
+    let mut r: u128 = 1;
+    for i in 0..k.min(n - k) {
+        r = r
+            .checked_mul((n - i).into())
+            .ok_or_else(|| anyhow!("binomial({n}, {k}) overflows"))?;
+        r /= u128::from(i + 1);
+    }
+    Ok(r)
+}
+
+fn test_choose(
+    sort_type: algorithms::SortType,
+    n: u32,
+    k: u32,
+    num_tests: u64,
+    show_max: usize,
+    algorithm: &str,
+) -> Result<()> {
+    let (_, f) = algorithms::algorithms(sort_type)
+        .into_iter()
+        .find(|(name, _)| *name == algorithm)
+        .ok_or_else(|| anyhow!("Unknown algorithm: {algorithm}"))?;
+    let mut rng = rand::make_rng::<SmallRng>();
+    let mut v = vec![0; k as usize];
+    let mut counts: BTreeMap<Vec<u32>, u64> = BTreeMap::new();
+    for _ in 0..num_tests {
+        f(&mut rng, n, &mut v);
+        *counts.entry(v.clone()).or_default() += 1;
+    }
+    if counts.len() <= show_max {
+        for (r, c) in &counts {
+            println!("{r:?}: {c}");
+        }
+    }
+    println!("{} {}", counts.len(), binomial(n, k)?);
+    println!(
+        "{} {}",
+        counts.values().min().unwrap(),
+        counts.values().max().unwrap()
+    );
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let args = Args::parse();
     match args.command {
@@ -112,6 +170,13 @@ fn main() -> Result<()> {
             time_all(args.sorttype, &csv)?;
         }
         Command::Time { n, k } => time_one(args.sorttype, n, k),
+        Command::Test {
+            n,
+            k,
+            num_tests,
+            show_max,
+            algorithm,
+        } => test_choose(args.sorttype, n, k, num_tests, show_max, &algorithm)?,
     }
     Ok(())
 }
