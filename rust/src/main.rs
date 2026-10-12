@@ -13,7 +13,7 @@ mod nkvalues;
 
 #[derive(Parser, Debug)]
 struct Args {
-    #[arg(long, global = true, value_enum, default_value_t = algorithms::SortType::Random)]
+    #[arg(long, global = true, value_enum, default_value_t = algorithms::SortType::Sorted)]
     sorttype: algorithms::SortType,
     #[command(subcommand)]
     command: Command,

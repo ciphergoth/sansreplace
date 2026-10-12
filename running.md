@@ -32,7 +32,7 @@ options: `time` is like `time_choose`, and writes CSV files in the same format, 
 ```
 cd rust
 cargo run --release -- time --values small --values fib --csv results.csv
-cargo run --release -- time --sorttype sorted --nk 1000000 1000
+cargo run --release -- time --sorttype random --nk 1000000 1000
 cargo run --release -- test 5 3 --algorithm hsel
 ```
 

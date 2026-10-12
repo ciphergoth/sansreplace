@@ -98,7 +98,7 @@ def parse_args():
     p.add_argument("--time-limit", type=float, default=0.1,
         help="Maximum time a single test can run")
     p.add_argument("--algorithm",  action='append')
-    p.add_argument("--sorttype", default="random", choices=['sorted', 'random'],
+    p.add_argument("--sorttype", default="sorted", choices=['sorted', 'random'],
         help="Algorithm variant to test")
     values = p.add_mutually_exclusive_group()
     values.add_argument("--values", action='append',
