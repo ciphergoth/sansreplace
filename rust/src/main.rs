@@ -2,7 +2,7 @@ use std::{path::Path, time::Duration};
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use rand::{SeedableRng, rngs::SmallRng};
+use rand::rngs::SmallRng;
 
 mod algorithms;
 
@@ -16,7 +16,7 @@ where
     F: Fn(&mut SmallRng, u32, &mut [u32]),
 {
     assert!(amount <= length);
-    let mut rng = SmallRng::from_entropy();
+    let mut rng = rand::make_rng::<SmallRng>();
     let mut v = vec![0; amount as usize];
     let mut iters = 1;
     let mut remaining = std::time::Duration::from_millis(500);

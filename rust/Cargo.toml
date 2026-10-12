@@ -13,6 +13,9 @@ anyhow = "1.0.68"
 version = "4.0.32"
 features = ["derive"]
 
+# We deliberately don't enable the "unbiased" feature. The default
+# random_range is very slightly biased (at worst 1 in 2^96 for u32), but
+# the unbiased version adds a cost per sample, which would unfairly favour
+# algorithms that draw fewer samples.
 [dependencies.rand]
-version = "0.8.5"
-features = ["small_rng"]
+version = "0.10.3"

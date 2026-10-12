@@ -6,7 +6,7 @@ mod rejectionsample;
 
 pub fn algorithms<R>() -> Vec<(&'static str, Box<dyn Fn(&mut R, u32, &mut [u32])>)>
 where
-    R: rand::Rng + ?Sized + 'static,
+    R: rand::RngExt + ?Sized + 'static,
 {
     vec![
         ("cardchoose", Box::new(cardchoose::random_order)),
