@@ -46,8 +46,12 @@ def main():
 
     # Nix sets SOURCE_DATE_EPOCH to 1980 for reproducible builds, and
     # LaTeX's \today follows it; we want the real date on the paper.
+    # VS Code's LaTeX Workshop sets max_print_line=10000, which stops TeX
+    # wrapping log lines at 79 columns; latexrun's log parser relies on
+    # that wrapping and hangs on long lines.
     env = dict(os.environ)
     env.pop("SOURCE_DATE_EPOCH", None)
+    env.pop("max_print_line", None)
     subprocess.run([str(latexrun),
             "-o", "cardchoose.pdf",
             "-O", str(build / "latex.out"),
