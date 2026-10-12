@@ -13,5 +13,6 @@
       "tools": ["do_build"]
     }
   ],
+  "latex-workshop.latex.build.enableMagicComments": false,
   "latex-workshop.latex.outDir": "%DIR%/build/latex.out"
 }
