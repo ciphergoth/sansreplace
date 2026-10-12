@@ -1,8 +1,8 @@
 mod cardchoose;
-mod floyd_f2;
-mod quadratic_f2;
-mod quadratic_reject;
-mod reject;
+mod floydf2;
+mod quadraticf2;
+mod quadraticreject;
+mod rejectionsample;
 
 pub fn algorithms<R>() -> Vec<(&'static str, Box<dyn Fn(&mut R, u32, &mut [u32])>)>
 where
@@ -10,9 +10,9 @@ where
 {
     vec![
         ("cardchoose", Box::new(cardchoose::random_order)),
-        ("floyd_f2", Box::new(floyd_f2::random_order)),
-        ("quadratic_f2", Box::new(quadratic_f2::random_order)),
-        ("quadratic_reject", Box::new(quadratic_reject::random_order)),
-        ("reject", Box::new(reject::random_order)),
+        ("floydf2", Box::new(floydf2::random_order)),
+        ("quadraticf2", Box::new(quadraticf2::random_order)),
+        ("quadraticreject", Box::new(quadraticreject::random_order)),
+        ("rejectionsample", Box::new(rejectionsample::random_order)),
     ]
 }
