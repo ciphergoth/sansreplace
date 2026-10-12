@@ -198,6 +198,11 @@ storing only the modified elements.
 A twist on set-based rejection that uses compensatingly biased samples
 to avoid multiple tests.
 \cite{floydf2}
+For random order output, our implementation does not shuffle
+afterwards. Instead, when the chosen value is already present, it
+moves a randomly chosen earlier output to the end and puts the new
+value in its place. This keeps the order uniformly random, and costs
+an extra random number only on collisions.
 
 \subsection{Quadratic F2}
 \inputminted{Python}{code/quadraticf2.py}
