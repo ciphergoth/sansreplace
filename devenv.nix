@@ -35,8 +35,6 @@ in
     (texliveMedium.withPackages (
       ps: with ps; [
         abstract
-        algorithmicx
-        algorithms
         bigfoot
         biblatex
         cryptocode
