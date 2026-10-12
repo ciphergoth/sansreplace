@@ -30,6 +30,7 @@ static void floydf2(uint32_t n, uint32_t k, uint32_t* result) {
         if (iresult.second) {
             result[i] = r;
         } else {
+            done.insert(m);
             result[i] = m;
         }
     }
