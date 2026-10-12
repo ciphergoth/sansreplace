@@ -1,0 +1,17 @@
+{
+  "latex-workshop.latex.tools": [
+    {
+      "name": "do_build",
+      "command": "./do_build",
+      "args": [],
+      "env": {}
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "do_build",
+      "tools": ["do_build"]
+    }
+  ],
+  "latex-workshop.latex.outDir": "%DIR%/build/latex.out"
+}

@@ -1,6 +1,10 @@
 scratch
 __pycache__
-.vscode
+
+# VS Code: keep the project settings, ignore per-user files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # Devenv
 .devenv*
