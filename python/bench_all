@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import argparse
+import datetime
+import pathlib
+import subprocess
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+# F_40; larger k needs more memory than a 16GB machine has
+default_options = ["--values", "small", "--values", "fib",
+    "--time-for", "0.2", "--time-limit", "20", "--max-k", "102334155"]
+
+def parse_args():
+    p = argparse.ArgumentParser(allow_abbrev=False,
+        description="Run the C++ and Rust benchmarks in both orders, writing a CSV for each "
+            "to OUTDIR. Stops at the first failure.")
+    p.add_argument("outdir", type=pathlib.Path)
+    p.add_argument("options", nargs=argparse.REMAINDER,
+        help="time_choose options, replacing the defaults")
+    return p.parse_args()
+
+def run(name, cmd):
+    print(f"{datetime.datetime.now():%F %T} starting {name}", flush=True)
+    subprocess.run(cmd, check=True)
+    print(f"{datetime.datetime.now():%F %T} finished {name}", flush=True)
+
+def main():
+    args = parse_args()
+    options = args.options or default_options
+    args.outdir.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["cargo", "build", "--release",
+        "--manifest-path", topdir / "rust/Cargo.toml"], check=True)
+    for order in ["random", "sorted"]:
+        run(f"cpp-{order}", [topdir / "python/time_choose", "--sorttype", order, *options,
+            "--csv", args.outdir / f"cpp-{order}.csv"])
+        run(f"rust-{order}", [topdir / "rust/target/release/sansreplace", "time",
+            "--sorttype", order, *options, "--csv", args.outdir / f"rust-{order}.csv"])
+
+if __name__ == '__main__':
+    main()
