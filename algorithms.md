@@ -17,6 +17,7 @@ HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dict
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
 Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | Random | none | _k_^2
 [Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | Sorted | none | _k_
 
 ## Quadratic rejection sampling
 
@@ -143,3 +144,26 @@ Algorithm | Python | C++ | Order guarantee | Data structures | Time
 [Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
 
 This is my algorithm, first made public in October 2018. [Detailed description](cardchoose.md).
+
+## Vitter's Algorithm D
+
+Algorithm | Python | C++ | Order guarantee | Data structures | Time
+----|----|----|----|----|----
+Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | Sorted | none | _k_
+
+A sequential sampling algorithm: like iterative choosing, it produces the output in sorted order, but
+instead of deciding about each value in [0, _n_) in turn, it draws the number of values to skip
+before the next chosen one directly. The skip has a known discrete distribution, and Algorithm D
+samples it by rejection from a continuous approximation, which takes O(1) expected time per
+output, so the whole algorithm takes O(_k_) expected time and needs no extra memory. The cost is
+floating-point arithmetic: each output needs a few uniform variates and exponentiations. Once
+_n_ is at most 13 _k_, it falls back on Vitter's Algorithm A, which draws each skip in O(skip) time,
+so the total work for the rest of the output is O(_n_).
+
+Our implementation follows the Pascal-like code in the paper's appendix.
+
+* Jeffrey Scott Vitter
+    * An Efficient Algorithm for Sequential Random Sampling
+    * ACM Transactions on Mathematical Software, Volume 13, Number 1, March 1987
+    * 58--67
+    * https://doi.org/10.1145/23002.23003

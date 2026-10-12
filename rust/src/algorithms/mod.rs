@@ -7,6 +7,7 @@ mod quadraticreject;
 mod rejectionsample;
 mod reservoirsample;
 mod select;
+mod vitterd;
 
 #[derive(Clone, Copy, Debug, clap::ValueEnum)]
 pub enum SortType {
@@ -40,6 +41,7 @@ where
         quadraticreject,
         rejectionsample,
         reservoirsample,
-        select
+        select,
+        vitterd
     ]
 }

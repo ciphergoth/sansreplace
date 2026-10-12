@@ -23,6 +23,7 @@ extern "C" {
 #endif
 extern void rand_init(void);
 extern uint32_t randbelow(uint32_t range);
+extern double randdouble(void);
 #if __cplusplus
 }
 #endif

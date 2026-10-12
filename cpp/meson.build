@@ -55,6 +55,7 @@ libsrc = [
     'quadraticreject.cpp',
     'hsel.cpp',
     'quadraticf2.cpp',
+    'vitterd.cpp',
     'timing.cpp',
 ]
 if avx512 or avx2
