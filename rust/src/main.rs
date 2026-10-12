@@ -2,7 +2,7 @@ use std::{path::Path, time::Duration};
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use rand::{rngs::SmallRng, SeedableRng};
+use rand::{SeedableRng, rngs::SmallRng};
 
 mod algorithms;
 
