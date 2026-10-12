@@ -3,19 +3,14 @@
 This is experimental software; it exists only to compare the various implementations, and it will
 change in arbitrary ways as I extend my tests.
 
-The following build instructions are written for users of Ubuntu and other
-Debian-derived Linux systems; adjust as needed for your own platform.
+The development environment is managed with [devenv](https://devenv.sh/), which provides Python
+and its needed packages, Meson, Ninja, and Rust.
 
-* Install [Python 3](https://www.python.org/): `apt-get install python3`
-    * Even the C++ tests depend on Python 3.
-* Install [Ninja](https://ninja-build.org/): `apt-get install ninja-build`
-    * Only needed for the C++ tests.
-* Optionally, create a Python 3 [virtual environment](https://docs.python.org/3/library/venv.html)
-  so you don't have to install globally:
-    * `python3 -m venv venv`
-    * `. ./venv/bin/activate`
-* Install needed Python packages:
-    * `pip install attrs matplotlib meson`
+* [Install devenv](https://devenv.sh/getting-started/).
+* Either:
+    * install [direnv](https://direnv.net/) and run `direnv allow` in the top directory of this
+      repository, so the environment is loaded whenever you `cd` into it, or
+    * run `devenv shell` in the top directory to start a shell with the environment loaded.
 * Try it out. While all of the scripts provide help from the command line, you will almost certainly
 need to read the source code to figure out what it does.
 
@@ -27,5 +22,12 @@ cd python
 ./scatter --help
 ```
 
-The C++ tools automatically create the build directory and build the code before running if needed;
-try eg `./test_choose 5 3`.
+Even the C++ tests are driven from Python. The C++ tools automatically create the build directory
+and build the code before running if needed; try eg `./test_choose 5 3`.
+
+The Rust implementation is separate, and writes timings to a CSV file:
+
+```
+cd rust
+cargo run --release -- results.csv
+```
