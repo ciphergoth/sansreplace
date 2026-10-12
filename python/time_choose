@@ -100,7 +100,11 @@ def parse_args():
     p.add_argument("--algorithm",  action='append')
     p.add_argument("--sorttype", default="random", choices=['sorted', 'random'],
         help="Algorithm variant to test")
-    p.add_argument("--values", action='append')
+    values = p.add_mutually_exclusive_group()
+    values.add_argument("--values", action='append',
+        help="Named set of n,k values to time")
+    values.add_argument("--nk", action='append', nargs=2, type=int, metavar=('N', 'K'),
+        help="Single n,k value to time")
     p.add_argument("--fix-freq", action='store_true')
     p.add_argument("--csv", type=pathlib.Path)
     impl_load.add_arguments(p)
@@ -110,7 +114,7 @@ def main():
     args = parse_args()
     if args.fix_freq:
         fix_freq()
-    if args.values is None:
+    if args.values is None and args.nk is None:
         args.values = ["small", "power10"]
     timeables = impl_load.get_timeables(args, topdir)
     if args.algorithm is None:
@@ -131,7 +135,11 @@ def main():
             }
             for k, v in info.items():
                 writer.writerow(['info', k, v])
-    run_timings(args, nkvalues.iter_values(args.values), totime)
+    if args.nk is not None:
+        vitr = ((f"n = {n}, k = {k}", n, k) for n, k in args.nk)
+    else:
+        vitr = nkvalues.iter_values(args.values)
+    run_timings(args, vitr, totime)
 
 if __name__ == '__main__':
     main()
