@@ -72,4 +72,4 @@ def _plot(toplot, data, title, output):
         if output is None:
             plt.show()
         else:
-            ani.save(output, dpi=300)
+            ani.save(output, writer="pillow", dpi=300)
