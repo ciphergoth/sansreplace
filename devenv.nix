@@ -28,6 +28,7 @@ let
 in
 {
   packages = with pkgs; [
+    ffmpeg
     meson
     ninja
     (python3.withPackages (ps: with ps; [ cffi matplotlib numpy requests ]))

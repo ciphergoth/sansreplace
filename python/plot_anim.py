@@ -3,18 +3,24 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 def plot(toplot, data, title, output):
+    rc = {}
     if output is not None:
         output = str(output)
         if output.endswith(".pgf"):
             matplotlib.use("pgf")
-            matplotlib.rcParams.update({
+            rc = {
                 "pgf.texsystem": "lualatex",
                 'font.family': 'serif',
                 'text.usetex': True,
                 'pgf.rcfonts': False,
-            })
+            }
         else:
             matplotlib.use('Agg')
+    # Scoped so the pgf settings don't leak into later plots
+    with matplotlib.rc_context(rc):
+        _plot(toplot, data, title, output)
+
+def _plot(toplot, data, title, output):
     fig = plt.figure()
     #plt.title(args.title)
     ax = plt.gca()
