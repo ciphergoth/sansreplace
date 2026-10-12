@@ -36,6 +36,8 @@
 \usepackage[landau,operators,probability,sets]{cryptocode}
 \usepackage[cachedir=build/_minted-cardchoose]{minted}
 \usepackage{pgf}
+% Matplotlib's pgf figures use \mathdefault in tick labels
+\def\mathdefault#1{#1}
 
 \renewcommand{\supportname}{supp}
 % work around cryptocode bug
@@ -83,9 +85,11 @@
     present here an algorithm that requires no such data structure or
     auxiliary storage, only an integer sort taking $\bigO{k \log k}$
     time; the algorithm is based on a method of fair multiset
-    choosing. In our benchmarks the algorithm outperforms all we
-    compare it to wherever \(k > 100\) and \(n > 100k\), and has
-    acceptable performance for all values of \(k, n\).
+    choosing. In our benchmarks using standard library hash tables,
+    the algorithm outperforms all we compare it to wherever
+    \(k > 100\) and \(n > 300k\), and has acceptable performance
+    for all values of \(k, n\). With a fast flat hash table, it
+    remains the fastest for sorted output.
 \end{abstract}
 
 \section{Introduction}
@@ -437,47 +441,88 @@ Python code below returns a sorted list of $k$ distinct integers in
 
 \section{Benchmarks}
 
-(\url{https://github.com/ciphergoth/sansreplace/cpp}) includes C++
+The accompanying repository
+(\url{https://github.com/ciphergoth/sansreplace}) includes C++ and Rust
 implementations of these algorithms, which were benchmarked for a
 variety of values of \(n\) and \(k\), for both sorted output and
-random output, on a Hewlett-Packard Z840 workstation:
+random output, on an Apple Mac mini:
 
 \begin{itemize}
-    \item CPU: Intel Xeon E5-2690 v3
-    \item Frequency: 3.5GHz
-    \item Cache: 768kiB L1, 3 MiB L2, 30MiB L3
-    \item Compiler: gcc 12.2, \verb|-Ofast|
+    \item CPU: Apple M4
+    \item Cache: 128kiB L1 data and 16MiB L2 per performance core cluster
+    \item Memory: 16GiB
+    \item C++ compiler: clang 21.1, \verb|-Ofast|
+    \item Rust compiler: rustc 1.98, release profile
 \end{itemize}
 
-In \autoref{randomsmalln} and \autoref{randomlargen} we graph
+We tested values of \(n\) and \(k\) that are Fibonacci numbers, with
+\(n\) up to 701,408,733 (the 44th Fibonacci number) and \(k\) up to
+102,334,155 (the 40th); larger \(k\) needs more memory than the test
+machine has.
+
+The C++ implementations use the standard library's
+\mintinline{cpp}{std::unordered_set} and
+\mintinline{cpp}{std::unordered_map}, which are node-based, so they
+show the performance available from a standard data structure. The
+Rust implementations use the Rust standard library's
+\mintinline{rust}{HashSet} and \mintinline{rust}{HashMap}, which are
+flat open-addressing hash tables based on SwissTable, and are much
+faster: the hash-based algorithms take about 0.4--0.5 times as long
+in Rust as in C++, while our algorithm takes about 0.6 times as long.
+
+In \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} we graph
 time/\(k\) in ns against \(k\) for two different values of \(n\) for
-random order output, and in \autoref{sortedlargen} a single value of
-\(n\) for sorted output. Animated graphs showing many values of \(n\)
-up to 701,408,733 (the 44th Fibonacci number) can be seen at
+random order output, and a single value of \(n\) for sorted output, in
+each language. Animated graphs showing many values of \(n\) can be
+seen at
 \url{https://github.com/ciphergoth/sansreplace/blob/master/results.md},
 and complete benchmark data at
 \url{https://github.com/ciphergoth/sansreplace/blob/master/results/latest}
 
 \begin{figure}
-    \input{random_1346269.pgf}
-    \caption{Random order, \(n=1.3 \times 10^{6}\)}
-    \label{randomsmalln}
+    \input{cpp-random-1346269.pgf}
+    \caption{C++, random order, \(n=1.3 \times 10^{6}\)}
+    \label{cpprandomsmalln}
 \end{figure}
 
 \begin{figure}
-    \input{random_701408733.pgf}
-    \caption{Random order, \(n=7.0 \times 10^{9}\)}
-    \label{randomlargen}
+    \input{cpp-random-701408733.pgf}
+    \caption{C++, random order, \(n=7.0 \times 10^{8}\)}
+    \label{cpprandomlargen}
 \end{figure}
 
 \begin{figure}
-    \input{sorted_701408733.pgf}
-    \caption{Sorted order, \(n=7.0 \times 10^{9}\)}
-    \label{sortedlargen}
+    \input{cpp-sorted-701408733.pgf}
+    \caption{C++, sorted order, \(n=7.0 \times 10^{8}\)}
+    \label{cppsortedlargen}
 \end{figure}
 
-Our algorithm outperforms all hash- and set-based algorithms for all
-values of \(n\) and \(k\) tested. In theory, the \(\bigO{k}\)
+\begin{figure}
+    \input{rust-random-1346269.pgf}
+    \caption{Rust, random order, \(n=1.3 \times 10^{6}\)}
+    \label{rustrandomsmalln}
+\end{figure}
+
+\begin{figure}
+    \input{rust-random-701408733.pgf}
+    \caption{Rust, random order, \(n=7.0 \times 10^{8}\)}
+    \label{rustrandomlargen}
+\end{figure}
+
+\begin{figure}
+    \input{rust-sorted-701408733.pgf}
+    \caption{Rust, sorted order, \(n=7.0 \times 10^{8}\)}
+    \label{rustsortedlargen}
+\end{figure}
+
+With C++ standard library hash tables, our algorithm outperforms all
+hash- and set-based algorithms for all values of \(n\) and \(k\)
+tested. With Rust's flat hash tables, the picture changes for random
+order output: set-based rejection sampling is up to 1.4 times faster
+than our algorithm for \(k\) between about 100 and \(10^6\) when
+\(n \gg k\). Our algorithm remains faster for smaller and larger \(k\),
+and for sorted output it is faster for all values tested, typically
+by a factor of about two. In theory, the \(\bigO{k}\)
 performance of these algorithms compared to the \(\bigO{k \log k}\)
 performance of our algorithm should mean that there is a value of
 \(k\) at which these algorithms perform better. However, the poor
@@ -490,33 +535,51 @@ leaves of the parallel tree it builds.
 Quadratic rejection and quadratic F2 both outperform our algorithm for
 small \(k\), while SELECT, reservoir sampling, and iterative choosing
 all outperform our algorithm for small \(n/k\). However all of these
-behave pathologically for other values of \(n, k\); ours is the
-fastest of all of the algorithms that perform reasonably for all
-values of \(n, k\).
+behave pathologically for other values of \(n, k\). Using standard
+library hash tables, ours is the fastest of all of the algorithms
+that perform reasonably for all values of \(n, k\); with a fast flat
+hash table, it is the fastest for sorted output, and comparable to
+set-based rejection sampling for random output.
 
 A good implementation will implement multiple algorithms, and choose
 which one to use based on the values of \(n\) and \(k\). For random
 order output, a combination of quadratic F2, our algorithm, and SELECT
 is likely to be near-optimal for all values, or if allocating extra
 memory on demand is not an option then reservoir sampling can be
-substituted for SELECT. For sorted order output, a combination of our
-algorithm and iterative choosing should suffice. Based on a
-least-squares curve fitting, the runtime estimates from
-\autoref{randomtable} and \autoref{sortedtable} can be used to select
-which algorithm to use.
+substituted for SELECT. Where a fast flat hash table is available,
+set-based rejection sampling can be added for moderate \(k\). For
+sorted order output, a combination of our algorithm and iterative
+choosing should suffice. Based on a least-squares curve fitting, the
+runtime estimates in seconds from \autoref{cpprandomtable} to
+\autoref{rustsortedtable} can be used to select which algorithm to
+use.
 
 \begin{table}
     \begin{tabular}{ lr }
-        \input{random_table.tex}
+        \input{cpp-random-table.tex}
     \end{tabular}
-    \caption{Time estimates for random order algorithms}\label{randomtable}
+    \caption{Time estimates for C++ random order algorithms}\label{cpprandomtable}
 \end{table}
 
 \begin{table}
-    \begin{tabular}{ lr } 
-        \input{sorted_table.tex}
+    \begin{tabular}{ lr }
+        \input{cpp-sorted-table.tex}
     \end{tabular}
-    \caption{Time estimates for sorted order algorithms}\label{sortedtable}
+    \caption{Time estimates for C++ sorted order algorithms}\label{cppsortedtable}
+\end{table}
+
+\begin{table}
+    \begin{tabular}{ lr }
+        \input{rust-random-table.tex}
+    \end{tabular}
+    \caption{Time estimates for Rust random order algorithms}\label{rustrandomtable}
+\end{table}
+
+\begin{table}
+    \begin{tabular}{ lr }
+        \input{rust-sorted-table.tex}
+    \end{tabular}
+    \caption{Time estimates for Rust sorted order algorithms}\label{rustsortedtable}
 \end{table}
 
 \printbibliography

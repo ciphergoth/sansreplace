@@ -24,16 +24,15 @@ topdir = pathlib.Path(__file__).resolve().parent.parent
 
 def main():
     results = topdir / "results/latest"
-    all_algorithms, data = read_results.read_for_plot(results / "random.csv")
-    plot_anim.plot(all_algorithms, data, "Random order", results / "random.webp")
-    for n in [1346269, 701408733]:
-        plot_anim.plot(all_algorithms, [d for d in data if d[0] == n],
-            "Random order", topdir / "latex" / f"random_{n}.pgf")
-    all_algorithms, data = read_results.read_for_plot(results / "sorted.csv")
-    plot_anim.plot(all_algorithms, data, "Sorted order", results / "sorted.webp")
-    for n in [701408733]:
-        plot_anim.plot(all_algorithms, [d for d in data if d[0] == n],
-            "Sorted order", topdir / "latex" / f"sorted_{n}.pgf")
+    for lang, langtitle in [("cpp", "C++"), ("rust", "Rust")]:
+        for sorttype, ns in [("random", [1346269, 701408733]), ("sorted", [701408733])]:
+            name = f"{lang}-{sorttype}"
+            title = f"{langtitle}, {sorttype} order"
+            all_algorithms, data = read_results.read_for_plot(results / f"{name}.csv")
+            plot_anim.plot(all_algorithms, data, title, results / f"{name}.webp")
+            for n in ns:
+                plot_anim.plot(all_algorithms, [d for d in data if d[0] == n],
+                    title, topdir / "latex" / f"{name}-{n}.pgf")
 
 if __name__ == '__main__':
     main()

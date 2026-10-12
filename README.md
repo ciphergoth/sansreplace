@@ -7,20 +7,26 @@ simplest algorithm for solving it, via these [Python](python/algorithms/quadrati
 [C++](cpp/quadraticreject.cpp) implementations.
 
 Here, I propose an algorithm I call "Cardchoose" for this
-problem which as far as I know is novel, and which in C++ outperforms all other
-solutions to either problem for most (_n_, _k_) inputs. The only data structure
+problem which as far as I know is novel. The only data structure
 used is the output vector, so no extra memory is needed; it runs in O(_k_ log
-_k_) time. I've implemented this and other algorithms in C++ and Python
+_k_) time. I've implemented this and other algorithms in C++, Rust and Python
 to compare their performance.
 
-In [my C++ tests](results.md), `cardchoose` outperforms `rejectionsample`,
-`floydf2`, and `hsel` for all values of _n_ and _k_. `quadraticreject` is
-best where _k_ < 100 or so, and `select` and `iterativechoose` perform well
-when _k_/_n_ is large.  `cardchoose` always performs within an acceptable factor of other algorithms.
+In [my C++ tests](results.md), which use the standard library's `std::unordered_set` and
+`std::unordered_map`, `cardchoose` outperforms `rejectionsample`, `floydf2`, and `hsel` for all
+values of _n_ and _k_. `quadraticreject` is best where _k_ < 100 or so, and `select` and
+`iterativechoose` perform well when _k_/_n_ is large. `cardchoose` always performs within an
+acceptable factor of other algorithms.
+
+A fast flat hash table changes the picture for random order output. Rust's standard `HashSet` is
+one, and in Rust `rejectionsample` is up to 1.4× faster than `cardchoose` for _k_ between about
+100 and 10<sup>6</sup> when _k_ is a small fraction of _n_. So `cardchoose` is the right choice
+when you want sorted output, where it is still about twice as fast as the hash-based algorithms,
+or when you don't have a fast hash table to hand.
 
 * [Guide to algorithms tested](algorithms.md)
 * [Description of Cardchoose](cardchoose.md)
-* [C++ benchmark results](results.md)
+* [Benchmark results](results.md)
 * [Running this software](running.md)
 
 ```python
@@ -40,7 +46,7 @@ def sorted_choose(n, k):
     return d
 ```
 
-![graph](results/latest/sorted.webp)
+![graph](results/latest/cpp-sorted.webp)
 
 
 This is not an officially supported Google product.
