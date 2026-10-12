@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Run the C++ and Rust benchmarks in both orders, writing a CSV and a log
+# for each to OUTDIR. Any OPTIONS replace the default time_choose options.
+# Each benchmark runs even if an earlier one fails; the exit status is
+# nonzero if any failed. Run inside the devenv environment.
+
+set -u
+
+if [ $# -lt 1 ]; then
+    echo "usage: $0 OUTDIR [OPTIONS...]" >&2
+    exit 2
+fi
+out=$1
+shift
+if [ $# -gt 0 ]; then
+    opts=("$@")
+else
+    # F_40; larger k needs more memory than a 16GB machine has
+    opts=(--values small --values fib --time-for 0.2 --time-limit 20 --max-k 102334155)
+fi
+
+top=$(cd "$(dirname "$0")" && pwd)
+mkdir -p "$out"
+cargo build --release --manifest-path "$top/rust/Cargo.toml" || exit 1
+
+status=0
+run() {
+    local name=$1
+    shift
+    echo "$(date '+%F %T') starting $name"
+    "$@" > "$out/$name.log" 2>&1
+    local s=$?
+    echo "$(date '+%F %T') finished $name: exit $s"
+    if [ $s -ne 0 ]; then
+        status=1
+    fi
+}
+
+for order in random sorted; do
+    run "cpp-$order" "$top/python/time_choose" --sorttype "$order" "${opts[@]}" \
+        --csv "$out/cpp-$order.csv"
+    run "rust-$order" "$top/rust/target/release/sansreplace" time --sorttype "$order" \
+        "${opts[@]}" --csv "$out/rust-$order.csv"
+done
+exit $status

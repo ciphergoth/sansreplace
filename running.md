@@ -35,3 +35,10 @@ cargo run --release -- time --values small --values fib --csv results.csv
 cargo run --release -- time --sorttype sorted --nk 1000000 1000
 cargo run --release -- test 5 3 --algorithm hsel
 ```
+
+To run the full C++ and Rust benchmarks in both orders, writing a CSV and a log for each to a
+directory (this takes several hours):
+
+```
+./bench_all results/my-run
+```
