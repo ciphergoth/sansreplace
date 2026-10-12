@@ -8,32 +8,32 @@ Fisher-Yates shuffle.
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
-rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
-iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
-reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
+Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
+Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
+Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
+Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
 SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
 HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
 Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | Random | none | _k_^2
-"[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+[Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
 
 ## Quadratic rejection sampling
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
+Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
 
 For each output, try choosing
 an integer in [0, _n_), but check every integer already in the output to see if
 it's the same, and reject and re-draw if so. This is quadratic in _k_, but for small
 _k_ the small constants can mean this algorithm does very well.
 
-## Rejection sampling
+## Set-based rejection sampling
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
+Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
 
 Maintain a set of already-produced values. While the output isn't full,
 try choosing a random integer in [0, _n_). If this is in the set of already-produced
@@ -43,11 +43,11 @@ already-produced values.
 One of the simplest possible algorithms, but the cost of set lookups and insertions
 is high.
 
-## Iterative random choosing
+## Iterative choosing (Algorithm S)
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-iterative random choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
+Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
 
 Iterate through every possible value in [0, _n_) in order and decide whether to include it in the
 output, weighting the probability appropriately depending on the number of spaces left in the output
@@ -61,11 +61,11 @@ where _k_ is a large fraction of _n_.
     * Page 137
     * "Algorithm S"
 
-## Reservoir sampling
+## Reservoir sampling (Algorithm R)
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
+Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
 
 Initialize the output with the integers [0, _k_) in random order.
 Then iterate through the remaining values [k, _n_) in order and decide
@@ -92,7 +92,7 @@ shortening the array.
 This is known as SELECT in Ernvall and Nevalainen, though in a slight variation
 we pick off the array at the start, rather than the end.
 
-## Ernvall-Nevalainen HSEL
+## HSEL
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
@@ -140,6 +140,6 @@ this does very well for small _k_.
 
 Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
-"[cardchoose](cardchoose.md)" | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+[Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
 
 This is my new algorithm. [Detailed description](cardchoose.md).

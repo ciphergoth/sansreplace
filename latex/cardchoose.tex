@@ -141,8 +141,8 @@ and a ``sorted'' variant of each algorithm.
     \hline
     Quadratic rejection sampling & Random &  & \(k^2\) \\
     Set-based rejection sampling & Random & Set & \(k\) \\
-    Algorithm S & Sorted &  & \(n\) \\
-    Algorithm R & Random &  & \(n\) \\
+    Iterative choosing & Sorted &  & \(n\) \\
+    Reservoir sampling & Random &  & \(n\) \\
     SELECT & Random & \(n\)-element array & \(n\) \\
     HSEL & Random & Dictionary & \(k\) \\
     Floyd's F2 &  & Set & \(k\) \\
@@ -164,7 +164,7 @@ length.
 As above, but use a data structure representing sets with an efficient membership test.
 \cite{goodman}
 
-\subsection{Iterative choosing (``Algorithm S'')}
+\subsection{Iterative choosing (Algorithm S)}
 \inputminted{Python}{code/iterativechoose.py}
 Iterate in order through each candidate to add to the list,
 calculate for each the probability it should be part of the list given
@@ -173,7 +173,7 @@ it with that probability.
 \cite{taocp2}
 \cite[Method 1, p.391]{fanetal}
 
-\subsection{Reservoir sampling (``Algorithm R'')}
+\subsection{Reservoir sampling (Algorithm R)}
 \inputminted{Python}{code/reservoirsample.py}
 Initialize a \(k\)-element array with the elements of \(\NN_{<k}\)
 in random order. Iterate over the elements of \(\NN_{<n} \setminus \NN_{<k}\),
