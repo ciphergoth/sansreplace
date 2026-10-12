@@ -13,6 +13,8 @@ def plot(toplot, data, title, output):
                 'font.family': 'serif',
                 'text.usetex': True,
                 'pgf.rcfonts': False,
+                # Fit the paper's 5.35in text width
+                'figure.figsize': (5.3, 4.0),
             }
         else:
             matplotlib.use('Agg')
