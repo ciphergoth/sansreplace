@@ -42,3 +42,24 @@ To run the full C++ and Rust benchmarks in both orders, writing a CSV for each t
 ```
 python/bench_all results/my-run
 ```
+
+## Building the paper
+
+The paper's figures and tables are generated from the CSVs in `results/latest`. After changing
+those, regenerate them with:
+
+```
+cd python
+./make_plots
+./all_least_sq
+```
+
+`make_plots` also writes the animated graphs in `results/latest`. Then build the PDF:
+
+```
+cd latex
+./do_build
+```
+
+This writes `latex/cardchoose.pdf`; the first run downloads `latexrun` into `latex/build`. The
+build prints some warnings from `latexrun` and from the LaTeX packages that can be ignored.
