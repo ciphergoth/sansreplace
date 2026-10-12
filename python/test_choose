@@ -53,7 +53,10 @@ def parse_args():
     p.add_argument('--algorithm', default='cardchoose',
         help="Algorithm to test")
     impl_load.add_arguments(p)
-    return p.parse_args()
+    args = p.parse_args()
+    if args.k > args.n:
+        p.error("k must be at most n")
+    return args
 
 def main():
     args = parse_args()

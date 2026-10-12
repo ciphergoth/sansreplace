@@ -4,7 +4,7 @@ use std::{
     time::Instant,
 };
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Context, Result, anyhow, ensure};
 use clap::{Parser, Subcommand};
 use rand::rngs::SmallRng;
 
@@ -158,6 +158,9 @@ fn time_choose(args: TimeArgs) -> Result<()> {
             })
             .collect::<Result<_>>()?;
     }
+    for c in args.nk.chunks(2) {
+        ensure!(c[1] <= c[0], "--nk {} {}: k must be at most n", c[0], c[1]);
+    }
     let default_values = [nkvalues::ValueSet::Small, nkvalues::ValueSet::Power10];
     let values: Box<dyn Iterator<Item = (String, u32, u32)>> = if !args.nk.is_empty() {
         Box::new(
@@ -299,6 +302,7 @@ fn test_choose(
     show_max: usize,
     algorithm: &str,
 ) -> Result<()> {
+    ensure!(k <= n, "k must be at most n");
     let (_, f) = algorithms::algorithms(sort_type)
         .into_iter()
         .find(|(name, _)| *name == algorithm)

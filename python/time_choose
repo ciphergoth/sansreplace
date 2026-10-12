@@ -110,7 +110,11 @@ def parse_args():
     p.add_argument("--fix-freq", action='store_true')
     p.add_argument("--csv", type=pathlib.Path)
     impl_load.add_arguments(p)
-    return p.parse_args()
+    args = p.parse_args()
+    for n, k in args.nk or []:
+        if k > n:
+            p.error(f"--nk {n} {k}: k must be at most n")
+    return args
 
 def main():
     args = parse_args()
