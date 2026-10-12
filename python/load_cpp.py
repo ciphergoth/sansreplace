@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import importlib
+import json
 import subprocess
-import sys
 
 import cffi
 
@@ -36,38 +35,20 @@ def setup_module(cppdir, build_dir, functions):
     if not (build_dir / "build.ninja").is_file():
         subprocess.run(["meson", "setup",  build_dir], cwd=cppdir, check=True)
     subprocess.run(["ninja", "-C", build_dir], check=True)
+    targets = json.loads(subprocess.run(["meson", "introspect", build_dir, "--targets"],
+        check=True, capture_output=True).stdout)
+    [libfile] = [t["filename"][0] for t in targets if t["name"] == "sansreplace"]
     ffi = cffi.FFI()
     ffi.cdef("""
         void rand_init();
         double timefunc_s(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
                           uint32_t n, uint32_t k, uint64_t iters);
-        void callchoose(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
-                        uint32_t n, uint32_t k, uint32_t* result);
     """)
-    source = """
-        #include "randbelow.h"
-        #include "timing.h"
-
-        void callchoose(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
-                        uint32_t n, uint32_t k, uint32_t* result) {
-            func(n, k, result);
-        }
-    """
     for f in functions:
-        ffi.cdef(f"void (*const {f})(uint32_t n, uint32_t k, uint32_t* result);")
-        source += f"void {f}(uint32_t n, uint32_t k, uint32_t* result);\n"
-    ffi.set_source("sansreplace", source,
-        include_dirs=[str(cppdir)],
-        library_dirs=[str(build_dir)],
-        runtime_library_dirs=[str(build_dir)],
-        libraries=["sansreplace"],
-        extra_compile_args=['-std=c11'],
-        extra_link_args=[f"-Wl,-rpath,{build_dir}"])
-    ffi.compile(tmpdir=str(build_dir))
-    sys.path.append(str(build_dir))
-    sansreplace = importlib.import_module("sansreplace")
-    sansreplace.lib.rand_init()
-    return sansreplace
+        ffi.cdef(f"void {f}(uint32_t n, uint32_t k, uint32_t* result);")
+    lib = ffi.dlopen(libfile)
+    lib.rand_init()
+    return ffi, lib
 
 def list_functions():
     yield ("donothing", "donothing", "donothing")
@@ -76,27 +57,28 @@ def list_functions():
             yield (sorttype, t, f"{sorttype}_{t}")
 
 class Timeable:
-    def __init__(self, sorttype, alg, module, funcname):
+    def __init__(self, sorttype, alg, ffi, lib, funcname):
         self.sorttype = sorttype
         self.alg = alg
-        self._module = module
-        self._fpointer = getattr(module.lib, funcname)
+        self._ffi = ffi
+        self._lib = lib
+        self._fpointer = getattr(lib, funcname)
 
     def call(self, params):
         n, k = params
-        buf = self._module.ffi.new('uint32_t[]', k)
-        self._module.lib.callchoose(self._fpointer, n, k, buf)
+        buf = self._ffi.new('uint32_t[]', k)
+        self._fpointer(n, k, buf)
         return list(buf)
 
     def time(self, params, iters):
         n, k = params
-        return self._module.lib.timefunc_s(self._fpointer, n, k, iters)
+        return self._lib.timefunc_s(self._fpointer, n, k, iters)
 
 def get_timeables(topdir, args):
-    module = setup_module(topdir / "cpp", args.build_dir,
+    ffi, lib = setup_module(topdir / "cpp", args.build_dir,
         [f[2] for f in list_functions()])
     res = {}
     for sorttype, alg, funcname in list_functions():
         res.setdefault(sorttype, {})[alg] = Timeable(sorttype, alg,
-            module, funcname)
+            ffi, lib, funcname)
     return res
