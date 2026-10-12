@@ -25,15 +25,13 @@ cd python
 Even the C++ tests are driven from Python. The C++ tools automatically create the build directory
 and build the code before running if needed; try eg `./test_choose 5 3`.
 
-The Rust implementation is separate. `sweep` times every algorithm over a range of _n_, _k_ values
-and writes the results to a CSV file; `time` times every algorithm for a single _n_, _k_; and
-`test`, like `test_choose`, checks one algorithm for fairness. They use the random order variants
-unless you pass `--sorttype sorted`:
+The Rust implementation is separate, but its subcommands mirror the Python tools and take the same
+options: `time` is like `time_choose`, and writes CSV files in the same format, and `test` is like
+`test_choose`:
 
 ```
 cd rust
-cargo run --release -- sweep results.csv
-cargo run --release -- sweep --sorttype sorted results.csv
-cargo run --release -- time 1000000 1000
+cargo run --release -- time --values small --values fib --csv results.csv
+cargo run --release -- time --sorttype sorted --nk 1000000 1000
 cargo run --release -- test 5 3 --algorithm hsel
 ```
