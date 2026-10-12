@@ -89,7 +89,9 @@
     the algorithm outperforms all we compare it to wherever
     \(k > 100\) and \(n > 300k\), and has acceptable performance
     for all values of \(k, n\). With a fast flat hash table, it
-    remains the fastest for sorted output.
+    remains the fastest for sorted output, and is always within a
+    factor of 1.4 of the fastest hash-based algorithm for random
+    output.
 \end{abstract}
 
 \section{Introduction}
@@ -522,7 +524,12 @@ order output: set-based rejection sampling is up to 1.4 times faster
 than our algorithm for \(k\) between about 100 and \(10^6\) when
 \(n \gg k\). Our algorithm remains faster for smaller and larger \(k\),
 and for sorted output it is faster for all values tested, typically
-by a factor of about two. In theory, the \(\bigO{k}\)
+by a factor of about two. Even for random output, our algorithm is
+never more than 1.4 times slower than the fastest of the hash-based
+algorithms, while each of those is at least 13 times slower than the
+fastest for some \(n, k\), mostly where \(k\) is close to \(n\), and
+2.5 to 4 times slower at large \(k\) even when \(k \ll n\), once its
+hash table no longer fits in cache. In theory, the \(\bigO{k}\)
 performance of these algorithms compared to the \(\bigO{k \log k}\)
 performance of our algorithm should mean that there is a value of
 \(k\) at which these algorithms perform better. However, the poor
@@ -538,8 +545,9 @@ all outperform our algorithm for small \(n/k\). However all of these
 behave pathologically for other values of \(n, k\). Using standard
 library hash tables, ours is the fastest of all of the algorithms
 that perform reasonably for all values of \(n, k\); with a fast flat
-hash table, it is the fastest for sorted output, and comparable to
-set-based rejection sampling for random output.
+hash table, it is the fastest for sorted output, and for random
+output it is comparable to set-based rejection sampling while never
+being far from the fastest.
 
 A good implementation will implement multiple algorithms, and choose
 which one to use based on the values of \(n\) and \(k\). For random

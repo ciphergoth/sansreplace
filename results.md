@@ -33,7 +33,9 @@ take about 0.4–0.5× as long in Rust as in C++, while `cardchoose` takes about
 In random order, `rejectionsample` beats `cardchoose` for _k_ between about 100 and
 10<sup>6</sup> when _k_ is a small fraction of _n_. `cardchoose` is still faster around _k_ = 10,
 around _k_ = 10<sup>7</sup>, where the hash table no longer fits in cache, and when _k_/_n_ is
-large. In sorted order, `cardchoose` outperforms `rejectionsample`, `floydf2`, and `hsel` for all
+large. `cardchoose` is never more than 1.38× slower than the fastest of `rejectionsample`,
+`floydf2`, and `hsel`, while each of those is at least 13× slower than the fastest somewhere. In
+sorted order, `cardchoose` outperforms `rejectionsample`, `floydf2`, and `hsel` for all
 values of _n_ and _k_.
 
 ![graph](results/latest/rust-random.webp)
@@ -51,3 +53,17 @@ with _k_ ≥ 10, giving `cardchoose`'s time as a fraction of the fastest of the 
 | C++, sorted order | 715 of 715 | 0.37× | 0.05–0.52× |
 | Rust, random order | 369 of 715 | 1.00× | 0.08–1.38× |
 | Rust, sorted order | 707 of 707 | 0.47× | 0.03–0.58× |
+
+The next table gives each algorithm's worst case over the same points: the largest factor by
+which it is slower than the fastest of the four.
+
+| | `cardchoose` | `rejectionsample` | `floydf2` | `hsel` |
+|---|---|---|---|---|
+| C++, random order | 1.00× | 91× | 15× | 8.7× |
+| C++, sorted order | 1.00× | 172× | 23× | 19× |
+| Rust, random order | 1.38× | 100× | 13× | 13× |
+| Rust, sorted order | 1.00× | 269× | 32× | 49× |
+
+The worst cases for the hash-based algorithms are where _k_ = _n_. Leaving out the points where
+_k_ ≥ _n_/2, they are still 2.5–6.4× slower than the fastest somewhere, mostly at large _k_, where
+their hash tables no longer fit in cache.

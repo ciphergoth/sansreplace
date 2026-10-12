@@ -20,9 +20,12 @@ acceptable factor of other algorithms.
 
 A fast flat hash table changes the picture for random order output. Rust's standard `HashSet` is
 one, and in Rust `rejectionsample` is up to 1.4× faster than `cardchoose` for _k_ between about
-100 and 10<sup>6</sup> when _k_ is a small fraction of _n_. So `cardchoose` is the right choice
-when you want sorted output, where it is still about twice as fast as the hash-based algorithms,
-or when you don't have a fast hash table to hand.
+100 and 10<sup>6</sup> when _k_ is a small fraction of _n_. But `cardchoose` is never more than
+about 1.4× slower than the fastest of `rejectionsample`, `floydf2`, and `hsel`, while each of those
+has a bad region: at large _k_, once its hash table no longer fits in cache, it is 2.5–4× slower
+than the fastest, and when _k_ is close to _n_ it is 13–100× slower. So `cardchoose` is the safe
+choice for random output, and the best choice when you want sorted output, where it is still
+about twice as fast as the hash-based algorithms, or when you don't have a fast hash table to hand.
 
 * [Guide to algorithms tested](algorithms.md)
 * [Description of Cardchoose](cardchoose.md)
