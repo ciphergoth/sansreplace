@@ -8,6 +8,8 @@ mod algorithms;
 
 #[derive(Parser, Debug)]
 struct Args {
+    #[arg(long, value_enum, default_value_t = algorithms::SortType::Random)]
+    sorttype: algorithms::SortType,
     csv: std::path::PathBuf,
 }
 
@@ -54,10 +56,10 @@ fn write_row(path: &Path, name: &str, n: u32, k: u32, t: Duration) -> Result<()>
     Ok(())
 }
 
-fn time_all(csv: &Path) -> Result<()> {
+fn time_all(sort_type: algorithms::SortType, csv: &Path) -> Result<()> {
     const MAX: u32 = 1_000_000_000;
     const MAXTIME: Duration = Duration::from_secs(3);
-    for (name, f) in algorithms::algorithms().iter() {
+    for (name, f) in algorithms::algorithms(sort_type).iter() {
         let mut kk = (1, 1);
         'kk: while kk.1 < MAX {
             let mut nn = kk;
@@ -85,6 +87,6 @@ fn main() -> Result<()> {
     if args.csv.is_file() {
         std::fs::remove_file(&args.csv)?;
     }
-    time_all(&args.csv)?;
+    time_all(args.sorttype, &args.csv)?;
     Ok(())
 }

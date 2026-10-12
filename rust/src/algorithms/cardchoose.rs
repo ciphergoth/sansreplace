@@ -1,4 +1,4 @@
-pub fn random_order<R>(rng: &mut R, length: u32, res: &mut [u32])
+fn cardchoose<R>(rng: &mut R, length: u32, res: &mut [u32])
 where
     R: rand::RngExt + ?Sized,
 {
@@ -13,8 +13,25 @@ where
             res[i as usize] = res[(r - t) as usize];
         }
     }
-    res.sort();
-    for i in 0..amount {
+    res.sort_unstable();
+}
+
+pub fn sorted_order<R>(rng: &mut R, length: u32, res: &mut [u32])
+where
+    R: rand::RngExt + ?Sized,
+{
+    cardchoose(rng, length, res);
+    for (r, i) in res.iter_mut().zip(0..) {
+        *r += i;
+    }
+}
+
+pub fn random_order<R>(rng: &mut R, length: u32, res: &mut [u32])
+where
+    R: rand::RngExt + ?Sized,
+{
+    cardchoose(rng, length, res);
+    for i in 0..res.len() as u32 {
         let r = rng.random_range(0..=i);
         let t = res[i as usize] + i;
         res[i as usize] = res[r as usize];

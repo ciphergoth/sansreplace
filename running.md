@@ -25,9 +25,11 @@ cd python
 Even the C++ tests are driven from Python. The C++ tools automatically create the build directory
 and build the code before running if needed; try eg `./test_choose 5 3`.
 
-The Rust implementation is separate, and writes timings to a CSV file:
+The Rust implementation is separate, and writes timings to a CSV file. Like `time_choose`, it
+times the random order variants unless you pass `--sorttype sorted`:
 
 ```
 cd rust
 cargo run --release -- results.csv
+cargo run --release -- --sorttype sorted results.csv
 ```

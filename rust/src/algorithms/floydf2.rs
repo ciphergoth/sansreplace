@@ -1,3 +1,23 @@
+pub fn sorted_order<R>(rng: &mut R, length: u32, res: &mut [u32])
+where
+    R: rand::RngExt + ?Sized,
+{
+    assert!(res.len() <= (length as usize));
+    let amount = res.len() as u32;
+    let mut done = std::collections::HashSet::with_capacity(amount as usize);
+    for i in 0..amount {
+        let j = length - amount + i;
+        let t = rng.random_range(0..=j);
+        if done.insert(t) {
+            res[i as usize] = t;
+        } else {
+            res[i as usize] = j;
+            done.insert(j);
+        }
+    }
+    res.sort_unstable();
+}
+
 pub fn random_order<R>(rng: &mut R, length: u32, res: &mut [u32])
 where
     R: rand::RngExt + ?Sized,

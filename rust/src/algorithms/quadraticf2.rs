@@ -13,3 +13,11 @@ where
         res[i as usize] = t;
     }
 }
+
+pub fn sorted_order<R>(rng: &mut R, length: u32, res: &mut [u32])
+where
+    R: rand::RngExt + ?Sized,
+{
+    random_order(rng, length, res);
+    res.sort_unstable();
+}
