@@ -115,8 +115,8 @@ strengths, but all suffer from one of two disadvantages:
 
 We here present an algorithm which requires no storage beyond the array in which
 the result is written but achieves a \(\bigO{k \log k}\) runtime. The
-algorithm was first made public in October 2018; as far as we know it is
-novel, and we would be glad to hear of any earlier description.
+algorithm was first made public in October 2018; \autoref{priorart}
+places it relative to earlier work.
 
 In Python the algorithm works as follows:
 
@@ -248,7 +248,7 @@ number as a star and each unchosen one as a bar. For \(n = 7\), \(k =
 
 A row of \(k\) stars and \(n - k\) bars is exactly a \(k\)-element
 subset of \(\NN_{<n}\): the stars' positions are the chosen numbers.
-Following \cite{feller}, instead of its position we describe each
+Following \cite[Chapter II \S 5]{feller}, instead of its position we describe each
 star by its \emph{value}, the number of bars to its left:
 
 \begin{displaymath}
@@ -289,7 +289,7 @@ random and converting it gives a subset chosen uniformly at random:
 each subset is reached from exactly one multiset. So what remains is
 to choose an element of \(\multichoose{\NN_{<t}}{k}\) fairly.
 
-\section{Choosing a multiset fairly}
+\section{Choosing a multiset fairly}\label{fairmultiset}
 
 Drawing \(k\) values independently from \(\NN_{<t}\) does not give a
 uniform multiset. With \(t = 2\), \(k = 2\), the multiset \([0, 1]\)
@@ -378,7 +378,47 @@ distinct integers in \(\NN_{<n}\), uniformly among all such subsets:
 The listing in the introduction is these two procedures merged into
 one.
 
-\section{Benchmarks}
+\section{Prior art}\label{priorart}
+
+Physicists have names for the three distributions in this story
+\cite[Chapter II \S 5]{feller}. Distinguishable particles placed independently in
+cells, the biased way of picking a multiset in \autoref{fairmultiset},
+is Maxwell--Boltzmann statistics. Indistinguishable particles with every
+occupancy pattern equally likely, a uniform multiset, is Bose--Einstein.
+At most one particle per cell with every pattern equally likely, a
+uniform subset, is Fermi--Dirac. Stars and bars is the standard way to
+count the Bose--Einstein configurations, by matching them with
+Fermi--Dirac ones. So the one-line summary of our algorithm is: generate
+a Bose--Einstein configuration with a Pólya urn, then map it to
+Fermi--Dirac by stars and bars.
+
+The mathematics of both halves is classical. The multiset loop is a
+Pólya urn \cite[Chapter V \S 2]{feller}: start with \(t\) balls, one of each
+colour; draw a ball uniformly at random, and put it back along with a
+new ball of the same colour. The urn is a textbook object of study, and
+that with one ball of each colour its counts are uniform, which is to
+say Bose--Einstein, is a standard lemma about it
+\cite[Lemma 2.7]{levinperes}; Niven and Grendar \cite{nivengrendar} map
+all three statistics onto the urn, with Maxwell--Boltzmann as
+replacement without a copy, Bose--Einstein as replacement with a copy,
+and Fermi--Dirac as no replacement. But the urn is presented as a model,
+not as a way to generate anything, beyond passing remarks that it could
+be used so \cite{cancriniposta}. The nearest thing to running an urn as
+a sampler in earnest is in Bayesian statistics, where the
+Blackwell--MacQueen urn \cite{blackwellmacqueen} draws an exchangeable
+sequence from a Dirichlet process, which is a different purpose. The
+combinatorial generation literature does generate random multisets, but
+through stars and bars in the other direction: Nijenhuis and Wilf's
+RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a random
+\((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences it. What
+we have not found elsewhere is the urn presented as a generator for
+uniform multisets, or its composition with stars and bars, which
+together give a sampler for sampling without replacement that needs no
+set, map or extra memory, uses only exact integer draws, and performs
+as described in \autoref{benchmarks}. We would be glad to hear of any
+earlier description.
+
+\section{Benchmarks}\label{benchmarks}
 
 The accompanying repository
 (\url{https://github.com/ciphergoth/sansreplace}) includes C++ and Rust

@@ -7,8 +7,10 @@ simplest algorithm for solving it, via these [Python](python/algorithms/quadrati
 [C++](cpp/quadraticreject.cpp) implementations.
 
 Here, I propose an algorithm I call "Cardchoose" for this
-problem. I first made it public in October 2018, and as far as I know it is novel; I would be
-glad to hear of any earlier description. The only data structure
+problem. I first made it public in October 2018. Its two ingredients, a Pólya urn and the
+stars-and-bars bijection, are classical mathematics; what I have not found elsewhere is the urn
+run as a generator, or the two composed into a sampler, see [prior art](priorart.md).
+I would be glad to hear of any earlier description. The only data structure
 used is the output vector, so no extra memory is needed; it runs in O(_k_ log
 _k_) time. I've implemented this and other algorithms in C++, Rust and Python
 to compare their performance.
@@ -30,6 +32,7 @@ about twice as fast as the hash-based algorithms, or when you don't have a fast 
 
 * [Guide to algorithms tested](algorithms.md)
 * [Description of Cardchoose](cardchoose.md)
+* [Prior art](priorart.md)
 * [Benchmark results](results.md)
 * [Running this software](running.md)
 

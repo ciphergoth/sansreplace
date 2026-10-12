@@ -143,3 +143,5 @@ positions 1, 2 and 5, with the unchosen numbers 0, 3, 4 and 6 as the bars.
 
 For unsorted output, `random_choose` runs the sorted version and then shuffles the result, which
 costs one extra random number per element.
+
+How this relates to earlier work is in [prior art](priorart.md).
