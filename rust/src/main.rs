@@ -1,16 +1,25 @@
 use std::{path::Path, time::Duration};
 
 use anyhow::{Context, Result};
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use rand::rngs::SmallRng;
 
 mod algorithms;
 
 #[derive(Parser, Debug)]
 struct Args {
-    #[arg(long, value_enum, default_value_t = algorithms::SortType::Random)]
+    #[arg(long, global = true, value_enum, default_value_t = algorithms::SortType::Random)]
     sorttype: algorithms::SortType,
-    csv: std::path::PathBuf,
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand, Debug)]
+enum Command {
+    /// Time every algorithm over a range of n, k values, writing the results to a CSV file
+    Sweep { csv: std::path::PathBuf },
+    /// Time every algorithm for a single n, k
+    Time { n: u32, k: u32 },
 }
 
 fn time_test<F>(f: F, length: u32, amount: u32) -> std::time::Duration
@@ -82,11 +91,27 @@ fn time_all(sort_type: algorithms::SortType, csv: &Path) -> Result<()> {
     Ok(())
 }
 
+fn time_one(sort_type: algorithms::SortType, n: u32, k: u32) {
+    let mut res: Vec<_> = algorithms::algorithms(sort_type)
+        .iter()
+        .map(|(name, f)| (time_test(f, n, k), *name))
+        .collect();
+    res.sort();
+    for (t, name) in res {
+        println!("{t:>12.1?} {name}");
+    }
+}
+
 fn main() -> Result<()> {
     let args = Args::parse();
-    if args.csv.is_file() {
-        std::fs::remove_file(&args.csv)?;
+    match args.command {
+        Command::Sweep { csv } => {
+            if csv.is_file() {
+                std::fs::remove_file(&csv)?;
+            }
+            time_all(args.sorttype, &csv)?;
+        }
+        Command::Time { n, k } => time_one(args.sorttype, n, k),
     }
-    time_all(args.sorttype, &args.csv)?;
     Ok(())
 }
