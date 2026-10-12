@@ -142,4 +142,4 @@ Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
 [Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
 
-This is my new algorithm. [Detailed description](cardchoose.md).
+This is my algorithm, first made public in October 2018. [Detailed description](cardchoose.md).

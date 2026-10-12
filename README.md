@@ -7,7 +7,8 @@ simplest algorithm for solving it, via these [Python](python/algorithms/quadrati
 [C++](cpp/quadraticreject.cpp) implementations.
 
 Here, I propose an algorithm I call "Cardchoose" for this
-problem which as far as I know is novel. The only data structure
+problem. I first made it public in October 2018, and as far as I know it is novel; I would be
+glad to hear of any earlier description. The only data structure
 used is the output vector, so no extra memory is needed; it runs in O(_k_ log
 _k_) time. I've implemented this and other algorithms in C++, Rust and Python
 to compare their performance.
