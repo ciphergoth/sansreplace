@@ -29,7 +29,7 @@ def _plot(toplot, data, title, output):
     ax.set_xlabel("k")
     ax.set_ylabel("time/k (ns)")
     ax.set_xlim(1, 1E9)
-    ax.set_ylim(0, 2E2)
+    ax.set_ylim(0, 1E2)
     #ttl = ax.set_title(args.title, animated=True)
     ttl = ax.text(.5, 1.01, title, 
         horizontalalignment='center', transform = ax.transAxes)
