@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import os
 import pathlib
 import subprocess
 import sys
@@ -43,6 +44,10 @@ def main():
         fl.chmod(0o755)
         fl.rename(latexrun)
 
+    # Nix sets SOURCE_DATE_EPOCH to 1980 for reproducible builds, and
+    # LaTeX's \today follows it; we want the real date on the paper.
+    env = dict(os.environ)
+    env.pop("SOURCE_DATE_EPOCH", None)
     subprocess.run([str(latexrun),
             "-o", "cardchoose.pdf",
             "-O", str(build / "latex.out"),
@@ -50,7 +55,7 @@ def main():
             "--latex-args=-shell-escape",
             "--bibtex-cmd", "biber",
             "cardchoose.tex"],
-        cwd=scriptdir, check=True)
+        cwd=scriptdir, check=True, env=env)
 
 if __name__ == "__main__":
     main()
