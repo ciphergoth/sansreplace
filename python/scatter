@@ -45,6 +45,7 @@ def main():
         'iterativechoose': '+',
         'select': 'x',
         'reservoirsample': 'D',
+        'vitterd': 'v',
     }
     for l in data.values():
         #winner = min((it for it in l if it.alg in markermap), default=None, key=lambda it: it.time)
