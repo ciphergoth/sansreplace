@@ -42,11 +42,18 @@ extern "C" void sorted_floydf2(uint32_t n, uint32_t k, uint32_t* result) {
 }
 
 extern "C" void random_floydf2(uint32_t n, uint32_t k, uint32_t* result) {
-    floydf2(n, k, result);
-    for (uint32_t i = 1; i < k; i++) {
-        uint32_t r = randbelow(i + 1);
-        auto t = result[i];
-        result[i] = result[r];
-        result[r] = t;
+    std::unordered_set<uint32_t> done(2 * k);
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t m = n + i - k;
+        uint32_t r = randbelow(m + 1);
+        auto iresult = done.insert(r);
+        if (iresult.second) {
+            result[i] = r;
+        } else {
+            done.insert(m);
+            uint32_t ix = randbelow(i);
+            result[i] = result[ix];
+            result[ix] = m;
+        }
     }
 }
