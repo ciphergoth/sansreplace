@@ -105,6 +105,8 @@ def parse_args():
         help="Named set of n,k values to time")
     values.add_argument("--nk", action='append', nargs=2, type=int, metavar=('N', 'K'),
         help="Single n,k value to time")
+    p.add_argument("--max-k", type=int,
+        help="Skip n,k values with k larger than this")
     p.add_argument("--fix-freq", action='store_true')
     p.add_argument("--csv", type=pathlib.Path)
     impl_load.add_arguments(p)
@@ -139,6 +141,8 @@ def main():
         vitr = ((f"n = {n}, k = {k}", n, k) for n, k in args.nk)
     else:
         vitr = nkvalues.iter_values(args.values)
+    if args.max_k is not None:
+        vitr = (v for v in vitr if v[2] <= args.max_k)
     run_timings(args, vitr, totime)
 
 if __name__ == '__main__':

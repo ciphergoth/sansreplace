@@ -38,6 +38,9 @@ enum Command {
         /// Single n,k value to time
         #[arg(long, num_args = 2, value_names = ["N", "K"])]
         nk: Vec<u32>,
+        /// Skip n,k values with k larger than this
+        #[arg(long)]
+        max_k: Option<u32>,
         /// File to write results to
         #[arg(long)]
         csv: Option<PathBuf>,
@@ -136,6 +139,7 @@ struct TimeArgs {
     algorithm: Vec<String>,
     values: Vec<nkvalues::ValueSet>,
     nk: Vec<u32>,
+    max_k: Option<u32>,
     csv: Option<PathBuf>,
 }
 
@@ -182,6 +186,7 @@ fn time_choose(args: TimeArgs) -> Result<()> {
                 ("algorithm", pylist(&args.algorithm)),
                 ("csv", csv.display().to_string()),
                 ("language", "rust".to_string()),
+                ("max_k", args.max_k.map_or(String::new(), |m| m.to_string())),
                 (
                     "nk",
                     if args.nk.is_empty() {
@@ -230,7 +235,7 @@ fn time_choose(args: TimeArgs) -> Result<()> {
         }
     };
     let mut klim: HashMap<&str, u32> = HashMap::new();
-    for (descrip, n, k) in values {
+    for (descrip, n, k) in values.filter(|v| args.max_k.is_none_or(|m| v.2 <= m)) {
         println!("{descrip}");
         let mut res = Vec::new();
         for (alg, f) in &timeables {
@@ -328,6 +333,7 @@ fn main() -> Result<()> {
             algorithm,
             values,
             nk,
+            max_k,
             csv,
         } => time_choose(TimeArgs {
             sort_type: args.sorttype,
@@ -336,6 +342,7 @@ fn main() -> Result<()> {
             algorithm,
             values,
             nk,
+            max_k,
             csv,
         })?,
         Command::Test {
