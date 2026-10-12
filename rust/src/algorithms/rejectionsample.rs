@@ -3,13 +3,12 @@ where
     R: rand::RngExt + ?Sized,
 {
     assert!(res.len() <= (length as usize));
-    let amount = res.len();
-    let mut done = std::collections::HashSet::with_capacity(amount as usize);
-    for i in 0..amount {
+    let mut done = std::collections::HashSet::with_capacity(res.len());
+    for r in res.iter_mut() {
         loop {
             let t = rng.random_range(0..length);
             if done.insert(t) {
-                res[i] = t;
+                *r = t;
                 break;
             }
         }

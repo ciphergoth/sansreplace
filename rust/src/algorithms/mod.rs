@@ -4,7 +4,9 @@ mod quadraticf2;
 mod quadraticreject;
 mod rejectionsample;
 
-pub fn algorithms<R>() -> Vec<(&'static str, Box<dyn Fn(&mut R, u32, &mut [u32])>)>
+pub type Algorithm<R> = Box<dyn Fn(&mut R, u32, &mut [u32])>;
+
+pub fn algorithms<R>() -> Vec<(&'static str, Algorithm<R>)>
 where
     R: rand::RngExt + ?Sized + 'static,
 {
