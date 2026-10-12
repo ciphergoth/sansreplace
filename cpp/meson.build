@@ -17,7 +17,7 @@ project('sansreplace', ['c', 'cpp'],
 'cpp_std=c++14'])
 
 add_project_arguments(
-    '-fno-strict-aliasing', '-Ofast',
+    '-fno-strict-aliasing', '-O3', '-ffast-math',
     language : ['c', 'cpp'])
 include_dirs = [
     include_directories('../third_party/SIMDxorshift/include')
