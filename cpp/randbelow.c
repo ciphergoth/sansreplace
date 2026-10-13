@@ -18,7 +18,7 @@
 
 uint64_t rand_state[4];
 uint64_t rand_buf;
-int rand_have_half;
+bool rand_have_half;
 
 // SplitMix64, the seeding generator recommended for Xoshiro
 static uint64_t splitmix64(uint64_t* x) {
@@ -34,5 +34,5 @@ void rand_init() {
     for (int i = 0; i < 4; i++) {
         rand_state[i] = splitmix64(&seed);
     }
-    rand_have_half = 0;
+    rand_have_half = false;
 }

@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // The generator is defined here so that it can be inlined into each
@@ -50,15 +51,15 @@ static inline uint64_t random64(void) {
 
 // Each output supplies two 32-bit words
 extern uint64_t rand_buf;
-extern int rand_have_half;
+extern bool rand_have_half;
 
 static inline uint32_t random32(void) {
     if (rand_have_half) {
-        rand_have_half = 0;
+        rand_have_half = false;
         return (uint32_t)(rand_buf >> 32);
     }
     rand_buf = random64();
-    rand_have_half = 1;
+    rand_have_half = true;
     return (uint32_t)rand_buf;
 }
 
