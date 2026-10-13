@@ -69,7 +69,7 @@
 \raggedright
 \raggedbottom
 
-\title{A new algorithm for sampling without replacement}
+\title{Algorithms for sampling without replacement}
 \author{Paul~Crowley}
 \affil{Anthropic PBC}
 
@@ -77,19 +77,20 @@
 \maketitle
 \begin{abstract}
     A variety of algorithms exist for fairly choosing $k$ distinct
-    natural numbers below \(n\). However, they either require a
-    hash-based data structure such as a set or dictionary, or show
-    asymptotically poor performance for some values of $k, n$. We
-    present here an algorithm that requires no such data structure or
-    auxiliary storage, only an integer sort taking $\bigO{k \log k}$
-    time; the algorithm is based on a method of fair multiset
-    choosing. In our benchmarks using standard library hash tables,
-    the algorithm outperforms all we compare it to wherever
-    \(k > 100\) and \(n > 300k\), and has acceptable performance
-    for all values of \(k, n\). With a fast flat hash table, it
-    remains the fastest for sorted output, and is always within a
-    factor of 1.4 of the fastest hash-based algorithm for random
-    output.
+    natural numbers below \(n\). We describe eleven of them, among them
+    one, cardchoose, which we believe to be new, and benchmark C++ and
+    Rust implementations of each over a wide range of \(n\) and \(k\),
+    for both sorted and random order output. No algorithm is close to
+    the fastest everywhere: in each case the best single algorithm is
+    somewhere 2.9 to 13 times slower than the fastest, while the best
+    set of three, choosing between them based on \(n\) and \(k\), is
+    never more than 1.2 to 1.9 times slower. Cardchoose needs no storage
+    beyond the output array and takes $\bigO{k \log k}$ time, using an
+    integer sort; it combines a P\'olya urn, which chooses a
+    multiset fairly, with the stars and bars bijection between
+    multisets and sets. It belongs to the best pair in three of the four cases, and
+    with a fast sort it is the fastest algorithm for sorted output over
+    most of the range tested.
 \end{abstract}
 
 \section{Introduction}
@@ -99,30 +100,27 @@ n-1\}$ such that every \(k\)-element subset is equally likely to be
 returned. Many programming languages include facilities for this in
 their standard libraries, for example Python's
 \mintinline{python}{random.sample()} or Rust's
-\mintinline{rust}{rand::seq::index::sample}. In \autoref{otheralgs} we
-discuss several known algorithms to this end; these all have their
-strengths, but all suffer from one of two disadvantages:
-\begin{itemize}
-    \item Some are fast for certain values of \(k, n\), e.g. where
-    \(k\) is small or where \(\frac{n}{k}\) is small, but very slow
-    for other values.
-    \item Others achieve much better asymptotic performance, but at
-    the cost of updating a hash-based data structure such as a set or
-    dictionary for each of the \(k\) values generated, adding a
-    significant constant multiplier to the overall runtime as well as
-    memory cost.
-\end{itemize}
+\mintinline{rust}{rand::seq::index::sample}.
 
-We here present an algorithm which requires no storage beyond the array in which
-the result is written but achieves a \(\bigO{k \log k}\) runtime. We first
-proposed the algorithm in October 2018; \autoref{priorart} places it
-relative to earlier work.
+Many algorithms solve this problem, with different strengths. Some are
+fast only for certain values of \(k, n\), for example where \(k\) is
+small or where \(\frac{n}{k}\) is small. Some update a hash-based data
+structure such as a set or dictionary for each value generated, which
+adds memory and a significant constant factor to the runtime. Some need
+extra memory proportional to \(n\), or floating-point arithmetic. In
+\autoref{otheralgs} we describe eleven algorithms, and in
+\autoref{benchmarks} we compare C++ and Rust implementations of each.
+Since no single algorithm is close to the fastest for all \(n, k\), we
+also find the small sets of algorithms that between them come closest,
+which are what a library should choose between.
 
-In Python the algorithm works as follows:
+One of the algorithms, which we call cardchoose, we believe to be new.
+It needs no storage beyond the array in which the result is written,
+and takes \(\bigO{k \log k}\) time. We first proposed it in October
+2018; \autoref{starsandbars} to \autoref{proof} explain it,
+and \autoref{priorart} places it relative to earlier work.
 
-\inputminted{Python}{code/cardchoose.py}
-
-\section{Comparison algorithms}\label{otheralgs}
+\section{Algorithms}\label{otheralgs}
 Let \(\NN_{<n}\) denote the \(n\)-element set \(\{0, 1, \ldots,
 n-1\}\). Though the literature includes algorithms that return an
 iterator, we here focus on algorithms that return an array of \(k\)
@@ -155,7 +153,7 @@ and a ``sorted'' variant of each algorithm.
     Vitter's Algorithm D & Sorted &  & \(k\) \\
     SELECT & Random & \(n\)-element array & \(n\) \\
     HSEL & Random & Dictionary & \(k\) \\
-    Our work & Sorted &  & \(k \log k\)
+    Cardchoose & Sorted &  & \(k \log k\)
     \end{tabular}
 \end{center}
 
@@ -251,6 +249,14 @@ first \(k\) entries of the virtual array in the output array itself,
 so only swaps that reach beyond them touch the hash table. This variant
 was described by rici \cite{rici}; we thank Mathias Weller for bringing
 it to our attention.
+
+\subsection{Cardchoose}
+\inputminted{Python}{code/cardchoose.py}
+Choose a multiset of \(k\) values below \(n - k + 1\) fairly, using
+a P\'olya urn, then sort it and add each value's index to it to turn it
+into a set. \autoref{starsandbars} to \autoref{proof} explain
+why this works. The output is sorted, and the only storage needed is
+the output array.
 
 \section{Notation}
 
@@ -351,7 +357,7 @@ gaps, and the gaps with \(b\) bars to the left are the \(c + 1\) gaps
 around the \(c\) stars that already have value \(b\): one fresh
 option, plus one for each existing star with that value.
 
-\section{Proof}
+\section{Proof}\label{proof}
 
 Tag each star with the number of the draw that placed it, and be
 specific about which gap each draw uses: a fresh value \(b\) goes in
@@ -411,7 +417,7 @@ distinct integers in \(\NN_{<n}\), uniformly among all such subsets:
 
 \inputminted{Python}{code/choose_binom.py}
 
-The listing in the introduction is these two procedures merged into
+The listing in \autoref{otheralgs} is these two procedures merged into
 one.
 
 \section{Prior art}\label{priorart}
@@ -424,7 +430,7 @@ occupancy pattern equally likely, a uniform multiset, is Bose--Einstein.
 At most one particle per cell with every pattern equally likely, a
 uniform subset, is Fermi--Dirac. Stars and bars is the standard way to
 count the Bose--Einstein configurations, by matching them with
-Fermi--Dirac ones. So the one-line summary of our algorithm is: generate
+Fermi--Dirac ones. So the one-line summary of cardchoose is: generate
 a Bose--Einstein configuration with a Pólya urn, then map it to
 Fermi--Dirac by stars and bars.
 
@@ -487,13 +493,16 @@ machine has.
 
 The C++ implementations use the standard library's
 \mintinline{cpp}{std::unordered_set} and
-\mintinline{cpp}{std::unordered_map}, which are node-based, so they
-show the performance available from a standard data structure. The
-Rust implementations use the Rust standard library's
-\mintinline{rust}{HashSet} and \mintinline{rust}{HashMap}, which are
-flat open-addressing hash tables based on SwissTable, and are much
-faster: the hash-based algorithms take about 0.4--0.5 times as long
-in Rust as in C++, while our algorithm takes about 0.6 times as long.
+\mintinline{cpp}{std::unordered_map}, which are node-based, and
+\mintinline{cpp}{std::sort}, so they show the performance available
+from the standard library. The Rust implementations use the Rust
+standard library's \mintinline{rust}{HashSet} and
+\mintinline{rust}{HashMap}, which are flat open-addressing hash tables
+based on SwissTable, and its unstable sort. These are much faster: the
+hash-based algorithms take about 0.4--0.5 times as long in Rust as in
+C++, and cardchoose about 0.6--0.7 times as long, while RANKSB and
+Vitter's Algorithm D, which need neither, take about the same time in
+both languages.
 
 In \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} we graph
 time/\(k\) in ns against \(k\) for two different values of \(n\) for
@@ -540,37 +549,46 @@ and complete benchmark data at
     \label{rustsortedlargen}
 \end{figure}
 
-With C++ standard library hash tables, our algorithm outperforms all
-hash- and set-based algorithms for all values of \(n\) and \(k\)
-tested. With Rust's flat hash tables, the picture changes for random
-order output: set-based rejection sampling is up to 1.4 times faster
-than our algorithm for \(k\) between about 100 and \(10^6\) when
-\(n \gg k\). Our algorithm remains faster for smaller and larger \(k\),
-and for sorted output it is faster for all values tested, typically
-by a factor of about two. Even for random output, our algorithm is
-never more than 1.4 times slower than the fastest of the hash-based
-algorithms, while each of those is at least 13 times slower than the
-fastest for some \(n, k\), mostly where \(k\) is close to \(n\), and
-2.5 to 4 times slower at large \(k\) even when \(k \ll n\), once its
-hash table no longer fits in cache. In theory, the \(\bigO{k}\)
-performance of these algorithms compared to the \(\bigO{k \log k}\)
-performance of our algorithm should mean that there is a value of
-\(k\) at which these algorithms perform better. However, the poor
-cache coherence of these algorithms means that their performance more
-closely resembles \(\bigO{k \log k}\) in practice. For very large
-\(k\), a parallel algorithm such as \cite{sandersetal} should
-generally be used; this algorithm calls a sequential algorithm at the
-leaves of the parallel tree it builds.
+No algorithm is close to the fastest for all \(n, k\). Quadratic
+rejection and quadratic F2 are the fastest for small \(k\), and SELECT,
+reservoir sampling and iterative choosing for small \(n/k\), but each of
+these is very slow elsewhere. The other algorithms run in
+\(\bigO{k}\) or \(\bigO{k \log k}\) time, and differ by smaller
+factors.
 
-Quadratic rejection and quadratic F2 both outperform our algorithm for
-small \(k\), while SELECT, reservoir sampling, and iterative choosing
-all outperform our algorithm for small \(n/k\). However all of these
-behave pathologically for other values of \(n, k\). Using standard
-library hash tables, ours is the fastest of all of the algorithms
-that perform reasonably for all values of \(n, k\); with a fast flat
-hash table, it is the fastest for sorted output, and for random
-output it is comparable to set-based rejection sampling while never
-being far from the fastest.
+For sorted output, the fastest of these is RANKSB in C++ and cardchoose
+in Rust. Over the points with \(k \leq n/2\), RANKSB is the fastest of
+the two at 522 of 663 in C++, where cardchoose takes a median of 1.24
+times as long, and cardchoose at 656 of 663 in Rust, where RANKSB takes
+a median of 1.62 times as long. RANKSB takes about the same time in
+both languages, so the difference is in cardchoose, most likely in its
+sort. As \(k\) approaches \(n\), RANKSB slows down, taking over 100 times
+as long as the fastest algorithm at \(k = n\); \cite{nijenhuiswilf}
+pairs it with iterative choosing (which Nijenhuis and Wilf refer to
+as RKS2) for \(k \geq n/2\). Vitter's
+Algorithm D, with its fallback to Algorithm A, has the smallest worst
+case of any single algorithm for sorted output, but over all the
+points tested takes a median of 1.3 times as long as cardchoose in C++
+and 2.3 times as long in Rust.
+
+For random output, the hash-based algorithms are competitive only with
+a fast hash table. With C++ standard library hash tables, cardchoose is
+faster than set-based rejection sampling, Floyd's F2 and HSEL at every
+point with \(k \leq n/2\), and they take a median of about 1.65 times as
+long, though RANKSB followed by a shuffle is faster still at most of
+these points. With Rust's flat hash tables, HSEL is the fastest of
+these four at most points, and cardchoose is never more than 1.51 times
+slower than the fastest of them for \(k \leq n/2\). The hash-based
+algorithms slow down at large \(k\), once the hash table no longer fits
+in cache, and as \(k\) approaches \(n\). In theory, their
+\(\bigO{k}\) performance compared to the \(\bigO{k \log k}\)
+performance of cardchoose should mean that there is a value of \(k\)
+at which they perform better. However, the poor cache coherence of
+these algorithms means that their performance more closely resembles
+\(\bigO{k \log k}\) in practice. For very large \(k\), a parallel
+algorithm such as \cite{sandersetal} should generally be used; this
+algorithm calls a sequential algorithm at the leaves of the parallel
+tree it builds.
 
 A good implementation will implement multiple algorithms, and choose
 which one to use based on the values of \(n\) and \(k\).
