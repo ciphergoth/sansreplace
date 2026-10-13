@@ -50,6 +50,7 @@ LATEX_NAMES = {
     "iterativechoose": "iterative choosing",
     "reservoirsample": "reservoir sampling",
     "vitterd": "Vitter's D",
+    "hiddenshuffle": "Hidden Shuffle",
     "select": "SELECT",
     "hsel": "HSEL",
     "cardchoose": "cardchoose",
