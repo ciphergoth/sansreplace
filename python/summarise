@@ -18,6 +18,7 @@
 # of a group, over the points with k >= 10, as in the tables in results.md.
 
 import argparse
+import math
 import pathlib
 import statistics
 
@@ -38,6 +39,30 @@ def ratios(csv, group, max_frac):
             res[alg].append((t[alg] / best, point))
     return res
 
+def short(x):
+    "x for a table, in standard form from 10^4"
+    if x < 10:
+        return f"{x:.2f}"
+    if x < 100:
+        return f"{x:.1f}"
+    if x < 10000:
+        return f"{x:,.0f}"
+    e = math.floor(math.log10(x))
+    return f"{x / 10**e:.1f}×10<sup>{e}</sup>"
+
+def markdown(results, group, max_frac):
+    "A table of each algorithm's median and worst ratio, with a column per CSV"
+    csvs = sorted(results.glob("*.csv"))
+    r = {csv: ratios(csv, group, max_frac) for csv in csvs}
+    print("| | " + " | ".join(csv.stem for csv in csvs) + " |")
+    print("|---" * (len(csvs) + 1) + "|")
+    for alg in group:
+        cells = []
+        for csv in csvs:
+            x = [y for y, _ in r[csv][alg]]
+            cells.append(f"{short(statistics.median(x))}× / {short(max(x))}×")
+        print(f"| `{alg}` | " + " | ".join(cells) + " |")
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("results", type=pathlib.Path)
@@ -45,8 +70,13 @@ def main():
         default=["rejectionsample", "floydf2", "hsel", "cardchoose"])
     parser.add_argument("--max-frac", type=float, default=1.0,
         help="Only include points with k <= max_frac * n")
+    parser.add_argument("--markdown", action="store_true",
+        help="Print a table of median and worst ratios instead")
     args = parser.parse_args()
     group = sorted(args.group, key=ALGORITHMS.index)
+    if args.markdown:
+        markdown(args.results, group, args.max_frac)
+        return
     for csv in sorted(args.results.glob("*.csv")):
         print(f"== {csv.stem}")
         for alg, r in ratios(csv, group, args.max_frac).items():
