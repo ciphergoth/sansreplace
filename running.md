@@ -57,6 +57,7 @@ those, regenerate them with:
 cd python
 ./make_plots
 ./all_least_sq
+./cover --latex ../latex/cover-table.tex
 ```
 
 `make_plots` also writes the animated graphs in `results/latest`. Then build the PDF:
