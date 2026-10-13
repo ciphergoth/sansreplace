@@ -6,35 +6,34 @@ result is equally likely. One way to get a precise understanding of the problem 
 simplest algorithm for solving it, via these [Python](python/algorithms/quadraticreject.py) or
 [C++](cpp/quadraticreject.cpp) implementations.
 
-Here, I describe an algorithm I call "Cardchoose" for this problem. The only data structure used
-is the output vector, so no extra memory is needed; it runs in O(_k_ log _k_) time. I've
-implemented this and other algorithms in C++, Rust and Python to compare their performance.
+This repository surveys algorithms for this problem. It implements eleven of them in Python, C++
+and Rust, and benchmarks the C++ and Rust implementations over a wide range of _n_ and _k_, for
+both sorted and random order output. The C++ implementations use only what the C++ standard
+library provides; the Rust ones use Rust's standard library, whose hash tables and sort are much
+faster.
 
-I first proposed Cardchoose in October 2018. Its two ingredients, a Pólya urn and the
-stars-and-bars bijection, are classical mathematics; what I have not found elsewhere is the urn
-run as a generator, or the two composed into a sampler (see [prior art](priorart.md)). I would
-be glad to hear of any earlier description.
+No algorithm is close to the fastest everywhere, so a good implementation chooses between a few
+algorithms based on _n_ and _k_. The [results](results.md) give the best such sets: in each case
+the best set of three is never more than 1.2–1.9× slower than the fastest, while the best single
+algorithm is somewhere 2.9–13× slower.
 
-In [my C++ tests](results.md), which use the standard library's `std::unordered_set` and
-`std::unordered_map`, `cardchoose` outperforms `rejectionsample`, `floydf2`, and `hsel` for all
-values of _n_ and _k_. `quadraticreject` is best where _k_ < 100 or so, and `select` and
-`iterativechoose` perform well when _k_/_n_ is large. `cardchoose` always performs within an
-acceptable factor of other algorithms.
-
-A fast flat hash table changes the picture for random order output. Rust's standard `HashSet` is
-one, and in Rust `rejectionsample` is up to 1.4× faster than `cardchoose` for _k_ between about
-100 and 10<sup>6</sup> when _k_ is a small fraction of _n_. But `cardchoose` is never more than
-about 1.4× slower than the fastest of `rejectionsample`, `floydf2`, and `hsel`, while each of those
-has a bad region: at large _k_, once its hash table no longer fits in cache, it is 2.5–4× slower
-than the fastest, and when _k_ is close to _n_ it is 13–100× slower. So `cardchoose` is the safe
-choice for random output, and the best choice when you want sorted output, where it is still
-about twice as fast as the hash-based algorithms, or when you don't have a fast hash table to hand.
+One of the algorithms, which I call cardchoose, I believe to be new; I first proposed it in
+October 2018. It needs no memory beyond the output vector and runs in O(_k_ log _k_) time. Its
+two ingredients, a Pólya urn and the stars-and-bars bijection, are classical mathematics; what I
+have not found elsewhere is the urn run as a generator, or the two composed into a sampler (see
+[prior art](priorart.md)). I would be glad to hear of any earlier description. Cardchoose belongs
+to the best pair of algorithms in three of the four cases, and with a fast sort, as in Rust, it is
+the fastest algorithm for sorted output over most of the range tested. With C++'s `std::sort`,
+Nijenhuis and Wilf's RANKSB, which also needs no extra memory, is faster at most points where
+_k_ ≤ _n_/2.
 
 * [Guide to algorithms tested](algorithms.md)
-* [Description of Cardchoose](cardchoose.md)
+* [Description of cardchoose](cardchoose.md)
 * [Prior art](priorart.md)
 * [Benchmark results](results.md)
 * [Running this software](running.md)
+
+Cardchoose in Python:
 
 ```python
 def sorted_choose(n, k):
