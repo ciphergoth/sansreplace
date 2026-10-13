@@ -51,7 +51,7 @@ class KLogK:
 
     def tex(self, c): 
         c = num2tex(c)
-        return f"({c})(k \\log k)"
+        return f"({c})(k \\ln k)"
 
 
 def formula(models, coeffs):
