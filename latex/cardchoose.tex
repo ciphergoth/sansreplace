@@ -84,13 +84,13 @@
     the fastest everywhere: in each case the best single algorithm is
     somewhere 2.9 to 13 times slower than the fastest, while the best
     set of three, choosing between them based on \(n\) and \(k\), is
-    never more than 1.2 to 1.9 times slower. Cardchoose needs no storage
+    never more than 1.3 to 1.8 times slower. Cardchoose needs no storage
     beyond the output array and takes $\bigO{k \log k}$ time, using an
     integer sort; it combines a P\'olya urn, which chooses a
     multiset fairly, with the stars and bars bijection between
-    multisets and sets. It belongs to the best pair in three of the four cases, and
-    with a fast sort it is the fastest algorithm for sorted output over
-    most of the range tested.
+    multisets and sets. It belongs to the best set of two or three in
+    three of the four cases, and with a fast sort it is the fastest
+    algorithm for sorted output more often than any other.
 \end{abstract}
 
 \section{Introduction}
@@ -549,9 +549,9 @@ standard library's \mintinline{rust}{HashSet} and
 \mintinline{rust}{HashMap}, which are flat open-addressing hash tables
 based on SwissTable, and its unstable sort. These are much faster: the
 hash-based algorithms take about 0.4--0.5 times as long in Rust as in
-C++, and cardchoose about 0.6--0.7 times as long, while RANKSB and
-Vitter's Algorithm D, which need neither, take about the same time in
-both languages.
+C++, and cardchoose about 0.6--0.7 times as long, while RANKSB,
+Vitter's Algorithm D and Hidden Shuffle, which need neither, take
+about the same time in both languages.
 
 In \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} we graph
 time/\(k\) in ns against \(k\) for two different values of \(n\) for
@@ -605,13 +605,16 @@ these is very slow elsewhere. The other algorithms run in
 \(\bigO{k}\) or \(\bigO{k \log k}\) time, and differ by smaller
 factors.
 
-For sorted output, the fastest of these is RANKSB in C++ and cardchoose
-in Rust. Over the points with \(k \leq n/2\), RANKSB is the fastest of
-the two at 522 of 663 in C++, where cardchoose takes a median of 1.24
-times as long, and cardchoose at 656 of 663 in Rust, where RANKSB takes
-a median of 1.62 times as long. RANKSB takes about the same time in
-both languages, so the difference is in cardchoose, most likely in its
-sort. As \(k\) approaches \(n\), RANKSB slows down, taking over 100 times
+For sorted output, the fastest of these is Hidden Shuffle in C++ and
+cardchoose in Rust. Over the points with \(k \leq n/2\), Hidden Shuffle
+is the faster of the two at 601 of 663 in C++, where cardchoose takes a
+median of 1.68 times as long, and cardchoose at 406 of 663 in Rust,
+where Hidden Shuffle takes a median of 1.09 times as long. Hidden
+Shuffle takes about the same time in both languages, so the difference
+is in cardchoose, most likely in its sort. Hidden Shuffle is also
+faster than RANKSB at most of these points in both languages, with
+RANKSB taking a median of 1.3 to 1.5 times as long. As \(k\)
+approaches \(n\), RANKSB slows down, taking over 100 times
 as long as the fastest algorithm at \(k = n\); \cite{nijenhuiswilf}
 pairs it with iterative choosing (which Nijenhuis and Wilf refer to
 as RKS2) for \(k \geq n/2\). Vitter's
@@ -624,8 +627,8 @@ For random output, the hash-based algorithms are competitive only with
 a fast hash table. With C++ standard library hash tables, cardchoose is
 faster than set-based rejection sampling, Floyd's F2 and HSEL at every
 point with \(k \leq n/2\), and they take a median of about 1.65 times as
-long, though RANKSB followed by a shuffle is faster still at most of
-these points. With Rust's flat hash tables, HSEL is the fastest of
+long, though Hidden Shuffle followed by a shuffle is faster still at
+most of these points. With Rust's flat hash tables, HSEL is the fastest of
 these four at most points, and cardchoose is never more than 1.51 times
 slower than the fastest of them for \(k \leq n/2\). The hash-based
 algorithms slow down at large \(k\), once the hash table no longer fits

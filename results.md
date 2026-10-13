@@ -4,6 +4,9 @@ These results were measured on an Apple M4 MacBook Pro with 16GB of memory, usin
 rustc 1.98, for values of _n_ and _k_ that are Fibonacci numbers, with _k_ at most 102,334,155
 (the 40th Fibonacci number). [Full results](results/latest/)
 
+Each algorithm is timed in its own run, and its CSVs record the commit and setup it was timed
+with. Hidden Shuffle was timed a few hours after the others, on the same setup.
+
 Since both _n_ and _k_ affect the performance, we compare algorithms
 using an animated graph. For each frame, we fix the value of _n_ and
 graph the performance of each algorithm for various values of _k_;
@@ -25,10 +28,10 @@ so wherever the best set includes it, the table also gives the best set without 
 
 | | best 1 | best 2 | best 3 |
 |---|---|---|---|
-| C++, random order | `cardchoose` 12.35× | `select` + `cardchoose` 3.01× | `quadraticreject` + `vitterd` + `select` 1.84×<br>_no D:_ `quadraticreject` + `ranksb` + `select` 1.90× |
-| C++, sorted order | `vitterd` 2.88×<br>_no D:_ `cardchoose` 7.70× | `ranksb` + `vitterd` 1.51×<br>_no D:_ `ranksb` + `iterativechoose` 1.81× | `ranksb` + `iterativechoose` + `reservoirsample` 1.50× |
-| Rust, random order | `hsel` 12.95× | `select` + `cardchoose` 3.01× | `quadraticreject` + `select` + `cardchoose` 1.51× |
-| Rust, sorted order | `vitterd` 6.17×<br>_no D:_ `cardchoose` 18.39× | `reservoirsample` + `cardchoose` 2.23× | `iterativechoose` + `reservoirsample` + `cardchoose` 1.19× |
+| C++, random order | `cardchoose` 12.35× | `select` + `cardchoose` 3.01× | `quadraticf2` + `hiddenshuffle` + `select` 1.82× |
+| C++, sorted order | `vitterd` 2.88×<br>_no D:_ `hiddenshuffle` 3.62× | `iterativechoose` + `hiddenshuffle` 1.72× | `iterativechoose` + `hiddenshuffle` + `cardchoose` 1.26× |
+| Rust, random order | `hsel` 12.95× | `hiddenshuffle` + `select` 3.00× | `quadraticreject` + `hiddenshuffle` + `select` 1.47× |
+| Rust, sorted order | `vitterd` 6.17×<br>_no D:_ `hiddenshuffle` 8.09× | `reservoirsample` + `cardchoose` 2.23× | `iterativechoose` + `reservoirsample` + `cardchoose` 1.53× |
 
 ## Each algorithm
 
@@ -39,17 +42,18 @@ became too slow, so their medians cover only the smaller values of _k_. Generate
 
 | | C++, random | C++, sorted | Rust, random | Rust, sorted |
 |---|---|---|---|---|
-| `quadraticreject` | 11.7× / 1.3×10<sup>5</sup>× | 9.83× / 2.3×10<sup>5</sup>× | 4.15× / 8.6×10<sup>4</sup>× | 3.84× / 2.4×10<sup>5</sup>× |
-| `rejectionsample` | 3.66× / 257× | 3.52× / 692× | 2.15× / 322× | 2.25× / 3,147× |
-| `ranksb` | 1.51× / 33.8× | 1.00× / 145× | 2.89× / 65.2× | 1.69× / 594× |
-| `floydf2` | 3.79× / 64.8× | 3.55× / 291× | 2.38× / 41.2× | 2.54× / 350× |
-| `quadraticf2` | 15.1× / 3.0×10<sup>4</sup>× | 13.9× / 4.3×10<sup>4</sup>× | 20.4× / 4.7×10<sup>4</sup>× | 20.1× / 1.2×10<sup>5</sup>× |
-| `iterativechoose` | 22.9× / 2.7×10<sup>7</sup>× | 25.2× / 1.2×10<sup>7</sup>× | 65.1× / 4.5×10<sup>7</sup>× | 68.6× / 1.8×10<sup>7</sup>× |
-| `reservoirsample` | 24.9× / 2.6×10<sup>7</sup>× | 28.0× / 1.2×10<sup>7</sup>× | 68.3× / 4.6×10<sup>7</sup>× | 70.2× / 2.1×10<sup>7</sup>× |
-| `vitterd` | 1.95× / 12.5× | 1.68× / 2.88× | 3.42× / 21.3× | 2.40× / 6.17× |
-| `select` | 1.92× / 3.8×10<sup>6</sup>× | 4.54× / 2.4×10<sup>6</sup>× | 1.85× / 6.7×10<sup>6</sup>× | 3.67× / 6.9×10<sup>5</sup>× |
-| `hsel` | 3.42× / 17.0× | 3.53× / 37.0× | 1.71× / 12.9× | 2.13× / 63.2× |
-| `cardchoose` | 1.73× / 12.3× | 1.29× / 7.70× | 1.66× / 14.6× | 1.00× / 18.4× |
+| `quadraticreject` | 15.0× / 1.3×10<sup>5</sup>× | 13.7× / 2.3×10<sup>5</sup>× | 4.15× / 8.6×10<sup>4</sup>× | 4.10× / 2.4×10<sup>5</sup>× |
+| `rejectionsample` | 3.91× / 257× | 4.74× / 692× | 2.17× / 322× | 2.36× / 3,147× |
+| `ranksb` | 1.66× / 33.8× | 1.49× / 145× | 2.89× / 65.2× | 1.80× / 594× |
+| `floydf2` | 4.08× / 64.8× | 4.77× / 291× | 2.39× / 41.2× | 2.69× / 350× |
+| `quadraticf2` | 18.3× / 3.0×10<sup>4</sup>× | 16.9× / 4.3×10<sup>4</sup>× | 20.4× / 4.7×10<sup>4</sup>× | 20.5× / 1.2×10<sup>5</sup>× |
+| `iterativechoose` | 29.8× / 2.7×10<sup>7</sup>× | 34.0× / 1.5×10<sup>7</sup>× | 65.1× / 4.5×10<sup>7</sup>× | 68.6× / 2.0×10<sup>7</sup>× |
+| `reservoirsample` | 31.8× / 2.6×10<sup>7</sup>× | 38.7× / 1.5×10<sup>7</sup>× | 68.3× / 4.6×10<sup>7</sup>× | 71.5× / 2.3×10<sup>7</sup>× |
+| `vitterd` | 2.38× / 12.5× | 2.41× / 2.88× | 3.42× / 21.3× | 2.55× / 6.17× |
+| `hiddenshuffle` | 1.19× / 15.7× | 1.00× / 3.62× | 2.02× / 24.2× | 1.14× / 8.09× |
+| `select` | 2.50× / 3.8×10<sup>6</sup>× | 6.44× / 3.0×10<sup>6</sup>× | 1.91× / 6.7×10<sup>6</sup>× | 4.06× / 8.1×10<sup>5</sup>× |
+| `hsel` | 3.47× / 17.0× | 4.90× / 37.0× | 1.71× / 12.9× | 2.23× / 63.2× |
+| `cardchoose` | 2.02× / 12.3× | 1.77× / 7.70× | 1.66× / 14.6× | 1.01× / 18.4× |
 
 The quadratic algorithms are the fastest for small _k_, and `select`, `iterativechoose` and
 `reservoirsample` for small _n_/_k_, but each is very slow elsewhere. The rest run in O(_k_) or
@@ -62,10 +66,11 @@ The C++ implementations use only the standard library: `std::unordered_set` and
 `std::unordered_map`, which are node-based, and `std::sort`. So these results show the
 performance you get from standard components.
 
-For sorted output, `ranksb` is the fastest at most points where _k_ ≤ _n_/2: of `ranksb` and
-`cardchoose`, it is faster at 522 of those 663 points, and `cardchoose` takes a median of 1.24×
-as long. `ranksb` slows down as _k_ approaches _n_, where Nijenhuis and Wilf pair it with
-`iterativechoose` (which they refer to as RKS2). For random output, `ranksb` followed by a shuffle and
+For sorted output, `hiddenshuffle` is the fastest at most points: where _k_ ≤ _n_/2, it is faster
+than `cardchoose` at 601 of 663 points, and `cardchoose` takes a median of 1.68× as long. It is
+also faster than `ranksb` at 562 of those points, with `ranksb` taking a median of 1.42× as long.
+`ranksb` slows down as _k_ approaches _n_, where Nijenhuis and Wilf pair it with `iterativechoose`
+(which they refer to as RKS2). For random output, `hiddenshuffle` followed by a shuffle and
 `select` are the fastest over most of the range. `cardchoose` is faster than `rejectionsample`,
 `floydf2` and `hsel` at every point where _k_ ≤ _n_/2, and they take a median of about 1.65× as
 long.
@@ -79,11 +84,11 @@ long.
 The Rust implementations use Rust's standard `HashMap`, `HashSet` and unstable sort. The hash
 tables are flat open-addressing tables, much faster than the node-based C++ ones; the hash-based
 algorithms take about 0.4–0.5× as long in Rust as in C++, and `cardchoose` about 0.6–0.7×, while
-`ranksb` and `vitterd` take about the same time in both.
+`ranksb`, `vitterd` and `hiddenshuffle` take about the same time in both.
 
-For sorted output, `cardchoose` is the fastest algorithm at 585 of the 732 points, and at all but
-7 of the points where _k_ ≤ _n_/2 it is faster than `ranksb`, which takes a median of 1.62× as
-long. For random output, `hsel` and `select` are the fastest over most of the range; `cardchoose`
+For sorted output, `cardchoose` is the fastest algorithm at 337 of the 732 points, more than any
+other, and `hiddenshuffle` at 257. Where _k_ ≤ _n_/2, `cardchoose` is faster than `hiddenshuffle`
+at 406 of 663 points, and `hiddenshuffle` takes a median of 1.09× as long. For random output, `hsel` and `select` are the fastest over most of the range; `cardchoose`
 is never more than 1.51× slower than the fastest of `rejectionsample`, `floydf2`, `hsel` and
 itself where _k_ ≤ _n_/2.
 

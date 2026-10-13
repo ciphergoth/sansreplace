@@ -14,7 +14,7 @@ faster.
 
 No algorithm is close to the fastest everywhere, so a good implementation chooses between a few
 algorithms based on _n_ and _k_. The [results](results.md) give the best such sets: in each case
-the best set of three is never more than 1.2–1.9× slower than the fastest, while the best single
+the best set of three is never more than 1.3–1.8× slower than the fastest, while the best single
 algorithm is somewhere 2.9–13× slower.
 
 One of the algorithms, which I call cardchoose, I believe to be new; I first proposed it in
@@ -22,10 +22,10 @@ October 2018. It needs no memory beyond the output vector and runs in O(_k_ log 
 two ingredients, a Pólya urn and the stars-and-bars bijection, are classical mathematics; what I
 have not found elsewhere is the urn run as a generator, or the two composed into a sampler (see
 [prior art](priorart.md)). I would be glad to hear of any earlier description. Cardchoose belongs
-to the best pair of algorithms in three of the four cases, and with a fast sort, as in Rust, it is
-the fastest algorithm for sorted output over most of the range tested. With C++'s `std::sort`,
-Nijenhuis and Wilf's RANKSB, which also needs no extra memory, is faster at most points where
-_k_ ≤ _n_/2.
+to the best set of two or three algorithms in three of the four cases, and with a fast sort, as in
+Rust, it is the fastest algorithm for sorted output more often than any other. With C++'s
+`std::sort`, Shekelyan and Cormode's Hidden Shuffle, which also needs no extra memory, is faster
+at most points.
 
 * [Guide to algorithms tested](algorithms.md)
 * [Description of cardchoose](cardchoose.md)
