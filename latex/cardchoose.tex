@@ -176,9 +176,9 @@ As above, but use a data structure representing sets with an efficient membershi
 A twist on set-based rejection that uses compensatingly biased samples
 to avoid multiple tests.
 \cite{floydf2}
-For random order output, our implementation does not shuffle
-afterwards. Instead, when the chosen value is already present, it
-moves a randomly chosen earlier output to the end and puts the new
+For random order output, our C++ and Rust implementations do not
+shuffle afterwards. Instead, when the chosen value is already present,
+they move a randomly chosen earlier output to the end and put the new
 value in its place. This keeps the order uniformly random, and costs
 an extra random number only on collisions.
 
@@ -228,6 +228,9 @@ As above, except that instead of allocating and initializing an
 \(n\)-element array, we use a ``virtual'' array, with a hash table
 storing only the modified elements.
 \cite{hsel}
+Our C++ and Rust implementations keep the first \(k\) entries of the
+virtual array in the output array itself, so only swaps that reach
+beyond them touch the hash table.
 
 \section{Notation}
 
