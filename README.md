@@ -31,6 +31,7 @@ at most points.
 * [Description of cardchoose](cardchoose.md)
 * [Prior art](priorart.md)
 * [Benchmark results](results.md)
+* [Pairwise comparisons](pairwise.md)
 * [Running this software](running.md)
 
 Cardchoose in Python:

@@ -60,6 +60,11 @@ The quadratic algorithms are the fastest for small _k_, and `select`, `iterative
 O(_k_ log _k_) time and differ by smaller factors; their worst cases are where _k_/_n_ is large, where
 the O(_n_) algorithms win.
 
+## Each pair of algorithms
+
+[Pairwise comparisons](pairwise.md) give, for every pair of algorithms, how much slower one is
+than the other at its worst, and where.
+
 ## C++
 
 The C++ implementations use only the standard library: `std::unordered_set` and
