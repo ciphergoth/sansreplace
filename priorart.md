@@ -30,6 +30,13 @@ which together give a sampler for sampling without replacement that needs no set
 memory, uses only exact integer draws, and performs as described in the [results](results.md).
 I would be glad to hear of any earlier description.
 
+Sorted output without a sort has a classic answer for real numbers: Bentley and Saxe generate _k_
+sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the
+rest below it, and credit Friedman with an essentially equivalent earlier program. This can't
+stand in for the urn: sorted independent draws, even rounded to integers, follow the
+Maxwell–Boltzmann distribution over multisets, not the Bose–Einstein one. Its closest analogue
+for distinct integers is Vitter's Algorithm D, whose continuous approximation is the same step.
+
 * William Feller, _An Introduction to Probability Theory and Its Applications_, volume 1, Wiley.
   Chapter II §5 covers occupancy problems and the three statistics; chapter V §2 covers urn
   models.
@@ -44,3 +51,8 @@ I would be glad to hear of any earlier description.
   _Annals of Statistics_ 1(2), 353–355, 1973.
 * Albert Nijenhuis and Herbert S. Wilf, _Combinatorial Algorithms for Computers and Calculators_,
   2nd edition, Academic Press, 1978. Chapter 6, "Random Composition of n into k Parts (RANCOM)".
+* Jon Louis Bentley and James B. Saxe, "Generating sorted lists of random numbers", _ACM
+  Transactions on Mathematical Software_ 6(3), 359–364, 1980.
+  [doi:10.1145/355900.355907](https://doi.org/10.1145/355900.355907).
+* Jerome H. Friedman, "Random event generation with preferred frequency distributions", _Journal
+  of Computational Physics_ 7(2), 201–218, 1971.

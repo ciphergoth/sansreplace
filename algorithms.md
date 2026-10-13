@@ -113,14 +113,21 @@ Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitter
 A sequential sampling algorithm: like iterative choosing, it produces the output in sorted order, but
 instead of deciding about each value in [0, _n_) in turn, it draws the number of values to skip
 before the next chosen one directly. The skip has a known discrete distribution, and Algorithm D
-samples it by rejection from a continuous approximation, which takes O(1) expected time per
-output, so the whole algorithm takes O(_k_) expected time and needs no extra memory. The cost is
+samples it by rejection from a continuous approximation, the smallest of _k_ uniform reals,
+drawn in one step as in Bentley and Saxe's method for generating sorted random numbers. This takes
+O(1) expected time per output, so the whole algorithm takes O(_k_) expected time and needs no extra memory. The cost is
 floating-point arithmetic: each output needs a few uniform variates and exponentiations. Once
 _n_ is at most 13 _k_, it falls back on Vitter's Algorithm A, which draws each skip in O(skip) time,
 so the total work for the rest of the output is O(_n_).
 
 Our C++ and Rust implementations follow the Pascal-like code in the paper's appendix; the
 Python one states the method directly, which is easier to follow.
+
+* Jon Louis Bentley and James B. Saxe
+    * Generating Sorted Lists of Random Numbers
+    * ACM Transactions on Mathematical Software, Volume 6, Number 3, September 1980
+    * 359--364
+    * https://doi.org/10.1145/355900.355907
 
 * Jeffrey Scott Vitter
     * An Efficient Algorithm for Sequential Random Sampling

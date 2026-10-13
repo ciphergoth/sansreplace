@@ -210,7 +210,8 @@ Like iterative choosing, produce the output in sorted order, but
 instead of deciding about each value in turn, draw the number of values
 to skip before the next chosen one directly. The skip has a known
 discrete distribution, which Algorithm D samples by rejection from a
-continuous approximation in \(\bigO{1}\) expected time per output, at
+continuous approximation, the smallest of \(k\) uniform reals drawn in
+one step as in \cite{bentleysaxe}, in \(\bigO{1}\) expected time per output, at
 the cost of a few floating-point exponentiations. Once \(n \leq 13k\)
 it falls back on Vitter's Algorithm A, which draws each skip in time
 proportional to its length. Our implementation follows the code in the
@@ -435,6 +436,16 @@ together give a sampler for sampling without replacement that needs no
 set, map or extra memory, uses only exact integer draws, and performs
 as described in \autoref{benchmarks}. We would be glad to hear of any
 earlier description.
+
+Sorted output without a sort has a classic answer for real numbers:
+Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
+reals in \(\bigO{k}\) time, drawing the largest as \(U^{1/k}\) and
+repeating for the rest below it, and credit Friedman \cite{friedman}
+with an essentially equivalent earlier program. This cannot stand in
+for the urn: sorted independent draws, even rounded to integers, follow
+the Maxwell--Boltzmann distribution over multisets, not the
+Bose--Einstein one. Its closest analogue for distinct integers is
+Vitter's Algorithm D, whose continuous approximation is the same step.
 
 \section{Benchmarks}\label{benchmarks}
 
