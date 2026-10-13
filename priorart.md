@@ -27,9 +27,9 @@ through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM choos
 (_k_-1)-subset of {1, …, _n_+_k_-1} and differences it. What I have not found elsewhere is the
 urn presented as a generator for uniform multisets, or its composition with stars and bars into
 a sampler for sampling without replacement. Needing no set, map or extra memory is not new in
-itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and so does Vitter's
-Algorithm D, though it needs floating-point arithmetic where cardchoose and RANKSB use only exact
-integer draws. I would be glad to hear of any earlier description of cardchoose.
+itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and so do Vitter's
+Algorithm D and, more recently, Shekelyan and Cormode's Hidden Shuffle, though they need
+floating-point arithmetic where cardchoose and RANKSB use only exact integer draws. I would be glad to hear of any earlier description of cardchoose.
 
 Sorted output without a sort has a classic answer for real numbers: Bentley and Saxe generate _k_
 sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the
@@ -58,3 +58,10 @@ for distinct integers is Vitter's Algorithm D, whose continuous approximation is
   [doi:10.1145/355900.355907](https://doi.org/10.1145/355900.355907).
 * Jerome H. Friedman, "Random event generation with preferred frequency distributions", _Journal
   of Computational Physics_ 7(2), 201–218, 1971.
+* Jeffrey Scott Vitter, "An efficient algorithm for sequential random sampling", _ACM Transactions
+  on Mathematical Software_ 13(1), 58–67, 1987.
+  [doi:10.1145/23002.23003](https://doi.org/10.1145/23002.23003).
+* Michael Shekelyan and Graham Cormode, "Sequential random sampling revisited: hidden shuffle
+  method", _Proceedings of the 24th International Conference on Artificial Intelligence and
+  Statistics (AISTATS)_, PMLR 130, 2021.
+  [proceedings.mlr.press/v130/shekelyan21a](https://proceedings.mlr.press/v130/shekelyan21a.html).
