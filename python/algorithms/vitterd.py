@@ -13,96 +13,97 @@
 # limitations under the License.
 
 # Vitter's Algorithm D, from "An Efficient Algorithm for Sequential Random
-# Sampling" (ACM TOMS 13(1), 1987), following the implementation in its
-# appendix. Each step draws the number of values to skip, S, before the next
-# chosen value, by rejection sampling from a continuous approximation to its
-# distribution; this takes O(1) expected time, so the whole algorithm takes
-# O(k) expected time. It falls back on Vitter's Algorithm A, which draws S
-# directly in O(S) time, once n is at most alpha_inv * k.
+# Sampling" (ACM TOMS 13(1), 1987).
+#
+# Like iterative choosing, this walks through [0, n) in order, but instead of
+# deciding about each value in turn, it draws S, the number of values to skip
+# before the next chosen one. When choosing k of the n values that remain,
+#
+#     P(S = s) = C(n-s-1, k-1) / C(n, k)    for 0 <= s <= n-k
+#
+# since the remaining k-1 chosen values must come from the n-s-1 after it.
+#
+# This version states the method directly. The C++ and Rust versions follow
+# the paper's appendix, which computes the same thing with fewer random
+# numbers, mostly by reusing one uniform variate between steps.
 
 import random
 
+# Use Algorithm D while n > ALPHA_INV * k, Algorithm A otherwise
 ALPHA_INV = 13
 
-def skips_a(n, k):
-    "Algorithm A: yield the gaps between the k values chosen from n, in order"
-    top = n - k
-    while k >= 2:
-        v = random.random()
-        s = 0
-        quot = top / n
-        while quot > v:
-            s += 1
-            top -= 1
-            n -= 1
-            quot *= top / n
-        yield s
-        n -= 1
-        k -= 1
-    if k == 1:
-        yield int(n * random.random())
-
-def skips_d(n, k):
-    "Algorithm D: yield the gaps between the k values chosen from n, in order"
-    if k == 0:
-        return
-    ninv = 1 / k
-    vprime = random.random() ** ninv
-    qu1 = n - k + 1
-    threshold = ALPHA_INV * k
-    while k > 1 and threshold < n:
-        nmin1inv = 1 / (k - 1)
-        while True:
-            # Step D2: generate U and X
-            while True:
-                x = n * (1 - vprime)
-                s = int(x)
-                if s < qu1:
-                    break
-                vprime = random.random() ** ninv
-            u = random.random()
-            # Step D3: accept?
-            y1 = (u * n / qu1) ** nmin1inv
-            vprime = y1 * (1 - x / n) * (qu1 / (qu1 - s))
-            if vprime <= 1:
-                break
-            # Step D4: accept?
-            y2 = 1.0
-            top = n - 1
-            if k - 1 > s:
-                bottom = n - k
-                limit = n - s
-            else:
-                bottom = n - s - 1
-                limit = qu1
-            for _ in range(limit, n):
-                y2 *= top / bottom
-                top -= 1
-                bottom -= 1
-            if n / (n - x) >= y1 * y2 ** nmin1inv:
-                vprime = random.random() ** nmin1inv
-                break
-            vprime = random.random() ** ninv
-        # Step D5: select the (S + 1)st value
-        yield s
-        n -= s + 1
-        k -= 1
-        ninv = nmin1inv
-        qu1 -= s
-        threshold -= ALPHA_INV
-    if k > 1:
-        yield from skips_a(n, k)
+def skip_probability(n, k, s):
+    "P(S = s) when choosing k of n, as a product of min(s, k-1) factors"
+    # C(n-s-1, k-1) / C(n, k) = (k/n) C(n-s-1, k-1) / C(n-1, k-1), and the
+    # last ratio expands as either of two products of falling factors.
+    p = k / n
+    if s < k - 1:
+        for i in range(s):
+            p *= (n - k - i) / (n - 1 - i)
     else:
-        yield int(n * vprime)
+        for i in range(k - 1):
+            p *= (n - s - 1 - i) / (n - 1 - i)
+    return p
+
+def skip_d(n, k):
+    "Algorithm D: draw S by rejection from a continuous approximation, k >= 2"
+    # Picture the distribution of S as a histogram: over [s, s+1), a bar of
+    # height P(S = s). The curve c g(x), where
+    #
+    #     g(x) = (k/n) (1 - x/n)^(k-1)    and    c = n / (n-k+1),
+    #
+    # lies above every bar. Pick a point uniformly under the curve: x is
+    # n (1 - V^(1/k)), the smallest of k uniform reals in [0, n), whose
+    # density is g, and the height is uniform in [0, c g(x)). If the point is
+    # under the bar in its column, s = floor(x), return s; otherwise try
+    # again. Accepted points are uniform over the histogram, so s has exactly
+    # the right distribution, and since the curve has c times the area of the
+    # histogram, this takes about 1 + k/n tries on average.
+    #
+    # Inside each bar is a lower bar of height h(s) = (k/n) (1 - s/q)^(k-1).
+    # A point under it is accepted without computing P(S = s) exactly, so the
+    # O(min(s, k)) exact test runs only for points in the thin sliver between
+    # the two.
+    q = n - k + 1
+    while True:
+        x = n * (1 - random.random() ** (1 / k))
+        s = int(x)
+        if s >= q:
+            continue
+        envelope = (n / q) * (k / n) * (1 - x / n) ** (k - 1)
+        threshold = random.random() * envelope
+        if threshold <= (k / n) * (1 - s / q) ** (k - 1):
+            return s
+        if threshold <= skip_probability(n, k, s):
+            return s
+
+def skip_a(n, k):
+    "Algorithm A: draw S by inversion, in O(S) time"
+    # P(S > s) is the probability that the first s+1 values are all skipped
+    v = random.random()
+    s = 0
+    tail = (n - k) / n
+    while tail > v:
+        s += 1
+        tail *= (n - k - s) / (n - s)
+    return s
 
 def sorted_choose(n, k):
     "k distinct integers 0 <= x < n, sorted"
     d = []
     j = 0
-    for s in skips_d(n, k):
+    while k > 0:
+        if k == 1:
+            s = random.randrange(n)
+        elif n > ALPHA_INV * k:
+            s = skip_d(n, k)
+        else:
+            s = skip_a(n, k)
         j += s
         d.append(j)
         j += 1
+        n -= s + 1
+        k -= 1
     return d
 
 def random_choose(n, k):

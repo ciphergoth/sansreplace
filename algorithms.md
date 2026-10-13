@@ -119,7 +119,8 @@ floating-point arithmetic: each output needs a few uniform variates and exponent
 _n_ is at most 13 _k_, it falls back on Vitter's Algorithm A, which draws each skip in O(skip) time,
 so the total work for the rest of the output is O(_n_).
 
-Our implementation follows the Pascal-like code in the paper's appendix.
+Our C++ and Rust implementations follow the Pascal-like code in the paper's appendix; the
+Python one states the method directly, which is easier to follow.
 
 * Jeffrey Scott Vitter
     * An Efficient Algorithm for Sequential Random Sampling
