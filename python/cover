@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# For each results CSV, the sets of up to --size algorithms that come closest
+# to the fastest of all the algorithms at every point with k >= 10, if each
+# point uses the fastest algorithm in the set. Sets are ranked by their worst
+# ratio to the fastest.
+#
+# Vitter's Algorithm D switches to Algorithm A once n <= 13k, so it is really
+# two algorithms. Wherever the best set includes it, the tables also give the
+# best set without it.
+
+import argparse
+import itertools
+import math
+import pathlib
+import statistics
+
+import read_results
+from algorithms import ALGORITHMS
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+CASES = [
+    ("cpp-random", "C++, random order"),
+    ("cpp-sorted", "C++, sorted order"),
+    ("rust-random", "Rust, random order"),
+    ("rust-sorted", "Rust, sorted order"),
+]
+
+LATEX_NAMES = {
+    "quadraticreject": "quadratic rejection",
+    "rejectionsample": "set-based rejection",
+    "ranksb": "RANKSB",
+    "floydf2": "Floyd's F2",
+    "quadraticf2": "quadratic F2",
+    "iterativechoose": "iterative choosing",
+    "reservoirsample": "reservoir sampling",
+    "vitterd": "Vitter's D",
+    "select": "SELECT",
+    "hsel": "HSEL",
+    "cardchoose": "cardchoose",
+}
+
+def read_times(csv):
+    times = {}
+    for item in read_results.read(csv):
+        if item.k >= 10:
+            times.setdefault((item.n, item.k), {})[item.alg] = item.time
+    return times
+
+def ranked_sets(times, size, exclude=()):
+    "(worst, median, set, worst point) for every set of size algorithms, best first"
+    algs = sorted({a for t in times.values() for a in t} - set(exclude),
+        key=ALGORITHMS.index)
+    ranked = []
+    for s in itertools.combinations(algs, size):
+        r = [min(t.get(a, math.inf) for a in s) / min(t.values())
+            for t in times.values()]
+        worst, wpoint = max(zip(r, times))
+        ranked.append((worst, statistics.median(r), s, wpoint))
+    ranked.sort()
+    return ranked
+
+def table_cells(times, max_size):
+    "For each size, the best set, and the best without Vitter's D if it differs"
+    cells = []
+    for size in range(1, max_size + 1):
+        best = ranked_sets(times, size)[0]
+        cell = [best]
+        if "vitterd" in best[2]:
+            cell.append(ranked_sets(times, size, exclude=["vitterd"])[0])
+        cells.append(cell)
+    return cells
+
+def markdown_cell(cell):
+    lines = []
+    for i, (worst, _, s, _) in enumerate(cell):
+        prefix = "_no D:_ " if i > 0 else ""
+        lines.append(prefix + " + ".join(f"`{a}`" for a in s) + f" {worst:.2f}×")
+    return "<br>".join(lines)
+
+def latex_rows(title, cells):
+    "A row naming the case, then one row per set"
+    rows = [f"\\multicolumn{{3}}{{l}}{{\\emph{{{title}}}}}"]
+    for size, cell in enumerate(cells, 1):
+        for i, (worst, _, s, _) in enumerate(cell):
+            label = str(size) if i == 0 else "no D"
+            rows.append(f"{label} & " + " + ".join(LATEX_NAMES[a] for a in s)
+                + f" & \\({worst:.2f}\\times\\)")
+    return "".join(row + " \\\\\n" for row in rows)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--results", type=pathlib.Path,
+        default=topdir / "results/latest")
+    parser.add_argument("--size", type=int, default=3)
+    parser.add_argument("--top", type=int, default=5)
+    parser.add_argument("--latex", type=pathlib.Path,
+        help="Write the table of best sets here, as a LaTeX tabular")
+    args = parser.parse_args()
+    all_cells = {}
+    for name, title in CASES:
+        times = read_times(args.results / f"{name}.csv")
+        print(f"== {name}")
+        for size in range(1, args.size + 1):
+            for worst, median, s, wpoint in ranked_sets(times, size)[:args.top]:
+                print(f"  worst {worst:5.2f} at n={wpoint[0]}, k={wpoint[1]}"
+                    f"  median {median:4.2f}  {' + '.join(s)}")
+        all_cells[name] = table_cells(times, args.size)
+    print()
+    print("| | " + " | ".join(f"best {size}" for size in range(1, args.size + 1)) + " |")
+    print("|---" * (args.size + 1) + "|")
+    for name, title in CASES:
+        print(f"| {title} | "
+            + " | ".join(markdown_cell(c) for c in all_cells[name]) + " |")
+    if args.latex is not None:
+        with args.latex.open("w") as out:
+            out.write("\\begin{tabular}{ llr }\n"
+                "Size & Algorithms & Worst \\\\\n"
+                "\\hline\n")
+            for name, title in CASES:
+                out.write(latex_rows(title, all_cells[name]))
+            out.write("\\end{tabular}\n")
+
+if __name__ == '__main__':
+    main()
