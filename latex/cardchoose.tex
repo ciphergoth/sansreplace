@@ -183,7 +183,10 @@ Then choose that many values within each bin; bins hold about one value
 each, so a quadratic method suffices. The output is sorted, the expected
 time is \(\bigO{k}\) for \(k \leq n/2\), and the program in
 \cite[Chapter 4]{nijenhuiswilf} needs no storage beyond the output
-array, which our C++ and Rust implementations follow.
+array. Our C++ and Rust implementations follow that program, except
+that they fill each bin as soon as they know where its values go,
+rather than first marking out every bin's slots and then scanning for
+the marks.
 
 \subsection{Floyd's F2}
 \inputminted{Python}{code/floydf2.py}

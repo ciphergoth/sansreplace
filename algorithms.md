@@ -59,8 +59,10 @@ values within each bin; bins hold about one value each, so a quadratic method is
 output comes out sorted, it takes O(_k_) expected time for _k_ ≤ _n_/2, and the book's program
 needs no storage beyond the output array.
 
-Our C++ and Rust implementations follow the program in the book; the Python one keeps the counts
-in a separate array, which is easier to follow.
+Our C++ and Rust implementations follow the program in the book, except that they fill each bin
+as soon as they know where its values go, rather than first marking out every bin's slots and
+then scanning for the marks; the Python one keeps the counts in a separate array, which is easier
+to follow.
 
 * Albert Nijenhuis and Herbert S. Wilf
     * Combinatorial Algorithms for Computers and Calculators, 2nd edition
