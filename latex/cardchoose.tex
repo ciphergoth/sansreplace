@@ -340,34 +340,45 @@ comes up half the time, because it can arrive as \(0, 1\) or as \(1,
 draws favour variety; we need to favour repeats, by exactly the right
 amount.
 
-For the \(i\)-th draw (counting from \(0\)), we choose uniformly
-among \(t + i\) options: the \(t\) fresh values, plus the \(i\)
-values already drawn. If the chosen \(r\) satisfies \(r < t\), it is
-a fresh value; otherwise \(r - t\) selects one of the earlier draws,
-and we copy it. A value that has already been drawn once is now twice
-as likely to be drawn again, a value drawn twice is three times as
-likely, and so on. The list is never searched or modified in place;
-copies go on the end like everything else, so each iteration is one
-random number, one comparison and one write, with no inner loop.
+Instead, build the row one star at a time, starting from the \(t -
+1\) bars alone, and put each new star in a uniformly random gap of the
+row so far. With \(i\) stars already placed, the row holds \(t - 1 +
+i\) things, so it has \(t + i\) gaps. Name each gap by what is just to
+its left:
+\begin{itemize}
+    \item The gap at the start of the row, and the gap just after each
+    bar. There are \(t\) of these, and a star placed in the one after
+    the \(b\)-th bar, or at the start for \(b = 0\), gets the value
+    \(b\). This is a \emph{fresh} value.
+    \item The gap just after each star. There are \(i\) of these, and a
+    star placed in one sits in the same gap between bars as its left
+    neighbour, so it gets the same value. This is a \emph{copy}.
+\end{itemize}
 
-In the stars and bars picture, this is dropping the new star into a
-uniformly random gap of the current row. Before the \(i\)-th star
-there are \(t - 1\) bars and \(i\) stars in the row, so \(t + i\)
-gaps, and the gaps with \(b\) bars to the left are the \(c + 1\) gaps
-around the \(c\) stars that already have value \(b\): one fresh
-option, plus one for each existing star with that value.
+
+That is the loop. \mintinline{python}{randrange(t + i)} picks a gap.
+If \(r < t\), the new star takes the fresh value \(r\). Otherwise
+\(r - t\) picks one of the stars already placed, and the new star
+copies its value, \mintinline{python}{d[r - t]}. The list
+\mintinline{python}{d} holds values in the order they were drawn, so
+the copy is a single index lookup: one random number, one comparison
+and one write per star, with no search.
+
+A value that \(c\) stars already have owns \(c + 1\) gaps: one fresh
+gap, and one after each of those stars. So a value drawn once is now
+twice as likely as one never drawn, a value drawn twice three times as
+likely, and so on. That is how repeats get favoured; the next section
+shows it is by exactly the right amount.
 
 \section{Proof}\label{proof}
 
-Tag each star with the number of the draw that placed it, and be
-specific about which gap each draw uses: a fresh value \(b\) goes in
-the gap just after the \(b\)-th bar (at the start of the row for \(b
-= 0\)), and a copy of star \(j\) goes in the gap just after star
-\(j\). Then different draws put the new star in different gaps, and a
-tagged row records its whole history: remove the highest-tagged star,
-and its left neighbour says whether it was fresh (a bar, or nothing)
-or a copy (a star, and which one). So distinct sequences of draws
-produce distinct tagged rows.
+Tag each star with the number of the draw that placed it. Different
+values of \(r\) put the new star in different gaps, so a tagged row
+records its whole history: remove the highest-tagged star, and its
+left neighbour says which gap it went in, so whether it was fresh (a
+bar, or nothing) or a copy (a star, and which one). Repeat to recover
+every draw. So distinct sequences of draws produce distinct tagged
+rows.
 
 \autoref{sixruns} lists every possible run for \(t = 2\), \(k = 2\),
 one bar and two stars. Every run has the same probability, \(\frac{1}{2}
