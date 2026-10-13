@@ -113,6 +113,12 @@ fn gitstate(topdir: &Path) -> Result<String> {
         .output()?;
     anyhow::ensure!(rp.status.success(), "git rev-parse failed");
     let mut state = String::from_utf8(rp.stdout)?.trim().to_string();
+    // diff-index compares file stats, so refresh them first, or a file whose
+    // timestamp changed without its contents changing counts as dirty
+    std::process::Command::new("git")
+        .args(["update-index", "-q", "--refresh"])
+        .current_dir(topdir)
+        .status()?;
     let di = std::process::Command::new("git")
         .args(["diff-index", "--quiet", "HEAD", "--"])
         .current_dir(topdir)
