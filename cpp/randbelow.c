@@ -94,12 +94,22 @@ uint32_t randbelow(uint32_t range) {
     return multiresult >> 32;
 }
 
+// One whole 64-bit xorshift128+ output. The buffer holds 64-bit outputs, but
+// random32 may have left us half-way through one, so skip to the next.
+static uint64_t random64() {
+    consumed += consumed % 2;
+    if (consumed == sizeof(buf) / sizeof(uint32_t)) {
+        fill_buf();
+        consumed = 0;
+    }
+    uint64_t r = ((uint64_t*)&buf)[consumed / 2];
+    consumed += 2;
+    return r;
+}
+
 // Uniform in [0, 1) with 53 random bits: the top 53 bits of one 64-bit
-// xorshift128+ output, which is two consecutive 32-bit words of the buffer.
-// The low bits of xorshift128+ are weak, so they must not land in the top of
-// the mantissa.
+// xorshift128+ output. The low bits of xorshift128+ are weak, so they must
+// not land in the top of the mantissa.
 double randdouble() {
-    uint64_t lo = random32();
-    uint64_t hi = random32();
-    return (double)(((hi << 32) | lo) >> 11) * (1.0 / 9007199254740992.0);
+    return (double)(random64() >> 11) * (1.0 / 9007199254740992.0);
 }
