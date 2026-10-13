@@ -2,6 +2,28 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+# The line style shows each algorithm's family, so the graphs can be read
+# without telling twelve colours apart, and the colour tells the algorithms
+# in a family apart. Dotted lines are hard to see, so they are drawn thicker.
+SOLID = {"linestyle": "-"}           # no extra memory, O(k) or O(k log k)
+DASHED = {"linestyle": "--"}         # hash-based
+DOTTED = {"linestyle": ":", "linewidth": 2.2}  # quadratic
+DASHDOT = {"linestyle": "-."}        # O(n)
+STYLES = {
+    "ranksb": {**SOLID, "color": "tab:blue"},
+    "vitterd": {**SOLID, "color": "tab:orange"},
+    "hiddenshuffle": {**SOLID, "color": "tab:green"},
+    "cardchoose": {**SOLID, "color": "tab:red"},
+    "rejectionsample": {**DASHED, "color": "tab:purple"},
+    "floydf2": {**DASHED, "color": "tab:brown"},
+    "hsel": {**DASHED, "color": "tab:pink"},
+    "quadraticreject": {**DOTTED, "color": "tab:gray"},
+    "quadraticf2": {**DOTTED, "color": "tab:olive"},
+    "iterativechoose": {**DASHDOT, "color": "tab:cyan"},
+    "reservoirsample": {**DASHDOT, "color": "black"},
+    "select": {**DASHDOT, "color": "darkgoldenrod"},
+}
+
 def plot(toplot, data, title, output):
     rc = {}
     if output is not None:
@@ -38,7 +60,7 @@ def _plot(toplot, data, title, output):
     artists = [ttl]
     lines = []
     for alg in toplot:
-        line, = ax.plot([], [])
+        line, = ax.plot([], [], **STYLES[alg])
         line.set_label(alg)
         artists.append(line)
         lines.append((alg, line))
