@@ -147,6 +147,7 @@ and a ``sorted'' variant of each algorithm.
     \hline
     Quadratic rejection sampling & Random &  & \(k^2\) \\
     Set-based rejection sampling & Random & Set & \(k\) \\
+    RANKSB & Sorted &  & \(k\) \\
     Floyd's F2 &  & Set & \(k\) \\
     Quadratic F2 & Random & & \(k^2\) \\
     Iterative choosing & Sorted &  & \(n\) \\
@@ -170,6 +171,19 @@ length.
 \inputminted{Python}{code/rejectionsample.py}
 As above, but use a data structure representing sets with an efficient membership test.
 \cite{goodman}
+
+\subsection{RANKSB}
+\inputminted{Python}{code/ranksb.py}
+Divide \(\NN_{<n}\) into \(k\) bins of nearly equal size. First
+decide how many of the chosen values fall in each bin, by simulating
+set-based rejection sampling while keeping only a count for each bin:
+a draw is rejected with the probability that it would duplicate a value
+already accepted in its bin, which depends only on that bin's count.
+Then choose that many values within each bin; bins hold about one value
+each, so a quadratic method suffices. The output is sorted, the expected
+time is \(\bigO{k}\) for \(k \leq n/2\), and the program in
+\cite[Chapter 4]{nijenhuiswilf} needs no storage beyond the output
+array, which our C++ and Rust implementations follow.
 
 \subsection{Floyd's F2}
 \inputminted{Python}{code/floydf2.py}

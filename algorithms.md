@@ -10,6 +10,7 @@ Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
 Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
 Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
+RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | Sorted | none | _k_
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
 Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | Random | none | _k_^2
 Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
@@ -43,6 +44,28 @@ already-produced values.
 
 One of the simplest possible algorithms, but the cost of set lookups and insertions
 is high.
+
+## RANKSB
+
+Algorithm | Python | C++ | Order guarantee | Data structures | Time
+----|----|----|----|----|----
+RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | Sorted | none | _k_
+
+Divide [0, _n_) into _k_ bins of nearly equal size. First decide how many of the chosen values
+fall in each bin, by simulating set-based rejection sampling while keeping only a count for each
+bin: a draw is rejected with the probability that it would duplicate a value already accepted in
+its bin, and that depends only on how many values the bin has accepted. Then choose that many
+values within each bin; bins hold about one value each, so a quadratic method is fine. The
+output comes out sorted, it takes O(_k_) expected time for _k_ ≤ _n_/2, and the book's program
+needs no storage beyond the output array.
+
+Our C++ and Rust implementations follow the program in the book; the Python one keeps the counts
+in a separate array, which is easier to follow.
+
+* Albert Nijenhuis and Herbert S. Wilf
+    * Combinatorial Algorithms for Computers and Calculators, 2nd edition
+    * Academic Press, 1978
+    * Chapter 4, "Random _k_-Subset of an _n_-Set (RANKSB)"
 
 ## Floyd's F2
 
