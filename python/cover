@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# For each results CSV, the sets of up to --size algorithms that come closest
+# For each case, the sets of up to --size algorithms that come closest
 # to the fastest of all the algorithms at every point with k >= 10, if each
 # point uses the fastest algorithm in the set. Sets are ranked by their worst
 # ratio to the fastest.
@@ -55,9 +55,9 @@ LATEX_NAMES = {
     "cardchoose": "cardchoose",
 }
 
-def read_times(csv):
+def read_times(case):
     times = {}
-    for item in read_results.read(csv):
+    for item in read_results.read(case):
         if item.k >= 10:
             times.setdefault((item.n, item.k), {})[item.alg] = item.time
     return times
@@ -114,7 +114,7 @@ def main():
     args = parser.parse_args()
     all_cells = {}
     for name, title in CASES:
-        times = read_times(args.results / f"{name}.csv")
+        times = read_times(args.results / name)
         print(f"== {name}")
         for size in range(1, args.size + 1):
             for worst, median, s, wpoint in ranked_sets(times, size)[:args.top]:

@@ -28,7 +28,7 @@ def main():
         for sorttype, ns in [("random", [1346269, 701408733]), ("sorted", [701408733])]:
             name = f"{lang}-{sorttype}"
             title = f"{langtitle}, {sorttype} order"
-            all_algorithms, data = read_results.read_for_plot(results / f"{name}.csv")
+            all_algorithms, data = read_results.read_for_plot(results / name)
             plot_anim.plot(all_algorithms, data, title, results / f"{name}.webp")
             for n in ns:
                 plot_anim.plot(all_algorithms, [d for d in data if d[0] == n],

@@ -47,14 +47,14 @@ def main():
     results = topdir / "results/latest"
     latex = topdir / "latex"
     for lang in ["cpp", "rust"]:
-        write_table(latex / f"{lang}-random-table.tex", results / f"{lang}-random.csv",
+        write_table(latex / f"{lang}-random-table.tex", results / f"{lang}-random",
             [
                 ("Quadratic F2", "quadraticf2", [pclasses.K2(), pclasses.K()]),
                 ("Reservoir sampling", "reservoirsample", [pclasses.N(), pclasses.K()]),
                 ("SELECT", "select", [pclasses.N(), pclasses.K()]),
                 ("Cardchoose", "cardchoose", [pclasses.KLogK(), pclasses.K()]),
             ])
-        write_table(latex / f"{lang}-sorted-table.tex", results / f"{lang}-sorted.csv",
+        write_table(latex / f"{lang}-sorted-table.tex", results / f"{lang}-sorted",
             [
                 ("Iterative choosing", "iterativechoose", [pclasses.N(), pclasses.K()]),
                 ("Cardchoose", "cardchoose", [pclasses.KLogK(), pclasses.K()]),

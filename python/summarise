@@ -25,10 +25,10 @@ import statistics
 import read_results
 from algorithms import ALGORITHMS
 
-def ratios(csv, group, max_frac):
+def ratios(case, group, max_frac):
     "For each algorithm in group, its time over the fastest in group, per point"
     times = {}
-    for item in read_results.read(csv):
+    for item in read_results.read(case):
         if item.k >= 10 and item.k <= max_frac * item.n:
             times.setdefault((item.n, item.k), {})[item.alg] = item.time
     res = {alg: [] for alg in group}
@@ -52,14 +52,14 @@ def short(x):
 
 def markdown(results, group, max_frac):
     "A table of each algorithm's median and worst ratio, with a column per CSV"
-    csvs = sorted(results.glob("*.csv"))
-    r = {csv: ratios(csv, group, max_frac) for csv in csvs}
-    print("| | " + " | ".join(csv.stem for csv in csvs) + " |")
-    print("|---" * (len(csvs) + 1) + "|")
+    cases = sorted(p for p in results.iterdir() if p.is_dir())
+    r = {case: ratios(case, group, max_frac) for case in cases}
+    print("| | " + " | ".join(case.name for case in cases) + " |")
+    print("|---" * (len(cases) + 1) + "|")
     for alg in group:
         cells = []
-        for csv in csvs:
-            x = [y for y, _ in r[csv][alg]]
+        for case in cases:
+            x = [y for y, _ in r[case][alg]]
             cells.append(f"{short(statistics.median(x))}× / {short(max(x))}×")
         print(f"| `{alg}` | " + " | ".join(cells) + " |")
 
@@ -77,9 +77,9 @@ def main():
     if args.markdown:
         markdown(args.results, group, args.max_frac)
         return
-    for csv in sorted(args.results.glob("*.csv")):
-        print(f"== {csv.stem}")
-        for alg, r in ratios(csv, group, args.max_frac).items():
+    for case in sorted(p for p in args.results.iterdir() if p.is_dir()):
+        print(f"== {case.name}")
+        for alg, r in ratios(case, group, args.max_frac).items():
             worst, wpoint = max(r)
             fastest = sum(1 for x, _ in r if x == 1.0)
             print(f"{alg:16} fastest {fastest:4} of {len(r):4}"
