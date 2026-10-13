@@ -54,4 +54,10 @@ in
   ];
 
   languages.rust.enable = true;
+
+  # Nix's compiler wrapper adds hardening flags to every compile, among them
+  # libc++ bounds checks, stack protectors, -fwrapv and zeroing registers on
+  # return. The C++ benchmarks should measure the standard library as an
+  # ordinary build gets it, so turn them all off.
+  env.NIX_HARDENING_ENABLE = "";
 }
