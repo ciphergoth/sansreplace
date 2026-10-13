@@ -28,7 +28,7 @@ where
         k -= 1;
     }
     if k == 1 {
-        *out.next().unwrap() = j + (f64::from(n) * rng.random::<f64>()) as u32;
+        *out.next().unwrap() = j + rng.random_range(0..n);
     }
 }
 
@@ -104,7 +104,9 @@ where
     if k > 1 {
         vittera(rng, n, j, &mut res[ix..]);
     } else {
-        res[ix] = j + (f64::from(n) * vprime) as u32;
+        // The appendix reuses vprime here, but it can round to exactly 1,
+        // which would give j + n
+        res[ix] = j + rng.random_range(0..n);
     }
 }
 

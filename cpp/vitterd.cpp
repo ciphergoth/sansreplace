@@ -44,7 +44,7 @@ static inline void vittera(uint32_t n, uint32_t k, uint32_t j, uint32_t* result)
         k--;
     }
     if (k == 1) {
-        *result = j + (uint32_t)(n * randdouble());
+        *result = j + randbelow(n);
     }
 }
 
@@ -113,7 +113,9 @@ static inline void vitterd(uint32_t n, uint32_t k, uint32_t* result) {
     if (k > 1) {
         vittera(n, k, j, result);
     } else {
-        *result = j + (uint32_t)(n * vprime);
+        // The appendix reuses vprime here, but it can round to exactly 1,
+        // which would give j + n
+        *result = j + randbelow(n);
     }
 }
 
