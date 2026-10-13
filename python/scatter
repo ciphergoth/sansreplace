@@ -48,6 +48,7 @@ def main():
     markermap = {
         'quadraticreject': '.',
         'rejectionsample': 's',
+        'ranksb': 'p',
         'floydf2': 'o',
         'quadraticf2': '*',
         'iterativechoose': '+',

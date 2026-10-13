@@ -4,6 +4,7 @@ mod hsel;
 mod iterativechoose;
 mod quadraticf2;
 mod quadraticreject;
+mod ranksb;
 mod rejectionsample;
 mod reservoirsample;
 mod select;
@@ -36,6 +37,7 @@ where
     algorithms![
         quadraticreject,
         rejectionsample,
+        ranksb,
         floydf2,
         quadraticf2,
         iterativechoose,

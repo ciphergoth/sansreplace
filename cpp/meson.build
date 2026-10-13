@@ -49,6 +49,7 @@ libsrc = [
     'timing.cpp',
     'quadraticreject.cpp',
     'rejectionsample.cpp',
+    'ranksb.cpp',
     'floydf2.cpp',
     'quadraticf2.cpp',
     'iterativechoose.cpp',

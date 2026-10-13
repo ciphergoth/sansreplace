@@ -4,6 +4,7 @@
 ALGORITHMS = [
     "quadraticreject",
     "rejectionsample",
+    "ranksb",
     "floydf2",
     "quadraticf2",
     "iterativechoose",
