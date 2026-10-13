@@ -36,12 +36,17 @@ cargo run --release -- time --sorttype random --nk 1000000 1000
 cargo run --release -- test 5 3 --algorithm hsel
 ```
 
-To run the full C++ and Rust benchmarks in both orders, writing a CSV for each to a directory
-(this takes several hours):
+To run the full C++ and Rust benchmarks in both orders (this takes several hours):
 
 ```
 python/bench_all results/my-run
 ```
+
+This times each algorithm on its own, writing `results/my-run/cpp-random/hsel.csv` and so on, so
+after changing one algorithm you only need to time that one, with `--algorithm`, and copy its CSVs
+into `results/latest`. Each CSV records the machine, OS, compilers and power state it was timed
+with, and the tools that compare algorithms warn if these differ. Timings on battery or in Low
+Power Mode are not comparable with timings on mains power.
 
 ## Building the paper
 

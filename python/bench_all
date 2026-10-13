@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
+import csv
 import datetime
 import pathlib
 import subprocess
+
+import machine
+from algorithms import ALGORITHMS
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -13,29 +17,44 @@ default_options = ["--values", "small", "--values", "fib",
 
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
-        description="Run the C++ and Rust benchmarks in both orders, writing a CSV for each "
-            "to OUTDIR. Stops at the first failure.")
+        description="Run the C++ and Rust benchmarks in both orders, timing each algorithm "
+            "on its own, and writing OUTDIR/LANG-ORDER/ALGORITHM.csv. Stops at the first "
+            "failure.")
+    p.add_argument("--algorithm", action="append", choices=ALGORITHMS,
+        help="Time only this algorithm; may be repeated (default: all)")
     p.add_argument("outdir", type=pathlib.Path)
     p.add_argument("options", nargs=argparse.REMAINDER,
         help="time_choose options, replacing the defaults")
     return p.parse_args()
 
-def run(name, cmd):
+def run(name, cmd, csvfile):
     print(f"{datetime.datetime.now():%F %T} starting {name}", flush=True)
-    subprocess.run(cmd, check=True)
+    setup = machine.get()
+    subprocess.run([*cmd, "--csv", csvfile], check=True)
+    with csvfile.open("a", newline="") as f:
+        writer = csv.writer(f)
+        for k, v in setup.items():
+            writer.writerow(["info", k, v])
     print(f"{datetime.datetime.now():%F %T} finished {name}", flush=True)
 
 def main():
     args = parse_args()
     options = args.options or default_options
-    args.outdir.mkdir(parents=True, exist_ok=True)
+    algorithms = args.algorithm or ALGORITHMS
     subprocess.run(["cargo", "build", "--release",
         "--manifest-path", topdir / "rust/Cargo.toml"], check=True)
     for order in ["random", "sorted"]:
-        run(f"cpp-{order}", [topdir / "python/time_choose", "--sorttype", order, *options,
-            "--csv", args.outdir / f"cpp-{order}.csv"])
-        run(f"rust-{order}", [topdir / "rust/target/release/sansreplace", "time",
-            "--sorttype", order, *options, "--csv", args.outdir / f"rust-{order}.csv"])
+        for lang in ["cpp", "rust"]:
+            outdir = args.outdir / f"{lang}-{order}"
+            outdir.mkdir(parents=True, exist_ok=True)
+            for alg in algorithms:
+                if lang == "cpp":
+                    cmd = [topdir / "python/time_choose", "--sorttype", order,
+                        "--algorithm", alg, *options]
+                else:
+                    cmd = [topdir / "rust/target/release/sansreplace", "time",
+                        "--sorttype", order, "--algorithm", alg, *options]
+                run(f"{lang}-{order} {alg}", cmd, outdir / f"{alg}.csv")
 
 if __name__ == '__main__':
     main()
