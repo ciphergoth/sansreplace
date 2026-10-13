@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "randbelow.h"
 
 #if __AVX512F__
 
