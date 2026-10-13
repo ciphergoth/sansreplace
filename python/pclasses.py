@@ -54,6 +54,17 @@ class KLogK:
         return f"({c})(k \\log k)"
 
 
+def formula(models, coeffs):
+    "TeX for the sum of the models with these coefficients, with signs"
+    terms = []
+    for i, (m, c) in enumerate(zip(models, coeffs)):
+        t = m.tex(abs(c))
+        if i == 0:
+            terms.append(f"-{t}" if c < 0 else t)
+        else:
+            terms.append(f" - {t}" if c < 0 else f" + {t}")
+    return "".join(terms)
+
 def lookup_model(m):
     if m == '1': return One()
     elif m == 'n': return N()

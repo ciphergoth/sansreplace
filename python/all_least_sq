@@ -40,8 +40,7 @@ def write_table(outfile, csv, pairs):
         for title, name, models in pairs:
             models = models + [pclasses.One()]
             fit = lstsq.gen_fit([item for item in items if item.alg == name], models)
-            z = " + ".join(m.tex(c) for m, c in zip(models, fit))
-            z = z.replace("+ -", "- ")
+            z = pclasses.formula(models, fit)
             out.write(f"{title} & \\({z}\\)\\\\\n")
 
 def main():
