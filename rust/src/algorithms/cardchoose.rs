@@ -4,6 +4,10 @@ where
 {
     assert!(res.len() <= (length as usize));
     let amount = res.len() as u32;
+    // t would overflow for length = u32::MAX and amount = 0
+    if amount == 0 {
+        return;
+    }
     let t = length - amount + 1;
     for i in 0..amount {
         let r = rng.random_range(0..t + i);
