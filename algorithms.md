@@ -148,10 +148,8 @@ Algorithm | Python | C++ | Order guarantee | Data structures | Time
 HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 
 This is a variation of the above in which we use a hash table to simulate the array
-of values [0, _n_), and store only where we change it. Our C++ and Rust implementations keep the
-first _k_ entries of the simulated array in the output array itself, so only swaps that reach
-beyond _k_ touch the hash table.
-First proposed by Ernvall and Nevalainen in 1982:
+of values [0, _n_), and store only where we change it. First proposed by Ernvall and Nevalainen
+in 1982:
 
 * Jarmo Ernvall and Olli Nevalainen
     * An algorithm for unbiased random sampling
@@ -162,6 +160,12 @@ First proposed by Ernvall and Nevalainen in 1982:
 It is also presented in Martin Harriman, [Sampling Without Replacement: Durstenfeld-Fisher-Yates
 Permutation for Very Large Permutation
 Sizes](https://www.tdcommons.org/cgi/viewcontent.cgi?article=1485&context=dpubs_series).
+
+Our C++ and Rust implementations use a faster variant, which keeps the first _k_ entries of the
+simulated array in the output array itself, so only swaps that reach beyond _k_ touch the hash
+table. This variant was described by rici in a [Stack Overflow
+answer](https://stackoverflow.com/a/30559195) in 2015. Thanks to Mathias Weller for bringing it to
+my attention.
 
 ## Cardchoose
 

@@ -228,9 +228,11 @@ As above, except that instead of allocating and initializing an
 \(n\)-element array, we use a ``virtual'' array, with a hash table
 storing only the modified elements.
 \cite{hsel}
-Our C++ and Rust implementations keep the first \(k\) entries of the
-virtual array in the output array itself, so only swaps that reach
-beyond them touch the hash table.
+Our C++ and Rust implementations use a faster variant, which keeps the
+first \(k\) entries of the virtual array in the output array itself,
+so only swaps that reach beyond them touch the hash table. This variant
+was described by rici \cite{rici}; we thank Mathias Weller for bringing
+it to our attention.
 
 \section{Notation}
 
