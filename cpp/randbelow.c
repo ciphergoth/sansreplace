@@ -16,67 +16,57 @@
 
 #include "randbelow.h"
 
-#if __AVX512F__
+// Xoshiro256++ (Blackman and Vigna, https://prng.di.unimi.it/): fast enough
+// that the benchmarks don't measure it, and with no weak bits, so every bit
+// of every output can be used.
 
-#include "simdxorshift128plus.h"
+static uint64_t state[4];
 
-static avx512_xorshift128plus_key_t mykey;
-static __m512i buf;
-
-static inline void init_mykey() {
-    avx512_xorshift128plus_init(324, 4444, &mykey);
+static inline uint64_t rotl(uint64_t x, int k) {
+    return (x << k) | (x >> (64 - k));
 }
 
-static inline void fill_buf() {
-    buf = avx512_xorshift128plus(&mykey);
+static uint64_t random64() {
+    uint64_t result = rotl(state[0] + state[3], 23) + state[0];
+    uint64_t t = state[1] << 17;
+    state[2] ^= state[0];
+    state[3] ^= state[1];
+    state[1] ^= state[2];
+    state[0] ^= state[3];
+    state[2] ^= t;
+    state[3] = rotl(state[3], 45);
+    return result;
 }
 
-#elif __AVX2__
-
-#include "simdxorshift128plus.h"
-
-static avx_xorshift128plus_key_t mykey;
-static __m256i buf;
-
-static inline void init_mykey() {
-    avx_xorshift128plus_init(324, 4444, &mykey);
-}
-
-static inline void fill_buf() {
-    buf = avx_xorshift128plus(&mykey);
-}
-
-#else
-
-#include "xorshift128plus.h"
-
-static xorshift128plus_key_t mykey;
+// Each output supplies two 32-bit words
 static uint64_t buf;
+static int have_half;
 
-static inline void init_mykey() {
-    xorshift128plus_init(324, 4444, &mykey);
+static uint32_t random32() {
+    if (have_half) {
+        have_half = 0;
+        return (uint32_t)(buf >> 32);
+    }
+    buf = random64();
+    have_half = 1;
+    return (uint32_t)buf;
 }
 
-static inline void fill_buf() {
-    buf = xorshift128plus(&mykey);
+// SplitMix64, the seeding generator recommended for Xoshiro
+static uint64_t splitmix64(uint64_t* x) {
+    uint64_t z = (*x += 0x9e3779b97f4a7c15);
+    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+    z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+    return z ^ (z >> 31);
 }
-
-#endif
-
-static uint32_t consumed;
 
 void rand_init() {
     // Deterministic seeding for now
-    init_mykey();
-    consumed = sizeof(buf) / sizeof(uint32_t);
-}
-
-static uint32_t random32() {
-    if (consumed == sizeof(buf) / sizeof(uint32_t)) {
-        fill_buf();
-        consumed = 0;
+    uint64_t seed = 324;
+    for (int i = 0; i < 4; i++) {
+        state[i] = splitmix64(&seed);
     }
-    return ((uint32_t*)&buf)[consumed++];
+    have_half = 0;
 }
 
 // inspired by https://lemire.me/blog/2016/06/30/fast-random-shuffling/
@@ -95,22 +85,7 @@ uint32_t randbelow(uint32_t range) {
     return multiresult >> 32;
 }
 
-// One whole 64-bit xorshift128+ output. The buffer holds 64-bit outputs, but
-// random32 may have left us half-way through one, so skip to the next.
-static uint64_t random64() {
-    consumed += consumed % 2;
-    if (consumed == sizeof(buf) / sizeof(uint32_t)) {
-        fill_buf();
-        consumed = 0;
-    }
-    uint64_t r = ((uint64_t*)&buf)[consumed / 2];
-    consumed += 2;
-    return r;
-}
-
-// Uniform in [0, 1) with 53 random bits: the top 53 bits of one 64-bit
-// xorshift128+ output. The low bits of xorshift128+ are weak, so they must
-// not land in the top of the mantissa.
+// Uniform in [0, 1) with 53 random bits: the top 53 bits of one output
 double randdouble() {
     return (double)(random64() >> 11) * (1.0 / 9007199254740992.0);
 }

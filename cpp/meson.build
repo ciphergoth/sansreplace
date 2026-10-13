@@ -19,30 +19,6 @@ project('sansreplace', ['c', 'cpp'],
 add_project_arguments(
     '-fno-strict-aliasing', '-O3', '-ffast-math',
     language : ['c', 'cpp'])
-include_dirs = [
-    include_directories('../third_party/SIMDxorshift/include')
-]
-
-if host_machine.cpu_family() == 'x86_64'
-    add_project_arguments(
-        '-march=native', '-mtune=native',
-        language : ['c', 'cpp'])
-endif
-
-compiler = meson.get_compiler('cpp')
-
-code = '''
-#include <x86intrin.h>
-void test() { __m512i t; _mm512_xor_si512(t, t);}
-'''
-avx512 = compiler.compiles(code, name : 'avx512 check', args: '-march=native')
-
-code = '''
-#include <x86intrin.h>
-void test() { __m256i t; _mm256_xor_si256(t, t);}
-'''
-avx2 = compiler.compiles(code, name : 'avx2 check', args: '-march=native')
-
 libsrc = [
     'donothing.cpp',
     'randbelow.c',
@@ -59,12 +35,6 @@ libsrc = [
     'hsel.cpp',
     'cardchoose.cpp',
 ]
-if avx512 or avx2
-    libsrc += '../third_party/SIMDxorshift/src/simdxorshift128plus.c'
-else
-    libsrc += '../third_party/SIMDxorshift/src/xorshift128plus.c'
-endif
 lib = shared_library('sansreplace',
                         libsrc,
-                        include_directories : include_dirs,
                         install : false)
