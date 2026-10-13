@@ -30,7 +30,8 @@ topdir = pathlib.Path(__file__).resolve().parent.parent
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Model performance using least squares")
-    p.add_argument('csv', type=pathlib.Path)
+    p.add_argument('csv', type=pathlib.Path,
+        help="A results CSV, or a directory holding a CSV per algorithm")
     p.add_argument('algorithm')
     p.add_argument('--model', action='append')
     p.add_argument('--output')

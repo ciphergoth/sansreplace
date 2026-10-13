@@ -14,7 +14,9 @@
 
 import csv
 import dataclasses
+import sys
 
+import machine
 from algorithms import ALGORITHMS
 
 @dataclasses.dataclass
@@ -24,15 +26,38 @@ class Test:
     k: int
     time: float
 
-def read(fname):
+def read_file(fname):
     with fname.open(newline='') as f:
         for row in csv.reader(f):
             if row[0] == 'result':
                 yield Test(row[1], int(row[2]), int(row[3]), float(row[4]))
 
-def read_for_plot(fname):
+def setup(fname):
+    "The machine setup a CSV records, as in machine.KEYS"
+    with fname.open(newline='') as f:
+        info = {row[1]: row[2] for row in csv.reader(f) if row[0] == 'info'}
+    return tuple(info.get(k) for k in machine.KEYS)
+
+def read(path):
+    """The results in a CSV, or in a directory holding a CSV per algorithm, in
+    which case warn if the CSVs were not all timed on the same setup"""
+    if not path.is_dir():
+        yield from read_file(path)
+        return
+    csvs = sorted(path.glob("*.csv"))
+    setups = {}
+    for fname in csvs:
+        setups.setdefault(setup(fname), []).append(fname.stem)
+    if len(setups) > 1:
+        print(f"warning: {path} mixes results from different setups:", file=sys.stderr)
+        for s, algs in setups.items():
+            print(f"  {', '.join(algs)}: {dict(zip(machine.KEYS, s))}", file=sys.stderr)
+    for fname in csvs:
+        yield from read_file(fname)
+
+def read_for_plot(path):
     data = {}
-    for item in read(fname):
+    for item in read(path):
         if item.k != 0:
             data.setdefault(item.n, {}).setdefault(item.alg, []).append((item.k, 1E9 * item.time/item.k))
     all_algorithms = set()

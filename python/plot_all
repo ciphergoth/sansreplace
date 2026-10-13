@@ -26,7 +26,8 @@ def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Plot all algorithms")
     p.add_argument('title')
-    p.add_argument('csv', type=pathlib.Path)
+    p.add_argument('csv', type=pathlib.Path,
+        help="A results CSV, or a directory holding a CSV per algorithm")
     p.add_argument("--algorithm",  action='append')
     p.add_argument('--output')
     p.add_argument('--n', type=int)

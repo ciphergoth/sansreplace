@@ -24,7 +24,8 @@ topdir = pathlib.Path(__file__).resolve().parent.parent
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Plot one algorithm against many others")
-    p.add_argument('csv', type=pathlib.Path)
+    p.add_argument('csv', type=pathlib.Path,
+        help="A results CSV, or a directory holding a CSV per algorithm")
     p.add_argument("--algorithm",  action='append')
     p.add_argument('--compare-to', default="cardchoose")
     p.add_argument('--to-png', action='store_true')

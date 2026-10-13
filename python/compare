@@ -43,7 +43,8 @@ def comparison(args, l):
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Plot some algorithms against all others")
-    p.add_argument('csv', type=pathlib.Path)
+    p.add_argument('csv', type=pathlib.Path,
+        help="A results CSV, or a directory holding a CSV per algorithm")
     p.add_argument("--algorithm",  action='append')
     p.add_argument('--compare-to', action='append')
     p.add_argument('--output', type=pathlib.Path,
