@@ -354,7 +354,17 @@ its left:
     star placed in one sits in the same gap between bars as its left
     neighbour, so it gets the same value. This is a \emph{copy}.
 \end{itemize}
+For example, with \(t = 4\), so three bars, and two stars already
+placed, \(d = [1, 3]\), there are six gaps, each marked \(\circ\) here
+with the \(r\) that picks it above and the value it gives below:
 
+\begin{displaymath}
+    \begin{array}{ l c c c c c c c c c c c }
+        r & 0 & & 1 & & 4 & & 2 & & 3 & & 5 \\
+        \text{row} & \circ & \big| & \circ & \star_0 & \circ & \big| & \circ & \big| & \circ & \star_1 & \circ \\
+        \text{value} & 0 & & 1 & & 1 & & 2 & & 3 & & 3 \\
+    \end{array}
+\end{displaymath}
 
 That is the loop. \mintinline{python}{randrange(t + i)} picks a gap.
 If \(r < t\), the new star takes the fresh value \(r\). Otherwise

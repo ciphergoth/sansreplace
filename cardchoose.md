@@ -90,6 +90,15 @@ things, so it has _t_+_i_ gaps. Name each gap by what is just to its left:
 * The gap just after each star. There are _i_ of these, and a star placed in one sits in the same
   gap between bars as its left neighbour, so it gets the same value. This is a **copy**.
 
+For example, with _t_ = 4, so three bars, and two stars already placed, `d = [1, 3]`, there are
+six gaps, each marked `∘` here with the `r` that picks it above and the value it gives below:
+
+```
+r:       0     1     4     2     3     5
+row:     ∘  |  ∘  ★₀ ∘  |  ∘  |  ∘  ★₁ ∘
+value:   0     1     1     2     3     3
+```
+
 That is the loop. `randrange(t + i)` picks a gap. If `r < t`, the new star takes the fresh value
 `r`. Otherwise `r - t` picks one of the stars already placed, and the new star copies its value,
 `d[r - t]`. The list `d` holds values in the order they were drawn, so the copy is a single index
