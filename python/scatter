@@ -18,6 +18,7 @@ import argparse
 import pathlib
 
 import read_results
+from algorithms import ALGORITHMS
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -37,28 +38,35 @@ def main():
     import matplotlib.pyplot as plt
     data = {}
     for item in read_results.read(args.csv):
-        data.setdefault((item.n, item.k), []).append(item)
+        # k = 0 can't be shown on a log scale
+        if item.k != 0:
+            data.setdefault((item.n, item.k), []).append(item)
     points = {}
+    for l in data.values():
+        winner = min(l, key=lambda it: it.time)
+        points.setdefault(winner.alg, []).append(winner)
     markermap = {
         'quadraticreject': '.',
-        'cardchoose': '^',
+        'rejectionsample': 's',
+        'floydf2': 'o',
+        'quadraticf2': '*',
         'iterativechoose': '+',
-        'select': 'x',
         'reservoirsample': 'D',
         'vitterd': 'v',
+        'select': 'x',
+        'hsel': 'h',
+        'cardchoose': '^',
     }
-    for l in data.values():
-        #winner = min((it for it in l if it.alg in markermap), default=None, key=lambda it: it.time)
-        winner = min(l, default=None, key=lambda it: it.time)
-        #if winner is None:
-        #    continue
-        points.setdefault(winner.alg, []).append(winner)
     fig = plt.figure()
     ax = plt.gca()
     ax.set_xscale('log')
     ax.set_yscale('log')
-    for k, l in points.items():
-        plt.scatter([it.n for it in l], [it.k for it in l], marker=markermap[k])
+    ax.set_xlabel("n")
+    ax.set_ylabel("k")
+    for alg in sorted(points, key=ALGORITHMS.index):
+        l = points[alg]
+        plt.scatter([it.n for it in l], [it.k for it in l], marker=markermap[alg], label=alg)
+    plt.legend()
     if args.png_output is not None:
         plt.savefig(str(args.png_output))
     else:
