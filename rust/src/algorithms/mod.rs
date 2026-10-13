@@ -32,16 +32,17 @@ where
             )),*]
         };
     }
+    // Same order as python/algorithms/__init__.py
     algorithms![
-        cardchoose,
-        floydf2,
-        hsel,
-        iterativechoose,
-        quadraticf2,
         quadraticreject,
         rejectionsample,
+        floydf2,
+        quadraticf2,
+        iterativechoose,
         reservoirsample,
+        vitterd,
         select,
-        vitterd
+        hsel,
+        cardchoose
     ]
 }

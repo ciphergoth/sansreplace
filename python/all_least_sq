@@ -51,14 +51,14 @@ def main():
         write_table(latex / f"{lang}-random-table.tex", results / f"{lang}-random.csv",
             [
                 ("Quadratic F2", "quadraticf2", [pclasses.K2(), pclasses.K()]),
-                ("Our algorithm", "cardchoose", [pclasses.KLogK(), pclasses.K()]),
-                ("SELECT", "select", [pclasses.N(), pclasses.K()]),
                 ("Reservoir sampling", "reservoirsample", [pclasses.N(), pclasses.K()]),
+                ("SELECT", "select", [pclasses.N(), pclasses.K()]),
+                ("Our algorithm", "cardchoose", [pclasses.KLogK(), pclasses.K()]),
             ])
         write_table(latex / f"{lang}-sorted-table.tex", results / f"{lang}-sorted.csv",
             [
-                ("Our algorithm", "cardchoose", [pclasses.KLogK(), pclasses.K()]),
                 ("Iterative choosing", "iterativechoose", [pclasses.N(), pclasses.K()]),
+                ("Our algorithm", "cardchoose", [pclasses.KLogK(), pclasses.K()]),
             ])
 
 

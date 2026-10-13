@@ -15,6 +15,8 @@
 import csv
 import dataclasses
 
+from algorithms import ALGORITHMS
+
 @dataclasses.dataclass
 class Test:
     alg: str
@@ -40,4 +42,4 @@ def read_for_plot(fname):
             all_algorithms.add(alg)
     data = list(data.items())
     data.sort()
-    return list(sorted(all_algorithms)), data
+    return sorted(all_algorithms, key=ALGORITHMS.index), data

@@ -147,12 +147,13 @@ and a ``sorted'' variant of each algorithm.
     \hline
     Quadratic rejection sampling & Random &  & \(k^2\) \\
     Set-based rejection sampling & Random & Set & \(k\) \\
-    Iterative choosing & Sorted &  & \(n\) \\
-    Reservoir sampling & Random &  & \(n\) \\
-    SELECT & Random & \(n\)-element array & \(n\) \\
-    HSEL & Random & Dictionary & \(k\) \\
     Floyd's F2 &  & Set & \(k\) \\
     Quadratic F2 & Random & & \(k^2\) \\
+    Iterative choosing & Sorted &  & \(n\) \\
+    Reservoir sampling & Random &  & \(n\) \\
+    Vitter's Algorithm D & Sorted &  & \(k\) \\
+    SELECT & Random & \(n\)-element array & \(n\) \\
+    HSEL & Random & Dictionary & \(k\) \\
     Our work & Sorted &  & \(k \log k\)
     \end{tabular}
 \end{center}
@@ -169,6 +170,23 @@ length.
 \inputminted{Python}{code/rejectionsample.py}
 As above, but use a data structure representing sets with an efficient membership test.
 \cite{goodman}
+
+\subsection{Floyd's F2}
+\inputminted{Python}{code/floydf2.py}
+A twist on set-based rejection that uses compensatingly biased samples
+to avoid multiple tests.
+\cite{floydf2}
+For random order output, our implementation does not shuffle
+afterwards. Instead, when the chosen value is already present, it
+moves a randomly chosen earlier output to the end and puts the new
+value in its place. This keeps the order uniformly random, and costs
+an extra random number only on collisions.
+
+\subsection{Quadratic F2}
+\inputminted{Python}{code/quadraticf2.py}
+Quadratic variant on Floyd's F2 which needs no external data
+structure. Inspired by the implementation in \cite{rust-random} but
+with some optimizations.
 
 \subsection{Iterative choosing (Algorithm S)}
 \inputminted{Python}{code/iterativechoose.py}
@@ -187,6 +205,18 @@ and replace a random element of the array with each element with the
 appropriate probability.
 \cite{taocp2}
 
+\subsection{Vitter's Algorithm D}
+Like iterative choosing, produce the output in sorted order, but
+instead of deciding about each value in turn, draw the number of values
+to skip before the next chosen one directly. The skip has a known
+discrete distribution, which Algorithm D samples by rejection from a
+continuous approximation in \(\bigO{1}\) expected time per output, at
+the cost of a few floating-point exponentiations. Once \(n \leq 13k\)
+it falls back on Vitter's Algorithm A, which draws each skip in time
+proportional to its length. Our implementation follows the code in the
+paper's appendix.
+\cite{vitterD}
+
 \subsection{SELECT}
 \inputminted{Python}{code/select.py}
 Use a Fisher-Yates shuffle to randomize only the first \(k\) items of
@@ -198,23 +228,6 @@ As above, except that instead of allocating and initializing an
 \(n\)-element array, we use a ``virtual'' array, with a hash table
 storing only the modified elements.
 \cite{hsel}
-
-\subsection{Floyd's F2}
-\inputminted{Python}{code/floydf2.py}
-A twist on set-based rejection that uses compensatingly biased samples
-to avoid multiple tests.
-\cite{floydf2}
-For random order output, our implementation does not shuffle
-afterwards. Instead, when the chosen value is already present, it
-moves a randomly chosen earlier output to the end and puts the new
-value in its place. This keeps the order uniformly random, and costs
-an extra random number only on collisions.
-
-\subsection{Quadratic F2}
-\inputminted{Python}{code/quadraticf2.py}
-Quadratic variant on Floyd's F2 which needs no external data
-structure. Inspired by the implementation in \cite{rust-random} but
-with some optimizations.
 
 \section{Notation}
 

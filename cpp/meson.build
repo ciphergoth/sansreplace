@@ -44,19 +44,19 @@ void test() { __m256i t; _mm256_xor_si256(t, t);}
 avx2 = compiler.compiles(code, name : 'avx2 check', args: '-march=native')
 
 libsrc = [
-    'cardchoose.cpp',
     'donothing.cpp',
-    'select.cpp',
-    'floydf2.cpp',
-    'iterativechoose.cpp',
     'randbelow.c',
-    'rejectionsample.cpp',
-    'reservoirsample.cpp',
-    'quadraticreject.cpp',
-    'hsel.cpp',
-    'quadraticf2.cpp',
-    'vitterd.cpp',
     'timing.cpp',
+    'quadraticreject.cpp',
+    'rejectionsample.cpp',
+    'floydf2.cpp',
+    'quadraticf2.cpp',
+    'iterativechoose.cpp',
+    'reservoirsample.cpp',
+    'vitterd.cpp',
+    'select.cpp',
+    'hsel.cpp',
+    'cardchoose.cpp',
 ]
 if avx512 or avx2
     libsrc += '../third_party/SIMDxorshift/src/simdxorshift128plus.c'

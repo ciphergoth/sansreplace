@@ -17,18 +17,8 @@ import subprocess
 
 import cffi
 
-samplers = [
-    "quadraticreject",
-    "cardchoose",
-    "select",
-    "floydf2",
-    "quadraticf2",
-    "iterativechoose",
-    "rejectionsample",
-    "reservoirsample",
-    "hsel",
-    "vitterd"
-]
+from algorithms import ALGORITHMS
+
 
 def setup_module(cppdir, build_dir, functions):
     if build_dir is None:
@@ -54,7 +44,7 @@ def setup_module(cppdir, build_dir, functions):
 def list_functions():
     yield ("donothing", "donothing", "donothing")
     for sorttype in ["sorted", "random"]:
-        for t in samplers:
+        for t in ALGORITHMS:
             yield (sorttype, t, f"{sorttype}_{t}")
 
 class Timeable:

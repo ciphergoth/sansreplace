@@ -1,0 +1,15 @@
+# The algorithms in presentation order: rejection methods, then sequential
+# scans, then shuffles, then cardchoose. Docs, the paper, the Rust registry
+# and the graph legends all use this order.
+ALGORITHMS = [
+    "quadraticreject",
+    "rejectionsample",
+    "floydf2",
+    "quadraticf2",
+    "iterativechoose",
+    "reservoirsample",
+    "vitterd",
+    "select",
+    "hsel",
+    "cardchoose",
+]
