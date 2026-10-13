@@ -26,11 +26,11 @@
 double timefunc_s(void (*func)(uint32_t n, uint32_t k, uint32_t* result), uint32_t n, uint32_t k,
                   uint64_t iters) {
     auto result = std::vector<uint32_t>(k);
-    auto start = std::chrono::system_clock::now();
+    auto start = std::chrono::steady_clock::now();
     for (uint64_t i = 0; i < iters; i++) {
         func(n, k, result.data());
     }
-    auto end = std::chrono::system_clock::now();
+    auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> duration = end - start;
     return duration.count();
 }
