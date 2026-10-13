@@ -454,11 +454,14 @@ through stars and bars in the other direction: Nijenhuis and Wilf's
 RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a random
 \((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences it. What
 we have not found elsewhere is the urn presented as a generator for
-uniform multisets, or its composition with stars and bars, which
-together give a sampler for sampling without replacement that needs no
-set, map or extra memory, uses only exact integer draws, and performs
-as described in \autoref{benchmarks}. We would be glad to hear of any
-earlier description.
+uniform multisets, or its composition with stars and bars into a
+sampler for sampling without replacement. Needing no set, map or extra
+memory is not new in itself: Nijenhuis and Wilf's RANKSB
+\cite[Chapter 4]{nijenhuiswilf} also uses nothing but the output
+array, and so does Vitter's Algorithm D, though it needs
+floating-point arithmetic where cardchoose and RANKSB use only exact
+integer draws. We would be glad to hear of any earlier description of
+cardchoose.
 
 Sorted output without a sort has a classic answer for real numbers:
 Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform

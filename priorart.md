@@ -25,10 +25,11 @@ Blackwell–MacQueen urn draws an exchangeable sequence from a Dirichlet process
 different purpose. The combinatorial generation literature does generate random multisets, but
 through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM chooses a random
 (_k_-1)-subset of {1, …, _n_+_k_-1} and differences it. What I have not found elsewhere is the
-urn presented as a generator for uniform multisets, or its composition with stars and bars,
-which together give a sampler for sampling without replacement that needs no set, map or extra
-memory, uses only exact integer draws, and performs as described in the [results](results.md).
-I would be glad to hear of any earlier description.
+urn presented as a generator for uniform multisets, or its composition with stars and bars into
+a sampler for sampling without replacement. Needing no set, map or extra memory is not new in
+itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and so does Vitter's
+Algorithm D, though it needs floating-point arithmetic where cardchoose and RANKSB use only exact
+integer draws. I would be glad to hear of any earlier description of cardchoose.
 
 Sorted output without a sort has a classic answer for real numbers: Bentley and Saxe generate _k_
 sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the
@@ -50,7 +51,8 @@ for distinct integers is Vitter's Algorithm D, whose continuous approximation is
 * David Blackwell and James B. MacQueen, "Ferguson distributions via Pólya urn schemes",
   _Annals of Statistics_ 1(2), 353–355, 1973.
 * Albert Nijenhuis and Herbert S. Wilf, _Combinatorial Algorithms for Computers and Calculators_,
-  2nd edition, Academic Press, 1978. Chapter 6, "Random Composition of n into k Parts (RANCOM)".
+  2nd edition, Academic Press, 1978. Chapter 4, "Random _k_-Subset of an _n_-Set (RANKSB)", and
+  chapter 6, "Random Composition of n into k Parts (RANCOM)".
 * Jon Louis Bentley and James B. Saxe, "Generating sorted lists of random numbers", _ACM
   Transactions on Mathematical Software_ 6(3), 359–364, 1980.
   [doi:10.1145/355900.355907](https://doi.org/10.1145/355900.355907).
