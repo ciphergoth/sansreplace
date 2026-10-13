@@ -61,22 +61,31 @@ static void ranksb(uint32_t n, uint32_t k, uint32_t* result) {
             p++;
         }
     }
+    // An entry says which bin it counts and how many values that bin needs
+    struct Bin {
+        uint32_t l, lo, count;
+    };
+    auto decode = [&](uint32_t e) {
+        uint32_t l = bin(e - 1);
+        return Bin{l, lo(l), e - lo(l)};
+    };
     // Fill each bin's slots, working from the right. The q nonempty bins
     // before the one result[q] counts each need at least one slot, so its
     // slots are all at q or later, and filling them overwrites no entry we
-    // have yet to read.
+    // have yet to read. Decoding takes divisions, so we decode each entry
+    // before filling the bin to its right, while the CPU has other work to
+    // do, rather than leaving the fill to wait for them.
     uint32_t s = k;
+    Bin b = p > 0 ? decode(result[p - 1]) : Bin{};
     for (uint32_t q = p; q-- > 0;) {
-        uint32_t l = bin(result[q] - 1);
-        uint32_t count = result[q] - lo(l);
-        uint32_t m0 = lo(l);
+        Bin next = q > 0 ? decode(result[q - 1]) : Bin{};
         // m values in the bin are not yet chosen
-        uint32_t m = lo((uint64_t)l + 1) - m0;
+        uint32_t m = lo((uint64_t)b.l + 1) - b.lo;
         // Fill the slots s - count to s - 1, from the right, with distinct
-        // values from bin l in increasing order
-        for (uint32_t r = s; r-- > s - count;) {
+        // values from the bin in increasing order
+        for (uint32_t r = s; r-- > s - b.count;) {
             // (F) Choose one of the m values not yet chosen
-            uint32_t x = m0 + randbelow(m);
+            uint32_t x = b.lo + randbelow(m);
             // (G) Skip over the values already chosen, shifting them left
             uint32_t i = r + 1;
             while (i < s && x >= result[i]) {
@@ -88,7 +97,8 @@ static void ranksb(uint32_t n, uint32_t k, uint32_t* result) {
             result[i - 1] = x;
             m--;
         }
-        s -= count;
+        s -= b.count;
+        b = next;
     }
 }
 

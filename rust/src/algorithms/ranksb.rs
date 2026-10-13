@@ -46,22 +46,46 @@ where
             p += 1;
         }
     }
+    // An entry says which bin it counts and how many values that bin needs
+    #[derive(Default)]
+    struct Bin {
+        l: u32,
+        lo: u32,
+        count: usize,
+    }
+    let decode = |e: u32| {
+        let l = bin(e - 1) as u32;
+        Bin {
+            l,
+            lo: lo(l),
+            count: (e - lo(l)) as usize,
+        }
+    };
     // Fill each bin's slots, working from the right. The q nonempty bins
     // before the one a[q] counts each need at least one slot, so its slots
     // are all at q or later, and filling them overwrites no entry we have yet
-    // to read.
+    // to read. Decoding takes divisions, so we decode each entry before
+    // filling the bin to its right, while the CPU has other work to do,
+    // rather than leaving the fill to wait for them.
     let mut s = a.len();
+    let mut b = if p > 0 {
+        decode(a[p - 1])
+    } else {
+        Bin::default()
+    };
     for q in (0..p).rev() {
-        let l = bin(a[q] - 1);
-        let count = (a[q] - lo(l as u32)) as usize;
-        let m0 = lo(l as u32);
+        let next = if q > 0 {
+            decode(a[q - 1])
+        } else {
+            Bin::default()
+        };
         // m values in the bin are not yet chosen
-        let mut m = lo(l as u32 + 1) - m0;
+        let mut m = lo(b.l + 1) - b.lo;
         // Fill the slots s - count to s - 1, from the right, with distinct
-        // values from bin l in increasing order
-        for r in (s - count..s).rev() {
+        // values from the bin in increasing order
+        for r in (s - b.count..s).rev() {
             // (F) Choose one of the m values not yet chosen
-            let mut x = m0 + rng.random_range(0..m);
+            let mut x = b.lo + rng.random_range(0..m);
             // (G) Skip over the values already chosen, shifting them left
             let mut i = r + 1;
             while i < s && x >= a[i] {
@@ -73,7 +97,8 @@ where
             a[i - 1] = x;
             m -= 1;
         }
-        s -= count;
+        s -= b.count;
+        b = next;
     }
 }
 
