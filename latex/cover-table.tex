@@ -1,0 +1,24 @@
+\begin{tabular}{ llr }
+Size & Algorithms & Worst \\
+\hline
+\multicolumn{3}{l}{\emph{C++, random order}} \\
+1 & cardchoose & \(12.35\times\) \\
+2 & SELECT + cardchoose & \(3.01\times\) \\
+3 & quadratic rejection + Vitter's D + SELECT & \(1.84\times\) \\
+no D & quadratic rejection + RANKSB + SELECT & \(1.90\times\) \\
+\multicolumn{3}{l}{\emph{C++, sorted order}} \\
+1 & Vitter's D & \(2.88\times\) \\
+no D & cardchoose & \(7.70\times\) \\
+2 & RANKSB + Vitter's D & \(1.51\times\) \\
+no D & RANKSB + iterative choosing & \(1.81\times\) \\
+3 & RANKSB + iterative choosing + reservoir sampling & \(1.50\times\) \\
+\multicolumn{3}{l}{\emph{Rust, random order}} \\
+1 & HSEL & \(12.95\times\) \\
+2 & SELECT + cardchoose & \(3.01\times\) \\
+3 & quadratic rejection + SELECT + cardchoose & \(1.51\times\) \\
+\multicolumn{3}{l}{\emph{Rust, sorted order}} \\
+1 & Vitter's D & \(6.17\times\) \\
+no D & cardchoose & \(18.39\times\) \\
+2 & reservoir sampling + cardchoose & \(2.23\times\) \\
+3 & iterative choosing + reservoir sampling + cardchoose & \(1.19\times\) \\
+\end{tabular}

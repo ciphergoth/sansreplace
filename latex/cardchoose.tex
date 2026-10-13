@@ -573,17 +573,26 @@ output it is comparable to set-based rejection sampling while never
 being far from the fastest.
 
 A good implementation will implement multiple algorithms, and choose
-which one to use based on the values of \(n\) and \(k\). For random
-order output, a combination of quadratic F2, our algorithm, and SELECT
-is likely to be near-optimal for all values, or if allocating extra
-memory on demand is not an option then reservoir sampling can be
-substituted for SELECT. Where a fast flat hash table is available,
-set-based rejection sampling can be added for moderate \(k\). For
-sorted order output, a combination of our algorithm and iterative
-choosing should suffice. Based on a least-squares curve fitting, the
-runtime estimates in seconds from \autoref{cpprandomtable} to
+which one to use based on the values of \(n\) and \(k\).
+\autoref{covertable} shows, for each language and order, the set of
+one, two or three algorithms that comes closest to the fastest of all
+of them at every point tested with \(k \geq 10\), if each point uses
+the fastest algorithm in the set, together with the largest factor by
+which that set is slower than the fastest. This assumes the best
+choice is made at every point; an implementation has to choose by a
+rule, such as a threshold on \(n/k\). Vitter's Algorithm D is itself
+two algorithms, since it switches to Algorithm A once \(n \leq 13k\),
+so wherever the best set includes it we also give the best set
+without it. Based on a least-squares curve fitting, the runtime
+estimates in seconds from \autoref{cpprandomtable} to
 \autoref{rustsortedtable} can be used to select which algorithm to
 use.
+
+\begin{table}
+    \input{cover-table.tex}
+    \caption{The best sets of up to three algorithms, and how much
+    slower than the fastest each is at its worst}\label{covertable}
+\end{table}
 
 \begin{table}
     \begin{tabular}{ lr }
