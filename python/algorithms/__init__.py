@@ -10,6 +10,7 @@ ALGORITHMS = [
     "iterativechoose",
     "reservoirsample",
     "vitterd",
+    "hiddenshuffle",
     "select",
     "hsel",
     "cardchoose",

@@ -1,5 +1,6 @@
 mod cardchoose;
 mod floydf2;
+mod hiddenshuffle;
 mod hsel;
 mod iterativechoose;
 mod quadraticf2;
@@ -43,6 +44,7 @@ where
         iterativechoose,
         reservoirsample,
         vitterd,
+        hiddenshuffle,
         select,
         hsel,
         cardchoose

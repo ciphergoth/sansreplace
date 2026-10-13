@@ -16,6 +16,7 @@ Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf
 Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
 Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
 Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | Sorted | none | _k_
+Hidden Shuffle | [Python](python/algorithms/hiddenshuffle.py) | [C++](cpp/hiddenshuffle.cpp) | Sorted | none | _k_
 SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
 HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 [Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
@@ -161,6 +162,36 @@ Python one states the method directly, which is easier to follow.
     * ACM Transactions on Mathematical Software, Volume 13, Number 1, March 1987
     * 58--67
     * https://doi.org/10.1145/23002.23003
+
+## Hidden Shuffle
+
+Algorithm | Python | C++ | Order guarantee | Data structures | Time
+----|----|----|----|----|----
+Hidden Shuffle | [Python](python/algorithms/hiddenshuffle.py) | [C++](cpp/hiddenshuffle.cpp) | Sorted | none | _k_
+
+Picture a Fisher-Yates shuffle of [0, _n_) that stops after _k_ steps, so the sample is whatever
+ends up in the first _k_ positions. Call those the low positions and the rest the high positions.
+Each step reaches a high position with a known probability, independently of the others, and which
+high position it reaches is uniform and independent of everything else. So first count how many
+steps reach a high position. Then draw that many high positions with replacement, in sorted order
+as in Bentley and Saxe's method. The first time a high position is drawn, its value joins the
+sample. A repeat finds a low value that was swapped there earlier, so the sample gains a low value
+instead, much as a collision in Floyd's F2 adds a different value. Given how many values are low,
+they are a uniformly random subset of the low positions by symmetry, and Vitter's Algorithm A
+chooses them in order. The output comes out sorted, it takes O(_k_) time in the worst case, and it
+needs no extra memory. Like Algorithm D, it relies on floating-point arithmetic, including an
+exponentiation for each high draw.
+
+The code printed in the paper is wrong: it can divide by zero, and the last step has an off-by-one
+error that biases the output. Our implementations apply the corrections from the errata in the
+authors' repository. Thanks to metasj for bringing this algorithm to my attention.
+
+* Michael Shekelyan and Graham Cormode
+    * Sequential Random Sampling Revisited: Hidden Shuffle Method
+    * Proceedings of the 24th International Conference on Artificial Intelligence and Statistics
+      (AISTATS 2021), PMLR volume 130
+    * https://proceedings.mlr.press/v130/shekelyan21a.html
+    * Errata and the authors' implementations: https://github.com/shekelyan/sampleiterator
 
 ## SELECT
 

@@ -151,6 +151,7 @@ and a ``sorted'' variant of each algorithm.
     Iterative choosing & Sorted &  & \(n\) \\
     Reservoir sampling & Random &  & \(n\) \\
     Vitter's Algorithm D & Sorted &  & \(k\) \\
+    Hidden Shuffle & Sorted &  & \(k\) \\
     SELECT & Random & \(n\)-element array & \(n\) \\
     HSEL & Random & Dictionary & \(k\) \\
     Cardchoose & Sorted &  & \(k \log k\)
@@ -232,6 +233,29 @@ it falls back on Vitter's Algorithm A, which draws each skip in time
 proportional to its length. Our implementation follows the code in the
 paper's appendix.
 \cite{vitterD}
+
+\subsection{Hidden Shuffle}
+\inputminted{Python}{code/hiddenshuffle.py}
+Consider a Fisher-Yates shuffle of \(\NN_{<n}\) that stops after
+\(k\) steps, so that the sample is whatever ends up in the first \(k\)
+positions; call these the low positions, and the rest the high
+positions. Each step reaches a high position independently, with known
+probability, and which high position it reaches is uniform and
+independent of everything else. So first count the steps that reach a
+high position, then draw that many high positions with replacement in
+sorted order as in \cite{bentleysaxe}. The first draw of a high position
+adds its value to the sample; a repeat finds a low value swapped there
+earlier, so the sample gains a low value instead, much as a collision in
+Floyd's F2 adds a different value. Given their number, the low values
+are a uniformly random subset of the low positions, chosen in order by
+Vitter's Algorithm A. The output is sorted, the time is \(\bigO{k}\) in
+the worst case, and no extra memory is needed; like Algorithm D, it
+relies on floating-point arithmetic, with an exponentiation for each
+high draw. \cite{hiddenshuffle}
+The code printed in the paper can divide by zero, and its last step has
+an off-by-one error that biases the output; our implementations apply
+the corrections from the errata in \cite{sampleiterator}. We thank metasj
+for bringing this algorithm to our attention.
 
 \subsection{SELECT}
 \inputminted{Python}{code/select.py}

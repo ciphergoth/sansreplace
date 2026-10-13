@@ -55,6 +55,7 @@ def main():
         'iterativechoose': '+',
         'reservoirsample': 'D',
         'vitterd': 'v',
+        'hiddenshuffle': '<',
         'select': 'x',
         'hsel': 'h',
         'cardchoose': '^',

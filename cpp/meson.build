@@ -31,6 +31,7 @@ libsrc = [
     'iterativechoose.cpp',
     'reservoirsample.cpp',
     'vitterd.cpp',
+    'hiddenshuffle.cpp',
     'select.cpp',
     'hsel.cpp',
     'cardchoose.cpp',
