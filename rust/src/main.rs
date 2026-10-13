@@ -50,7 +50,7 @@ enum Command {
         n: u32,
         k: u32,
         /// Number of tests to run
-        #[arg(long, default_value_t = 100_000)]
+        #[arg(long, default_value_t = 100_000, value_parser = clap::value_parser!(u64).range(1..))]
         num_tests: u64,
         /// Maximum number of result rows to show
         #[arg(long, default_value_t = 21)]

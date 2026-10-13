@@ -56,6 +56,8 @@ def parse_args():
     args = p.parse_args()
     if args.k > args.n:
         p.error("k must be at most n")
+    if args.num_tests < 1:
+        p.error("--num-tests must be at least 1")
     return args
 
 def main():
