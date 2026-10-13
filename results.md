@@ -1,6 +1,6 @@
 # Results
 
-These results were measured on an Apple M4 Mac mini with 16GB of memory, using clang 21.1 and
+These results were measured on an Apple M4 MacBook Pro with 16GB of memory, using clang 21.1 and
 rustc 1.98, for values of _n_ and _k_ that are Fibonacci numbers, with _k_ at most 102,334,155
 (the 40th Fibonacci number). [Full results](results/latest/)
 
