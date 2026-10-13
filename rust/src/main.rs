@@ -289,13 +289,24 @@ fn time_choose(args: TimeArgs) -> Result<()> {
     Ok(())
 }
 
+fn gcd(mut a: u128, mut b: u128) -> u128 {
+    while b != 0 {
+        (a, b) = (b, a % b);
+    }
+    a
+}
+
 fn binomial(n: u32, k: u32) -> Result<u128> {
+    // C(n, i+1) = C(n, i) (n-i) / (i+1). Cancel what C(n, i) shares with
+    // i+1 first; what's left of i+1 then divides n-i, so no intermediate
+    // value exceeds the result.
     let mut r: u128 = 1;
     for i in 0..k.min(n - k) {
-        r = r
-            .checked_mul((n - i).into())
+        let g = gcd(r, u128::from(i + 1));
+        let d = u128::from(i + 1) / g;
+        r = (r / g)
+            .checked_mul(u128::from(n - i) / d)
             .ok_or_else(|| anyhow!("binomial({n}, {k}) overflows"))?;
-        r /= u128::from(i + 1);
     }
     Ok(r)
 }
