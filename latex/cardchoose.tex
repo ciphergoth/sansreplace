@@ -77,7 +77,7 @@
 \maketitle
 \begin{abstract}
     A variety of algorithms exist for fairly choosing $k$ distinct
-    natural numbers below \(n\). We describe eleven of them, among them
+    natural numbers below \(n\). We describe twelve of them, among them
     one, cardchoose, which we believe to be new, and benchmark C++ and
     Rust implementations of each over a wide range of \(n\) and \(k\),
     for both sorted and random order output. No algorithm is close to
@@ -108,7 +108,7 @@ small or where \(\frac{n}{k}\) is small. Some update a hash-based data
 structure such as a set or dictionary for each value generated, which
 adds memory and a significant constant factor to the runtime. Some need
 extra memory proportional to \(n\), or floating-point arithmetic. In
-\autoref{otheralgs} we describe eleven algorithms, and in
+\autoref{otheralgs} we describe twelve algorithms, and in
 \autoref{benchmarks} we compare C++ and Rust implementations of each.
 Since no single algorithm is close to the fastest for all \(n, k\), we
 also find the small sets of algorithms that between them come closest,
