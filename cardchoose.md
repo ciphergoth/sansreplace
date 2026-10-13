@@ -78,30 +78,34 @@ _k_ = 2, the bag {0, 1} comes up half the time, because it can arrive as 0,1 or 
 {0, 0} and {1, 1} get a quarter each. Independent draws favour variety; we need to favour repeats,
 by exactly the right amount.
 
-## The fix is to let earlier draws vote
+## Each new star goes in a random gap
 
-For the _i_-th draw, choose uniformly among _t_+_i_ options: the _t_ fresh values, plus the _i_
-values already in the list. That is `randrange(t + i)`. If `r < t`, it's a fresh value. Otherwise
-`r - t` picks one of the earlier entries, and we copy it: `d[r - t]`. A value that has already
-been drawn once is now twice as likely to be drawn again, a value drawn twice is three times as
-likely, and so on.
+Build the row one star at a time, starting from the _t_-1 bars alone, and put each new star in a
+uniformly random gap of the row so far. With _i_ stars already placed, the row holds _t_-1+_i_
+things, so it has _t_+_i_ gaps. Name each gap by what is just to its left:
 
-The list is never searched or modified in place; copies go on the end like everything else. So
-each iteration is one random number, one comparison and one write, with no inner loop.
+* The gap at the start of the row, and the gap just after each bar. There are _t_ of these, and a
+  star placed in the one after bar _b_, or at the start for _b_ = 0, gets the value _b_. This is a
+  **fresh** value.
+* The gap just after each star. There are _i_ of these, and a star placed in one sits in the same
+  gap between bars as its left neighbour, so it gets the same value. This is a **copy**.
 
-In the picture, this is dropping the new star into a uniformly random gap of the current row.
-Before the _i_-th star there are _t_-1+_i_ things in the row, so _t_+_i_ gaps, and the gaps with
-_b_ bars to the left are the _c_+1 gaps around the _c_ stars that already have value _b_: one
-fresh option, plus one for each existing star with that value.
+That is the loop. `randrange(t + i)` picks a gap. If `r < t`, the new star takes the fresh value
+`r`. Otherwise `r - t` picks one of the stars already placed, and the new star copies its value,
+`d[r - t]`. The list `d` holds values in the order they were drawn, so the copy is a single index
+lookup: one random number, one comparison and one write per star, with no search.
+
+A value that _c_ stars already have owns _c_+1 gaps: one fresh gap, and one after each of those
+stars. So a value drawn once is now twice as likely as one never drawn, a value drawn twice three
+times as likely, and so on. That is how repeats get favoured. The next section shows it is by
+exactly the right amount.
 
 ## Why that's exactly fair
 
-Tag each star with the number of the draw that placed it, and be specific about which gap each
-draw uses: a fresh value _b_ goes in the gap just after bar _b_ (at the start of the row for
-_b_ = 0), and a copy of star _j_ goes in the gap just after star _j_. Then different draws put
-the new star in different gaps, and a tagged row records its whole history: pull out the
-highest-tagged star, and its left neighbour says whether it was fresh (a bar, or nothing) or a
-copy (a star, and which one).
+Tag each star with the number of the draw that placed it. Different values of `r` put the new
+star in different gaps, so a tagged row records its whole history: pull out the highest-tagged
+star, and its left neighbour says which gap it went in, so whether it was fresh (a bar, or
+nothing) or a copy (a star, and which one). Repeat to recover every draw.
 
 Here is every possible run for _t_ = 2, _k_ = 2, one bar and two stars:
 
