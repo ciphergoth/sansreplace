@@ -29,10 +29,10 @@ class Timeable:
 
     def time(self, params, iters):
         gc.disable()
-        start = time.process_time()
+        start = time.perf_counter()
         for _ in range(iters):
             self._choose(*params)
-        finish = time.process_time()
+        finish = time.perf_counter()
         gc.enable()
         return finish - start
 
