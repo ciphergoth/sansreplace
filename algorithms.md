@@ -169,6 +169,6 @@ Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
 [Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
 
-This is my algorithm, first made public in October 2018: a Pólya urn generates a uniform
+This is my algorithm: a Pólya urn generates a uniform
 multiset, and stars and bars turns it into a uniform subset. [Detailed
 description](cardchoose.md), including how it relates to [prior art](priorart.md).

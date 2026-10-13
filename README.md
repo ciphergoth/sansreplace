@@ -6,14 +6,14 @@ result is equally likely. One way to get a precise understanding of the problem 
 simplest algorithm for solving it, via these [Python](python/algorithms/quadraticreject.py) or
 [C++](cpp/quadraticreject.cpp) implementations.
 
-Here, I propose an algorithm I call "Cardchoose" for this
-problem. I first made it public in October 2018. Its two ingredients, a Pólya urn and the
+Here, I describe an algorithm I call "Cardchoose" for this problem. The only data structure used
+is the output vector, so no extra memory is needed; it runs in O(_k_ log _k_) time. I've
+implemented this and other algorithms in C++, Rust and Python to compare their performance.
+
+I first proposed Cardchoose in October 2018. Its two ingredients, a Pólya urn and the
 stars-and-bars bijection, are classical mathematics; what I have not found elsewhere is the urn
-run as a generator, or the two composed into a sampler, see [prior art](priorart.md).
-I would be glad to hear of any earlier description. The only data structure
-used is the output vector, so no extra memory is needed; it runs in O(_k_ log
-_k_) time. I've implemented this and other algorithms in C++, Rust and Python
-to compare their performance.
+run as a generator, or the two composed into a sampler (see [prior art](priorart.md)). I would
+be glad to hear of any earlier description.
 
 In [my C++ tests](results.md), which use the standard library's `std::unordered_set` and
 `std::unordered_map`, `cardchoose` outperforms `rejectionsample`, `floydf2`, and `hsel` for all
