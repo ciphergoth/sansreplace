@@ -1,28 +1,36 @@
 import matplotlib
+import matplotlib.lines
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 # The line style shows each algorithm's family, so the graphs can be read
 # without telling twelve colours apart, and the colour tells the algorithms
 # in a family apart. Dotted lines are hard to see, so they are drawn thicker.
-SOLID = {"linestyle": "-"}           # no extra memory, O(k) or O(k log k)
-DASHED = {"linestyle": "--"}         # hash-based
-DOTTED = {"linestyle": ":", "linewidth": 2.2}  # quadratic
-DASHDOT = {"linestyle": "-."}        # O(n)
-STYLES = {
-    "ranksb": {**SOLID, "color": "tab:blue"},
-    "vitterd": {**SOLID, "color": "tab:orange"},
-    "hiddenshuffle": {**SOLID, "color": "tab:green"},
-    "cardchoose": {**SOLID, "color": "tab:red"},
-    "rejectionsample": {**DASHED, "color": "tab:purple"},
-    "floydf2": {**DASHED, "color": "tab:brown"},
-    "hsel": {**DASHED, "color": "tab:pink"},
-    "quadraticreject": {**DOTTED, "color": "tab:gray"},
-    "quadraticf2": {**DOTTED, "color": "tab:olive"},
-    "iterativechoose": {**DASHDOT, "color": "tab:cyan"},
-    "reservoirsample": {**DASHDOT, "color": "black"},
-    "select": {**DASHDOT, "color": "darkgoldenrod"},
-}
+# The legend gives each family a column.
+FAMILIES = [
+    ({"linestyle": "-"}, {             # no extra memory, O(k) or O(k log k)
+        "ranksb": "tab:blue",
+        "vitterd": "tab:orange",
+        "hiddenshuffle": "tab:green",
+        "cardchoose": "tab:red",
+    }),
+    ({"linestyle": "--"}, {            # hash-based
+        "rejectionsample": "tab:purple",
+        "floydf2": "tab:brown",
+        "hsel": "tab:pink",
+    }),
+    ({"linestyle": ":", "linewidth": 2.2}, {  # quadratic
+        "quadraticreject": "tab:gray",
+        "quadraticf2": "tab:olive",
+    }),
+    ({"linestyle": "-."}, {            # O(n)
+        "iterativechoose": "tab:cyan",
+        "reservoirsample": "black",
+        "select": "darkgoldenrod",
+    }),
+]
+STYLES = {alg: {**style, "color": colour}
+    for style, colours in FAMILIES for alg, colour in colours.items()}
 
 def plot(toplot, data, title, output):
     rc = {}
@@ -44,8 +52,19 @@ def plot(toplot, data, title, output):
     with matplotlib.rc_context(rc):
         _plot(toplot, data, title, output)
 
+def legend(fig, lines):
+    "A column per family; the legend fills columns first, so pad each to the same height"
+    columns = [[lines[alg] for alg in colours if alg in lines] for _, colours in FAMILIES]
+    height = max(len(c) for c in columns)
+    blank = matplotlib.lines.Line2D([], [], linestyle="none", label="")
+    handles = [h for c in columns for h in c + [blank] * (height - len(c))]
+    fig.legend(handles=handles, loc="outside lower center", ncols=len(columns),
+        fontsize="small", frameon=False)
+
 def _plot(toplot, data, title, output):
-    fig = plt.figure()
+    # Taller than usual, to leave room for the legend below
+    width, height = plt.rcParams["figure.figsize"]
+    fig = plt.figure(layout="constrained", figsize=(width, height * 1.25))
     #plt.title(args.title)
     ax = plt.gca()
     ax.set_xscale('log')
@@ -64,7 +83,7 @@ def _plot(toplot, data, title, output):
         line.set_label(alg)
         artists.append(line)
         lines.append((alg, line))
-    ax.legend()
+    legend(fig, dict(lines))
     artists = [l[1] for l in lines]
     def init():
         ttl.set_text(title)
