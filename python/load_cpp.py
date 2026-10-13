@@ -23,6 +23,8 @@ from algorithms import ALGORITHMS
 def setup_module(cppdir, build_dir, functions):
     if build_dir is None:
         build_dir = cppdir / "build/host"
+    # meson setup runs in cppdir, so a relative path must be made absolute
+    build_dir = build_dir.resolve()
     if not (build_dir / "build.ninja").is_file():
         subprocess.run(["meson", "setup",  build_dir], cwd=cppdir, check=True)
     subprocess.run(["ninja", "-C", build_dir], check=True)
