@@ -17,7 +17,7 @@ project('sansreplace', ['c', 'cpp'],
 'cpp_std=c++17'])
 
 add_project_arguments(
-    '-fno-strict-aliasing', '-O3',
+    '-O3',
     language : ['c', 'cpp'])
 libsrc = [
     'donothing.cpp',
