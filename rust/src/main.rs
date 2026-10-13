@@ -149,7 +149,7 @@ struct TimeArgs {
     csv: Option<PathBuf>,
 }
 
-fn time_choose(args: TimeArgs) -> Result<()> {
+fn time_choose(mut args: TimeArgs) -> Result<()> {
     let topdir = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
     let mut timeables = algorithms::algorithms::<Rng>(args.sort_type);
     if !args.algorithm.is_empty() {
@@ -167,17 +167,18 @@ fn time_choose(args: TimeArgs) -> Result<()> {
     for c in args.nk.chunks(2) {
         ensure!(c[1] <= c[0], "--nk {} {}: k must be at most n", c[0], c[1]);
     }
-    let default_values = [nkvalues::ValueSet::Small, nkvalues::ValueSet::Power10];
+    // As in time_choose, so the config records the value sets used
+    if args.values.is_empty() && args.nk.is_empty() {
+        args.values = vec![nkvalues::ValueSet::Small, nkvalues::ValueSet::Power10];
+    }
     let values: Box<dyn Iterator<Item = (String, u32, u32)>> = if !args.nk.is_empty() {
         Box::new(
             args.nk
                 .chunks(2)
                 .map(|c| (format!("n = {}, k = {}", c[0], c[1]), c[0], c[1])),
         )
-    } else if !args.values.is_empty() {
-        Box::new(nkvalues::iter_values(&args.values))
     } else {
-        Box::new(nkvalues::iter_values(&default_values))
+        Box::new(nkvalues::iter_values(&args.values))
     };
     let mut rng = rand::make_rng::<Rng>();
     let mut writer = match &args.csv {
@@ -205,8 +206,9 @@ fn time_choose(args: TimeArgs) -> Result<()> {
                     },
                 ),
                 ("sorttype", format!("{:?}", args.sort_type).to_lowercase()),
-                ("time_for", args.time_for.to_string()),
-                ("time_limit", args.time_limit.to_string()),
+                // {:?} writes floats as Python does, e.g. 20.0 rather than 20
+                ("time_for", format!("{:?}", args.time_for)),
+                ("time_limit", format!("{:?}", args.time_limit)),
                 (
                     "values",
                     pylist(
