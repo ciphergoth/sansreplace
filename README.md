@@ -23,12 +23,12 @@ two ingredients, a Pólya urn and the stars-and-bars bijection, are classical ma
 have not found elsewhere is the urn run as a generator, or the two composed into a sampler (see
 [prior art](priorart.md)). I would be glad to hear of any earlier description. Cardchoose is the
 simplest of the three algorithms whose time per number output is never far above the fastest's,
-and belongs to the best set of two or three algorithms in three of the four cases. With a fast
-sort, as in Rust, it is the fastest algorithm for sorted output, or within 25% of it, wherever
-_k_ < 1000 and _n_ ≥ 2 _k_, while Shekelyan and Cormode's Hidden Shuffle, which also needs no
-extra memory, is the fastest or within 3% of it wherever _k_ ≥ 10<sup>5</sup> and _n_ ≥ 16 _k_.
-With C++'s `std::sort`, Hidden Shuffle is faster than cardchoose wherever _n_ ≥ 16 _k_ and
-_k_ ≥ 1000.
+and belongs to the best set of two or three algorithms by ratio in three of the four cases. With
+a fast sort, as in Rust, it is the fastest algorithm for sorted output, or within 25% of it,
+wherever _k_ < 1000 and _n_ ≥ 2 _k_, while Shekelyan and Cormode's Hidden Shuffle, which also needs
+no extra memory, is the fastest or within 3% of it wherever _k_ ≥ 10<sup>5</sup> and
+_n_ ≥ 16 _k_. With C++'s `std::sort`, Hidden Shuffle is faster than cardchoose wherever
+_n_ ≥ 16 _k_ and _k_ ≥ 1000.
 
 * [Guide to algorithms tested](algorithms.md)
 * [Description of cardchoose](cardchoose.md)
