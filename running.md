@@ -74,7 +74,8 @@ those, regenerate them with:
 cd python
 ./make_plots
 ./all_least_sq
-./cover --latex ../latex/cover-table.tex
+./cover --measure ratio --latex ../latex/cover-ratio.tex
+./cover --measure difference --latex ../latex/cover-difference.tex
 ```
 
 `python/pairwise` regenerates the pairwise comparisons, [`pairwise-ratio.md`](pairwise-ratio.md)
