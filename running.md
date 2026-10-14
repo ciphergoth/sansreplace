@@ -74,14 +74,17 @@ The graphs and pairwise comparisons that the Markdown pages show are generated f
 
 ```
 python/make_plots
+python/pareto
 python/pairwise
 ```
 
-`make_plots` writes the animated graphs into `results/latest/graphs`, and `pairwise` writes
+`make_plots` writes the animated graphs and `pareto` the scattergrams for
+[choosing algorithms](choosing.md), both into `results/latest/graphs`, and `pairwise` writes
 [`pairwise-ratio.md`](results/latest/pairwise-ratio.md) and
-[`pairwise-difference.md`](results/latest/pairwise-difference.md). The tables in the
-[results](results.md) come from `python/cover --measure ratio` and `--measure difference` and from
-`python/summarise`, as that page says.
+[`pairwise-difference.md`](results/latest/pairwise-difference.md). The tables in
+[choosing algorithms](choosing.md) come from `python/cover --measure ratio` and
+`--measure difference`, and the ones in the [results](results.md) from `python/summarise`, as
+those pages say.
 
 `python/regions CASE A B` compares two algorithms by region of _n_/_k_ and _k_, as for the claims in
 the [results](results.md); `B` can be `others`, for the fastest of all the other algorithms.

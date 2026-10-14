@@ -13,9 +13,9 @@ library provides; the Rust ones use Rust's standard library, whose hash tables a
 faster.
 
 No algorithm is close to the fastest everywhere, so a good implementation chooses between a few
-algorithms based on _n_ and _k_. The [results](results.md) give the best such sets: in each case
-the best set of three is never more than 1.3–1.8× slower than the fastest, while the best single
-algorithm is somewhere 2.9–13× slower.
+algorithms based on _n_ and _k_. [Choosing algorithms](choosing.md) gives the best such sets: in
+each case the best set of three is never more than 1.3–1.8× slower than the fastest, while the
+best single algorithm is somewhere 2.9–13× slower.
 
 One of the algorithms, which I call cardchoose, I believe to be new; I first proposed it in
 October 2018. It needs no memory beyond the output vector and runs in O(_k_ log _k_) time. Its
@@ -34,6 +34,7 @@ _n_ ≥ 16 _k_ and _k_ ≥ 1000.
 * [Description of cardchoose](cardchoose.md)
 * [Prior art](priorart.md)
 * [Benchmark results](results.md)
+* [Choosing algorithms](choosing.md)
 * Pairwise comparisons: [ratio of times](results/latest/pairwise-ratio.md), [difference in time/_k_](results/latest/pairwise-difference.md)
 * [Running this software](running.md)
 

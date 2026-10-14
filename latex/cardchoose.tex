@@ -114,9 +114,9 @@ adds memory and a significant constant factor to the runtime. Some need
 extra memory proportional to \(n\), or floating-point arithmetic. In
 \autoref{otheralgs} we describe twelve algorithms, and in
 \autoref{benchmarks} we compare C++ and Rust implementations of each.
-Since no single algorithm is close to the fastest for all \(n, k\), we
-also find the small sets of algorithms that between them come closest,
-which are what a library should choose between.
+Since no single algorithm is close to the fastest for all \(n, k\), in
+\autoref{choosing} we find the small sets of algorithms that between
+them come closest, which are what a library should choose between.
 
 One of the algorithms, which we call cardchoose, we believe to be new.
 It needs no storage beyond the array in which the result is written,
@@ -675,6 +675,8 @@ algorithm such as \cite{sandersetal} should generally be used; this
 algorithm calls a sequential algorithm at the leaves of the parallel
 tree it builds.
 
+\section{Choosing algorithms}\label{choosing}
+
 A good implementation will implement multiple algorithms, and choose
 which one to use based on the values of \(n\) and \(k\).
 \autoref{coverratio} and \autoref{coverdifference} show, for each
@@ -720,6 +722,66 @@ worst difference, which need not occur at the same point.
     difference in time per number output from the fastest, with their
     worst ratio}\label{coverdifference}
 \end{table}
+
+\autoref{cpprandompareto} to \autoref{rustsortedpareto} plot, for
+each language and order, sets of one, two or three algorithms by their
+worst ratio and worst difference, both on log scales, so that down and
+to the left is better. Each figure shows every set that no other set
+of the same size beats on both measures, both among all sets and among
+sets without Algorithm D, so it includes every set in
+\autoref{coverratio} and \autoref{coverdifference} and the compromises
+between them. It also shows cardchoose, Hidden Shuffle and Algorithm D
+on their own, which are never far from the fastest by difference, and
+RANKSB with iterative choosing, which \cite{nijenhuiswilf} pair. The
+labels abbreviate the algorithms: CC is cardchoose, D is Vitter's
+Algorithm D, F2 is Floyd's F2, HS is Hidden Shuffle, HSEL is HSEL, IC
+is iterative choosing, QF2 is quadratic F2, QR is quadratic rejection
+sampling, RES is reservoir sampling, RKSB is RANKSB, RS is set-based
+rejection sampling and SEL is SELECT.
+
+In Rust with sorted output, no set of three does well on both
+measures, because four algorithms are each the fastest in their own
+region: cardchoose for small \(k\), Hidden Shuffle for large \(k\) when
+\(n\) is much larger, iterative choosing where \(k/n\) is large, and
+reservoir sampling near \(k = n\). (SELECT is the fastest at some
+points too, but never by more than 1.19 times.) Every set of three has to leave one
+region to a slower algorithm. Among them, Algorithm D, Hidden Shuffle
+and cardchoose make a good compromise between the best three by ratio
+and the best three by difference: they are never more than 2.7 times
+slower than the fastest, or 2.5\,ns per number slower. But all four
+of iterative choosing, reservoir sampling, Hidden Shuffle and
+cardchoose together beat every set of three on both measures: they
+are never more than 1.19 times slower, or 1.19\,ns per number slower.
+So for this case alone, \autoref{rustsortedpareto} also shows sets of
+four.
+
+\begin{figure}
+    \input{generated/cpp-random-pareto.pgf}
+    \caption{The best sets of algorithms for C++, random order, by worst ratio
+    and worst difference}
+    \label{cpprandompareto}
+\end{figure}
+
+\begin{figure}
+    \input{generated/cpp-sorted-pareto.pgf}
+    \caption{The best sets of algorithms for C++, sorted order, by worst ratio
+    and worst difference}
+    \label{cppsortedpareto}
+\end{figure}
+
+\begin{figure}
+    \input{generated/rust-random-pareto.pgf}
+    \caption{The best sets of algorithms for Rust, random order, by worst ratio
+    and worst difference}
+    \label{rustrandompareto}
+\end{figure}
+
+\begin{figure}
+    \input{generated/rust-sorted-pareto.pgf}
+    \caption{The best sets of algorithms for Rust, sorted order, by worst ratio
+    and worst difference}
+    \label{rustsortedpareto}
+\end{figure}
 
 % Flush the remaining figures before the bibliography
 \clearpage

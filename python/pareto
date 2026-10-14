@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# For each case, a scattergram of sets of one, two or three algorithms, or
+# four where SIZES says so, each set's worst ratio to the fastest against its
+# worst difference in time/k. It shows the sets on the Pareto frontier for
+# their size of set, among all sets or among those without Vitter's D, which
+# is really two algorithms, and the sets in DISCUSSED.
+
+import argparse
+import itertools
+import math
+import pathlib
+
+import matplotlib
+
+import read_results
+from algorithms import ALGORITHMS
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+CASES = [
+    ("cpp-random", "C++, random order"),
+    ("cpp-sorted", "C++, sorted order"),
+    ("rust-random", "Rust, random order"),
+    ("rust-sorted", "Rust, sorted order"),
+]
+
+SHORT = {
+    "quadraticreject": "QR", "rejectionsample": "RS", "ranksb": "RKSB",
+    "floydf2": "F2", "quadraticf2": "QF2", "iterativechoose": "IC",
+    "reservoirsample": "RES", "vitterd": "D", "hiddenshuffle": "HS",
+    "select": "SEL", "hsel": "HSEL", "cardchoose": "CC",
+}
+
+# In Rust with sorted output, four algorithms are each fastest in their own
+# region, and a set of all four beats every set of three on both measures
+SIZES = {"rust-sorted": 4}
+
+# Sets the text discusses: the three algorithms never far from the fastest in
+# time/k, and Nijenhuis and Wilf's pairing of RANKSB with iterative choosing
+DISCUSSED = [("cardchoose",), ("hiddenshuffle",), ("vitterd",),
+    ("ranksb", "iterativechoose")]
+
+def read_times(case):
+    times = {}
+    for item in read_results.read(case):
+        if item.k >= 10:
+            times.setdefault((item.n, item.k), {})[item.alg] = item.time
+    return times
+
+def worsts(times, s):
+    "The set's worst ratio to the fastest, and worst excess time/k in ns"
+    ratio = difference = 0
+    for (n, k), t in times.items():
+        best = min(t.values())
+        mine = min(t.get(a, math.inf) for a in s)
+        ratio = max(ratio, mine / best)
+        difference = max(difference, 1E9 * (mine - best) / k)
+    return ratio, difference
+
+def frontier(points):
+    "The points not beaten on both measures by another, by increasing ratio"
+    front = []
+    for r, d, s in sorted(points):
+        if not front or d < front[-1][1]:
+            front.append((r, d, s))
+    return front
+
+def plot(times, sizes, title, output):
+    "Write the scattergram to output, as pgf for the paper or an image"
+    rc = {}
+    if output.suffix == ".pgf":
+        matplotlib.use("pgf")
+        # As in plot_anim
+        rc = {
+            "pgf.texsystem": "lualatex",
+            "font.family": "serif",
+            "text.usetex": True,
+            "pgf.rcfonts": False,
+            "figure.figsize": (5.3, 4.0),
+        }
+    else:
+        matplotlib.use("Agg")
+        rc = {"figure.figsize": (8, 6)}
+    # Scoped so the pgf settings don't leak into later plots
+    with matplotlib.rc_context(rc):
+        _plot(times, sizes, title, output)
+
+def _plot(times, sizes, title, output):
+    import matplotlib.pyplot as plt
+    from matplotlib import ticker
+    markers = {1: "o", 2: "s", 3: "^", 4: "D"}
+    colours = {1: "tab:blue", 2: "tab:orange", 3: "tab:green", 4: "tab:red"}
+    fig, ax = plt.subplots(layout="constrained")
+    algs = sorted({a for t in times.values() for a in t}, key=ALGORITHMS.index)
+    for size in range(1, sizes + 1):
+        points = [(*worsts(times, s), s) for s in itertools.combinations(algs, size)]
+        points = [p for p in points if math.isfinite(p[0])]
+        front = set(frontier(points)) | set(frontier(
+            [p for p in points if "vitterd" not in p[2]]))
+        front |= {p for p in points if p[2] in DISCUSSED}
+        ax.scatter([p[0] for p in front], [p[1] for p in front], s=40,
+            marker=markers[size], color=colours[size],
+            label=f"{size} algorithm{'s' if size > 1 else ''}")
+        for r, d, s in front:
+            ax.annotate("+".join(SHORT[a] for a in s), (r, d), fontsize=8,
+                xytext=(5, -3 + 4 * size), textcoords="offset points",
+                color=colours[size])
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    for axis, unit in [(ax.xaxis, "×"), (ax.yaxis, " ns")]:
+        def label(x, _, unit=unit, minor=False):
+            "Label the decades, and 2, 3 and 5 times them"
+            mantissa = round(x / 10 ** math.floor(math.log10(x) + 1E-9))
+            return f"{x:g}{unit}" if not minor or mantissa in (2, 3, 5) else ""
+        axis.set_major_formatter(ticker.FuncFormatter(label))
+        axis.set_minor_formatter(ticker.FuncFormatter(
+            lambda x, pos, label=label: label(x, pos, minor=True)))
+    ax.set_xlabel("worst ratio to the fastest")
+    ax.set_ylabel("worst difference in time/k")
+    ax.set_title(title)
+    # Room for the labels, which sit to the right of their points
+    ax.margins(x=0.12, y=0.08)
+    ax.legend(loc="best")
+    fig.savefig(output, dpi=100)
+    plt.close(fig)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--results", type=pathlib.Path,
+        default=topdir / "results/latest")
+    parser.add_argument("--pgf", type=pathlib.Path,
+        help="Write only the paper's figures, as pgf, into this directory")
+    args = parser.parse_args()
+    for name, title in CASES:
+        times = read_times(args.results / name)
+        sizes = SIZES.get(name, 3)
+        if args.pgf is None:
+            plot(times, sizes, title, args.results / "graphs" / f"{name}-pareto.webp")
+        else:
+            plot(times, sizes, title, args.pgf / f"{name}-pareto.pgf")
+
+if __name__ == '__main__':
+    main()
