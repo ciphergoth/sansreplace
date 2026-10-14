@@ -49,7 +49,7 @@ LATEX_NAMES = {
     "hiddenshuffle": "Hidden Shuffle",
     "select": "SELECT",
     "hsel": "HSEL",
-    "cardchoose": "cardchoose",
+    "cardchoose": "Cardchoose",
 }
 
 def read_times(case):

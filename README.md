@@ -17,26 +17,19 @@ algorithms based on _n_ and _k_. [Choosing algorithms](choosing.md) gives the be
 each case the best set of three is never more than 1.2–1.7× slower than the fastest, while the
 best single algorithm is somewhere 2.9–13× slower.
 
-One of the algorithms, which I call cardchoose, I believe to be new; I first proposed it in
-October 2018. It needs no memory beyond the output vector and runs in O(_k_ log _k_) time. Its
-two ingredients, a Pólya urn and the stars-and-bars bijection, are classical mathematics; what I
-have not found elsewhere is the urn run as a generator, or the two composed into a sampler (see
-[prior art](priorart.md)). I would be glad to hear of any earlier description. Cardchoose is the
-simplest of the three algorithms whose time per number output is never far above the fastest's,
-and belongs to the best set of two or three algorithms by ratio in three of the four cases. With
-a fast sort, as in Rust, it is the fastest algorithm for sorted output, or within 25% of it,
-wherever _k_ < 1000 and _n_ ≥ 2 _k_, while Shekelyan and Cormode's Hidden Shuffle, which also needs
-no extra memory, is the fastest or within 3% of it wherever _k_ ≥ 10<sup>5</sup> and
-_n_ ≥ 16 _k_. With C++'s `std::sort`, Hidden Shuffle is faster than cardchoose wherever
-_n_ ≥ 16 _k_ and _k_ ≥ 1000.
-
 * [Guide to algorithms tested](algorithms.md)
-* [Description of cardchoose](cardchoose.md)
-* [Prior art](priorart.md)
 * [Benchmark results](results.md)
 * [Choosing algorithms](choosing.md)
-* Pairwise comparisons: [ratio of times](results/latest/pairwise-ratio.md), [difference in time/_k_](results/latest/pairwise-difference.md)
+* Pairwise comparisons: [ratio of times](results/latest/pairwise-ratio.md),
+  [difference in time/_k_](results/latest/pairwise-difference.md)
 * [Running this software](running.md)
+
+## Cardchoose
+
+This repository also presents a (I believe) novel algorithm for this purpose, Cardchoose. It is to
+my knowledge the only algorithm which is both simple and performs within an acceptable distance (in
+time per output) of all other solutions across the entire parameter space tested. It needs no
+memory beyond the output vector and runs in O(_k_ log _k_) time.
 
 Cardchoose in Python:
 
@@ -57,7 +50,7 @@ def sorted_choose(n, k):
     return d
 ```
 
+* [Description of Cardchoose](cardchoose.md)
+* [Prior art](priorart.md)
+
 ![graph](results/latest/graphs/cpp-sorted.webp)
-
-
-This is not an officially supported Google product.

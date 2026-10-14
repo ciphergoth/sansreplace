@@ -3,6 +3,8 @@
 This is experimental software; it exists only to compare the various implementations, and it will
 change in arbitrary ways as I extend my tests.
 
+This is not an officially supported Google product.
+
 The development environment is managed with [devenv](https://devenv.sh/), which provides Python
 and its needed packages, Meson, Ninja, and Rust.
 

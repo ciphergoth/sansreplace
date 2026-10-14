@@ -75,8 +75,8 @@ from _t_ **uniformly at random**.
 
 Drawing _k_ values independently from 0 to _t_-1 does not give a uniform multiset. With _t_ = 2,
 _k_ = 2, the bag {0, 1} comes up half the time, because it can arrive as 0,1 or as 1,0, while
-{0, 0} and {1, 1} get a quarter each. Independent draws favour variety; we need to favour repeats,
-by exactly the right amount.
+{0, 0} and {1, 1} get a quarter each. Independent draws favour variety; a fair draw must favour
+repeats, by exactly the right amount.
 
 ## Each new star goes in a random gap
 
@@ -141,7 +141,7 @@ every multiset, which is to say every subset. In the tree, each of the three unt
 
 ## Worked example
 
-_n_ = 7, _k_ = 3, so _t_ = 5 and we start with four bars: `| | | |`.
+_n_ = 7, _k_ = 3, so _t_ = 5 and there are four bars to start with: `| | | |`.
 
 draw | `randrange` | `r` | meaning | `d` | row
 ----|----|----|----|----|----

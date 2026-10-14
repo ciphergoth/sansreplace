@@ -79,7 +79,7 @@
 \begin{abstract}
     A variety of algorithms exist for fairly choosing $k$ distinct
     natural numbers below \(n\). We describe twelve of them, among them
-    one, cardchoose, which we believe to be new, and benchmark C++ and
+    one, Cardchoose, which we believe to be new, and benchmark C++ and
     Rust implementations of each over a wide range of \(n\) and \(k\),
     for both sorted and random order output. No algorithm is close to
     the fastest everywhere: in each case the best single algorithm is
@@ -118,7 +118,7 @@ Since no single algorithm is close to the fastest for all \(n, k\), in
 \autoref{choosing} we find the small sets of algorithms that between
 them come closest, which are what a library should choose between.
 
-One of the algorithms, which we call cardchoose, we believe to be new.
+One of the algorithms, which we call Cardchoose, we believe to be new.
 It needs no storage beyond the array in which the result is written,
 and takes \(\bigO{k \log k}\) time. We first proposed it in October
 2018; \autoref{cardchoose} explains it,
@@ -489,7 +489,7 @@ occupancy pattern equally likely, a uniform multiset, is Bose--Einstein.
 At most one particle per cell with every pattern equally likely, a
 uniform subset, is Fermi--Dirac. Stars and bars is the standard way to
 count the Bose--Einstein configurations, by matching them with
-Fermi--Dirac ones. So the one-line summary of cardchoose is: generate
+Fermi--Dirac ones. So the one-line summary of Cardchoose is: generate
 a Bose--Einstein configuration with a Pólya urn, then map it to
 Fermi--Dirac by stars and bars.
 
@@ -519,9 +519,9 @@ memory is not new in itself: Nijenhuis and Wilf's RANKSB
 \cite[Chapter 4]{nijenhuiswilf} also uses nothing but the output
 array, and so do Vitter's Algorithm D and, more recently, Shekelyan and
 Cormode's Hidden Shuffle \cite{hiddenshuffle}, though they need
-floating-point arithmetic where cardchoose and RANKSB use only exact
+floating-point arithmetic where Cardchoose and RANKSB use only exact
 integer draws. We would be glad to hear of any earlier description of
-cardchoose.
+Cardchoose.
 
 Sorted output without a sort has a classic answer for real numbers:
 Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
@@ -563,7 +563,7 @@ standard library's \mintinline{rust}{HashSet} and
 \mintinline{rust}{HashMap}, which are flat open-addressing hash tables
 based on SwissTable, and its unstable sort. These are much faster: the
 hash-based algorithms take about 0.4--0.5 times as long in Rust as in
-C++, and cardchoose about 0.6--0.7 times as long, while RANKSB,
+C++, and Cardchoose about 0.6--0.7 times as long, while RANKSB,
 Vitter's Algorithm D and Hidden Shuffle, which need neither, take
 about the same time in both languages.
 
@@ -622,7 +622,7 @@ factors.
 A ratio overstates differences where both times are small, so we also
 measure how much each algorithm's time per number output exceeds that
 of the fastest. By this measure three algorithms are never far from
-the fastest: in every case, cardchoose, Hidden Shuffle and Algorithm D
+the fastest: in every case, Cardchoose, Hidden Shuffle and Algorithm D
 are never more than 27\,ns per number slower, while every other
 algorithm is at least 97\,ns slower somewhere, and all but HSEL more
 than 100\,ns. Cardchoose is the simplest of the three: it is a few lines of
@@ -641,14 +641,14 @@ rather than averages, since any average depends on which values of
 
 For sorted output in C++, Hidden Shuffle is the fastest algorithm
 wherever \(n \geq 256k\), and wherever \(n \geq 16k\) and
-\(k \geq 1000\); there, cardchoose takes up to 2.5 times as long. In
-Rust, cardchoose and Hidden Shuffle divide the range by \(k\): wherever
-\(k < 1000\) and \(n \geq 2k\), cardchoose is the fastest algorithm
+\(k \geq 1000\); there, Cardchoose takes up to 2.5 times as long. In
+Rust, Cardchoose and Hidden Shuffle divide the range by \(k\): wherever
+\(k < 1000\) and \(n \geq 2k\), Cardchoose is the fastest algorithm
 or within 25\% of it, and Hidden Shuffle takes up to 4.0 times as long,
 while wherever \(k \geq 10^5\) and \(n \geq 16k\), Hidden Shuffle is
-the fastest or within 3\% of it, and cardchoose takes up to 1.6 times
+the fastest or within 3\% of it, and Cardchoose takes up to 1.6 times
 as long. Hidden Shuffle takes about the same time in both languages,
-so the difference is in cardchoose, most likely in its sort. Hidden
+so the difference is in Cardchoose, most likely in its sort. Hidden
 Shuffle is also faster than RANKSB wherever \(n \geq 16k\) and
 \(k \geq 1000\) in both languages, with RANKSB taking 1.09 to 1.9
 times as long in C++ and 1.1 to 2.2 times as long in Rust. As \(k\)
@@ -658,24 +658,24 @@ pairs it with iterative choosing (which Nijenhuis and Wilf refer to
 as RKS2) for \(k \geq n/2\). Vitter's
 Algorithm D, with its fallback to Algorithm A, has the smallest worst
 case of any single algorithm for sorted output. Where \(n \geq 4k\),
-it takes 0.72 to 2.9 times as long as cardchoose in C++ and 1.07 to
+it takes 0.72 to 2.9 times as long as Cardchoose in C++ and 1.07 to
 6.3 times as long in Rust; where \(n < 2k\) and \(k \geq 1000\), it is
-faster than cardchoose in both.
+faster than Cardchoose in both.
 
 For random output, the hash-based algorithms are competitive only with
-a fast hash table. With C++ standard library hash tables, cardchoose is
+a fast hash table. With C++ standard library hash tables, Cardchoose is
 faster than set-based rejection sampling, Floyd's F2 and HSEL at every
 point with \(k \leq n/2\), where they take 1.01 to 4.0 times as long,
 though Hidden Shuffle followed by a shuffle is faster still wherever
 \(n \geq 16k\) and \(k \geq 1000\). With Rust's flat hash tables, HSEL
-is faster than cardchoose wherever \(1000 \leq k < 10^5\) and
-\(n \geq 2k\), and cardchoose is faster wherever \(k \geq 10^7\); it is
+is faster than Cardchoose wherever \(1000 \leq k < 10^5\) and
+\(n \geq 2k\), and Cardchoose is faster wherever \(k \geq 10^7\); it is
 never more than 1.50 times slower than the fastest of these four for
 \(k \leq n/2\). The hash-based
 algorithms slow down at large \(k\), once the hash table no longer fits
 in cache, and as \(k\) approaches \(n\). In theory, their
 \(\bigO{k}\) performance compared to the \(\bigO{k \log k}\)
-performance of cardchoose should mean that there is a value of \(k\)
+performance of Cardchoose should mean that there is a value of \(k\)
 at which they perform better. However, the poor cache coherence of
 these algorithms means that their performance more closely resembles
 \(\bigO{k \log k}\) in practice. For very large \(k\), a parallel
@@ -738,10 +738,10 @@ to the left is better. Each figure shows every set that no other set
 of the same size beats on both measures, both among all sets and among
 sets without Algorithm D, so it includes every set in
 \autoref{coverratio} and \autoref{coverdifference} and the compromises
-between them. It also shows cardchoose, Hidden Shuffle and Algorithm D
+between them. It also shows Cardchoose, Hidden Shuffle and Algorithm D
 on their own, which are never far from the fastest by difference, and
 RANKSB with iterative choosing, which \cite{nijenhuiswilf} pair. The
-labels abbreviate the algorithms: CC is cardchoose, D is Vitter's
+labels abbreviate the algorithms: CC is Cardchoose, D is Vitter's
 Algorithm D, F2 is Floyd's F2, HS is Hidden Shuffle, HSEL is HSEL, IC
 is iterative choosing, QF2 is quadratic F2, QR is quadratic rejection
 sampling, RES is reservoir sampling, RKSB is RANKSB, RS is set-based
@@ -749,16 +749,16 @@ rejection sampling and SEL is SELECT.
 
 In Rust with sorted output, no set of three does well on both
 measures, because four algorithms are each the fastest in their own
-region: cardchoose for small \(k\), Hidden Shuffle for large \(k\) when
+region: Cardchoose for small \(k\), Hidden Shuffle for large \(k\) when
 \(n\) is much larger, iterative choosing where \(k/n\) is large, and
 reservoir sampling near \(k = n\). (SELECT is the fastest at some
 points too, but never by more than 1.17 times.) Every set of three has to leave one
 region to a slower algorithm. Among them, Algorithm D, Hidden Shuffle
-and cardchoose make a good compromise between the best three by ratio
+and Cardchoose make a good compromise between the best three by ratio
 and the best three by difference: they are never more than 2.7 times
 slower than the fastest, or 2.4\,ns per number slower. But all four
 of iterative choosing, reservoir sampling, Hidden Shuffle and
-cardchoose together beat every set of three on both measures: they
+Cardchoose together beat every set of three on both measures: they
 are never more than 1.17 times slower, or 1.18\,ns per number slower.
 So for this case alone, \autoref{rustsortedpareto} also shows sets of
 four.

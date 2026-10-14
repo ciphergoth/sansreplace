@@ -65,9 +65,9 @@ values within each bin; bins hold about one value each, so a quadratic method is
 output comes out sorted, it takes O(_k_) expected time for _k_ ≤ _n_/2, and the book's program
 needs no storage beyond the output array. As _k_ approaches _n_ it slows down, and for
 _k_ ≥ _n_/2 the book pairs it with iterative choosing (which Nijenhuis and Wilf refer to as
-RKS2); we benchmark RANKSB on its own.
+RKS2); I benchmark RANKSB on its own.
 
-Our C++ and Rust implementations follow the program in the book, except that they fill each bin
+My C++ and Rust implementations follow the program in the book, except that they fill each bin
 as soon as they know where its values go, rather than first marking out every bin's slots and
 then scanning for the marks; the Python one keeps the counts in a separate array, which is easier
 to follow.
@@ -153,7 +153,7 @@ floating-point arithmetic: each output needs a few uniform variates and exponent
 _n_ is at most 13 _k_, it falls back on Vitter's Algorithm A, which draws each skip in O(skip) time,
 so the total work for the rest of the output is O(_n_).
 
-Our C++ and Rust implementations follow the Pascal-like code in the paper's appendix; the
+My C++ and Rust implementations follow the Pascal-like code in the paper's appendix; the
 Python one states the method directly, which is easier to follow.
 
 * Jon Louis Bentley and James B. Saxe
@@ -188,7 +188,7 @@ needs no extra memory. Like Algorithm D, it relies on floating-point arithmetic,
 exponentiation for each high draw.
 
 The code printed in the paper is wrong: it can divide by zero, and the last step has an off-by-one
-error that biases the output. Our implementations apply the corrections from the errata in the
+error that biases the output. My implementations apply the corrections from the errata in the
 authors' repository. Thanks to metasj for bringing this algorithm to my attention.
 
 * Michael Shekelyan and Graham Cormode
@@ -209,7 +209,7 @@ in the output, and delete them by replacing them with a value from one end and
 shortening the array.
 
 This is known as SELECT in Ernvall and Nevalainen, though in a slight variation
-we pick off the array at the start, rather than the end.
+I pick off the array at the start, rather than the end.
 
 ## HSEL
 
@@ -217,8 +217,8 @@ Algorithm | Python | C++ | Order guarantee | Data structures | Time
 ----|----|----|----|----|----
 HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
 
-This is a variation of the above in which we use a hash table to simulate the array
-of values [0, _n_), and store only where we change it. First proposed by Ernvall and Nevalainen
+This is a variation of the above which uses a hash table to simulate the array
+of values [0, _n_), storing only the entries that change. First proposed by Ernvall and Nevalainen
 in 1982:
 
 * Jarmo Ernvall and Olli Nevalainen
@@ -231,7 +231,7 @@ It is also presented in Martin Harriman, [Sampling Without Replacement: Durstenf
 Permutation for Very Large Permutation
 Sizes](https://www.tdcommons.org/cgi/viewcontent.cgi?article=1485&context=dpubs_series).
 
-Our C++ and Rust implementations use a faster variant, which keeps the first _k_ entries of the
+My C++ and Rust implementations use a faster variant, which keeps the first _k_ entries of the
 simulated array in the output array itself, so only swaps that reach beyond _k_ touch the hash
 table. This variant was described by rici in a [Stack Overflow
 answer](https://stackoverflow.com/a/30559195) in 2015. Thanks to Mathias Weller for bringing it to

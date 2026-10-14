@@ -1,14 +1,14 @@
 # Prior art
 
-How [cardchoose](cardchoose.md) relates to earlier work.
+How [Cardchoose](cardchoose.md) relates to earlier work.
 
-Physicists have names for the three distributions in the cardchoose story. Distinguishable
+Physicists have names for the three distributions in the Cardchoose story. Distinguishable
 particles placed independently in cells, the biased way of picking a multiset, is
 Maxwell–Boltzmann statistics. Indistinguishable particles with every occupancy pattern equally
 likely, a uniform multiset, is Bose–Einstein. At most one particle per cell with every pattern
 equally likely, a uniform subset, is Fermi–Dirac. Stars and bars is the standard way to count the
 Bose–Einstein configurations, by matching them with Fermi–Dirac ones. So the one-line summary of
-cardchoose is: generate a Bose–Einstein configuration with a Pólya urn, then map it to
+Cardchoose is: generate a Bose–Einstein configuration with a Pólya urn, then map it to
 Fermi–Dirac by stars and bars.
 
 The mathematics of both halves is classical. Cardchoose's multiset loop is a **Pólya urn**: start
@@ -29,7 +29,7 @@ urn presented as a generator for uniform multisets, or its composition with star
 a sampler for sampling without replacement. Needing no set, map or extra memory is not new in
 itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and so do Vitter's
 Algorithm D and, more recently, Shekelyan and Cormode's Hidden Shuffle, though they need
-floating-point arithmetic where cardchoose and RANKSB use only exact integer draws. I would be glad to hear of any earlier description of cardchoose.
+floating-point arithmetic where Cardchoose and RANKSB use only exact integer draws. I would be glad to hear of any earlier description of Cardchoose.
 
 Sorted output without a sort has a classic answer for real numbers: Bentley and Saxe generate _k_
 sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the
