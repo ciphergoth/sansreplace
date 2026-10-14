@@ -24,17 +24,11 @@ import argparse
 import pathlib
 
 import read_results
+from cases import CASES
 from duration import duration
 from algorithms import ALGORITHMS
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
-
-CASES = [
-    ("cpp-random", "C++, random order"),
-    ("cpp-sorted", "C++, sorted order"),
-    ("rust-random", "Rust, random order"),
-    ("rust-sorted", "Rust, sorted order"),
-]
 
 COMMON = """Each table compares every pair of algorithms in one of the [benchmark](../../results.md)
 cases, over the points with _k_ ≥ 10 that both timed. We stop timing an algorithm at a value of

@@ -22,6 +22,7 @@ import pathlib
 import statistics
 
 import read_results
+from cases import CASES
 from duration import duration
 from algorithms import ALGORITHMS
 
@@ -79,34 +80,32 @@ def not_timed(k):
 
 def markdown(results, group, max_frac):
     "A table of each algorithm's worst ratio, with a column per CSV"
-    cases = sorted(p for p in results.iterdir() if p.is_dir())
-    times = {case: read_times(case, max_frac) for case in cases}
-    print("| | " + " | ".join(case.name for case in cases) + " |")
-    print("|---" * (len(cases) + 1) + "|")
+    times = {name: read_times(results / name, max_frac) for name, _ in CASES}
+    print("| | " + " | ".join(title for _, title in CASES) + " |")
+    print("|---" * (len(CASES) + 1) + "|")
     for alg in group:
         cells = []
-        for case in cases:
-            missing = untimed(times[case], group)
+        for name, _ in CASES:
+            missing = untimed(times[name], group)
             if alg in missing:
                 cells.append(not_timed(missing[alg]))
                 continue
-            cells.append(f"{short(max(x for x, _ in ratios(times[case], group)[alg]))}×")
+            cells.append(f"{short(max(x for x, _ in ratios(times[name], group)[alg]))}×")
         print(f"| `{alg}` | " + " | ".join(cells) + " |")
 
 def markdown_excess(results, group, max_frac):
     "A table of each algorithm's worst excess time/k, with a column per CSV"
-    cases = sorted(p for p in results.iterdir() if p.is_dir())
-    times = {case: read_times(case, max_frac) for case in cases}
-    print("| | " + " | ".join(case.name for case in cases) + " |")
-    print("|---" * (len(cases) + 1) + "|")
+    times = {name: read_times(results / name, max_frac) for name, _ in CASES}
+    print("| | " + " | ".join(title for _, title in CASES) + " |")
+    print("|---" * (len(CASES) + 1) + "|")
     for alg in group:
         cells = []
-        for case in cases:
-            missing = untimed(times[case], group)
+        for name, _ in CASES:
+            missing = untimed(times[name], group)
             if alg in missing:
                 cells.append(not_timed(missing[alg]))
                 continue
-            cells.append(duration(max(x for x, _ in excesses(times[case], group)[alg])))
+            cells.append(duration(max(x for x, _ in excesses(times[name], group)[alg])))
         print(f"| `{alg}` | " + " | ".join(cells) + " |")
 
 def main():
@@ -128,9 +127,9 @@ def main():
     if args.markdown_excess:
         markdown_excess(args.results, group, args.max_frac)
         return
-    for case in sorted(p for p in args.results.iterdir() if p.is_dir()):
-        print(f"== {case.name}")
-        for alg, r in ratios(read_times(case, args.max_frac), group).items():
+    for name, _ in CASES:
+        print(f"== {name}")
+        for alg, r in ratios(read_times(args.results / name, args.max_frac), group).items():
             worst, wpoint = max(r)
             fastest = sum(1 for x, _ in r if x == 1.0)
             print(f"{alg:16} fastest {fastest:4} of {len(r):4}"

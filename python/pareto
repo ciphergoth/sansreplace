@@ -28,16 +28,10 @@ import pathlib
 import matplotlib
 
 import read_results
+from cases import CASES
 from algorithms import ALGORITHMS
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
-
-CASES = [
-    ("cpp-random", "C++, random order"),
-    ("cpp-sorted", "C++, sorted order"),
-    ("rust-random", "Rust, random order"),
-    ("rust-sorted", "Rust, sorted order"),
-]
 
 SHORT = {
     "quadraticreject": "QR", "rejectionsample": "RS", "ranksb": "RKSB",

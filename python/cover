@@ -31,17 +31,11 @@ import math
 import pathlib
 
 import read_results
+from cases import CASES
 from algorithms import ALGORITHMS
 from duration import duration
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
-
-CASES = [
-    ("cpp-random", "C++, random order"),
-    ("cpp-sorted", "C++, sorted order"),
-    ("rust-random", "Rust, random order"),
-    ("rust-sorted", "Rust, sorted order"),
-]
 
 LATEX_NAMES = {
     "quadraticreject": "quadratic rejection",
