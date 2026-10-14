@@ -80,6 +80,9 @@ def run_timings(args, vitr, totime):
                 if t > args.time_limit:
                     print(f"hit tlim: {tm.alg}")
                     klim[tm.alg] = k
+            elif args.csv is not None:
+                with args.csv.open("a") as csvf:
+                    csv.writer(csvf).writerow(['skipped', tm.alg, n, k])
         if len(res) == 0:
             print()
             continue

@@ -309,6 +309,9 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
                     println!("hit tlim: {alg}");
                     klim.insert(alg, k);
                 }
+            } else if let Some(w) = &mut writer {
+                w.write_record(["skipped", alg, &n.to_string(), &k.to_string()])?;
+                w.flush()?;
             }
         }
         if res.is_empty() {
