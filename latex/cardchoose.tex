@@ -168,12 +168,20 @@ Start with an empty array of integers. Generate an integer \(0 \leq x
 < n\), and check if \(x\) is already present in the array by iterating
 through the array checking every element. If it is not present, append
 it to the array. Repeat this process until the array is of the desired
-length.
+length. Each membership test takes \(\bigO{k}\) time, so the whole
+takes \(\bigO{k^2}\) expected time for \(k \leq n/2\), and more
+as \(k\) approaches \(n\) and more draws are rejected, as for
+set-based rejection sampling below.
 
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
 As above, but use a data structure representing sets with an efficient membership test.
 \cite{goodman}
+This takes \(\bigO{k}\) expected time for \(k \leq n/2\), where
+each draw is rejected with probability at most a half. As \(k\)
+approaches \(n\), rejections mount: the expected number of draws is
+\(n(H_n - H_{n-k})\), where \(H_m\) is the \(m\)th harmonic number,
+so at \(k = n\) it takes \(\bigO{n \log n}\) time.
 
 \subsection{RANKSB}
 \inputminted{Python}{code/ranksb.py}

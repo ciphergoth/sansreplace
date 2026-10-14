@@ -30,7 +30,9 @@ Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | 
 For each output, try choosing
 an integer in [0, _n_), but check every integer already in the output to see if
 it's the same, and reject and re-draw if so. This is quadratic in _k_, but for small
-_k_ the small constants can mean this algorithm does very well.
+_k_ the small constants can mean this algorithm does very well. It takes O(_k_^2) expected time for
+_k_ ≤ _n_/2, and more as _k_ approaches _n_ and more draws are rejected, as for set-based rejection
+sampling.
 
 ## Set-based rejection sampling
 
@@ -44,7 +46,10 @@ values, discard it. Otherwise, append it to the output, and add it to the list o
 already-produced values.
 
 One of the simplest possible algorithms, but the cost of set lookups and insertions
-is high.
+is high. It takes O(_k_) expected time for _k_ ≤ _n_/2, where each draw is rejected with
+probability at most a half. As _k_ approaches _n_, rejections mount: the expected number of draws
+is _n_(_H_<sub>_n_</sub> − _H_<sub>_n_−_k_</sub>), where _H_ is the harmonic number, so at
+_k_ = _n_ it takes O(_n_ log _n_) time.
 
 ## RANKSB
 
