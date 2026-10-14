@@ -25,13 +25,17 @@ import read_results
 from duration import duration
 from algorithms import ALGORITHMS
 
-def compare(case, group, max_frac, measure):
-    """For each algorithm in group, measure(its time, the fastest time in group,
-    k) per point"""
+def read_times(case, max_frac):
+    "The time of each algorithm at each point with k >= 10 and k <= max_frac * n"
     times = {}
     for item in read_results.read(case):
         if item.k >= 10 and item.k <= max_frac * item.n:
             times.setdefault((item.n, item.k), {})[item.alg] = item.time
+    return times
+
+def compare(times, group, measure):
+    """For each algorithm in group, measure(its time, the fastest time in group,
+    k) per point"""
     res = {alg: [] for alg in group}
     for point, t in sorted(times.items()):
         present = [alg for alg in group if alg in t]
@@ -40,14 +44,24 @@ def compare(case, group, max_frac, measure):
             res[alg].append((measure(t[alg], best, point[1]), point))
     return res
 
-def ratios(case, group, max_frac):
+def ratios(times, group):
     "For each algorithm in group, its time over the fastest in group, per point"
-    return compare(case, group, max_frac, lambda t, best, k: t / best)
+    return compare(times, group, lambda t, best, k: t / best)
 
-def excesses(case, group, max_frac):
+def excesses(times, group):
     """For each algorithm in group, how much its time/k exceeds the fastest in
     group, in seconds, per point"""
-    return compare(case, group, max_frac, lambda t, best, k: (t - best) / k)
+    return compare(times, group, lambda t, best, k: (t - best) / k)
+
+def untimed(times, group):
+    """For each algorithm in group that was not timed at some points, the
+    smallest k of those points"""
+    res = {}
+    for (n, k), t in times.items():
+        for alg in group:
+            if alg not in t:
+                res[alg] = min(res.get(alg, k), k)
+    return res
 
 def short(x):
     "x for a table, in standard form from 10^4"
@@ -60,27 +74,38 @@ def short(x):
     mantissa, e = f"{x:.1e}".split("e")
     return f"{mantissa}×10<sup>{int(e)}</sup>"
 
+def not_timed(k):
+    return f"?<br><sub>not timed from k={short(k)}</sub>"
+
 def markdown(results, group, max_frac):
     "A table of each algorithm's median and worst ratio, with a column per CSV"
     cases = sorted(p for p in results.iterdir() if p.is_dir())
-    r = {case: ratios(case, group, max_frac) for case in cases}
+    times = {case: read_times(case, max_frac) for case in cases}
     print("| | " + " | ".join(case.name for case in cases) + " |")
     print("|---" * (len(cases) + 1) + "|")
     for alg in group:
         cells = []
         for case in cases:
-            x = [y for y, _ in r[case][alg]]
-            cells.append(f"{short(statistics.median(x))}× / {short(max(x))}×")
+            x = [y for y, _ in ratios(times[case], group)[alg]]
+            missing = untimed(times[case], group)
+            worst = not_timed(missing[alg]) if alg in missing else f"{short(max(x))}×"
+            cells.append(f"{short(statistics.median(x))}× / {worst}")
         print(f"| `{alg}` | " + " | ".join(cells) + " |")
 
 def markdown_excess(results, group, max_frac):
     "A table of each algorithm's worst excess time/k, with a column per CSV"
     cases = sorted(p for p in results.iterdir() if p.is_dir())
-    r = {case: excesses(case, group, max_frac) for case in cases}
+    times = {case: read_times(case, max_frac) for case in cases}
     print("| | " + " | ".join(case.name for case in cases) + " |")
     print("|---" * (len(cases) + 1) + "|")
     for alg in group:
-        cells = [duration(max(x for x, _ in r[case][alg])) for case in cases]
+        cells = []
+        for case in cases:
+            missing = untimed(times[case], group)
+            if alg in missing:
+                cells.append(not_timed(missing[alg]))
+                continue
+            cells.append(duration(max(x for x, _ in excesses(times[case], group)[alg])))
         print(f"| `{alg}` | " + " | ".join(cells) + " |")
 
 def main():
@@ -104,7 +129,7 @@ def main():
         return
     for case in sorted(p for p in args.results.iterdir() if p.is_dir()):
         print(f"== {case.name}")
-        for alg, r in ratios(case, group, args.max_frac).items():
+        for alg, r in ratios(read_times(case, args.max_frac), group).items():
             worst, wpoint = max(r)
             fastest = sum(1 for x, _ in r if x == 1.0)
             print(f"{alg:16} fastest {fastest:4} of {len(r):4}"
