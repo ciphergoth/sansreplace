@@ -24,8 +24,9 @@ import statistics
 import read_results
 from algorithms import ALGORITHMS
 
-def ratios(case, group, max_frac):
-    "For each algorithm in group, its time over the fastest in group, per point"
+def compare(case, group, max_frac, measure):
+    """For each algorithm in group, measure(its time, the fastest time in group,
+    k) per point"""
     times = {}
     for item in read_results.read(case):
         if item.k >= 10 and item.k <= max_frac * item.n:
@@ -35,8 +36,17 @@ def ratios(case, group, max_frac):
         present = [alg for alg in group if alg in t]
         best = min(t[alg] for alg in present)
         for alg in present:
-            res[alg].append((t[alg] / best, point))
+            res[alg].append((measure(t[alg], best, point[1]), point))
     return res
+
+def ratios(case, group, max_frac):
+    "For each algorithm in group, its time over the fastest in group, per point"
+    return compare(case, group, max_frac, lambda t, best, k: t / best)
+
+def excesses(case, group, max_frac):
+    """For each algorithm in group, how much its time/k exceeds the fastest in
+    group, in ns, per point"""
+    return compare(case, group, max_frac, lambda t, best, k: 1E9 * (t - best) / k)
 
 def short(x):
     "x for a table, in standard form from 10^4"
@@ -62,6 +72,16 @@ def markdown(results, group, max_frac):
             cells.append(f"{short(statistics.median(x))}× / {short(max(x))}×")
         print(f"| `{alg}` | " + " | ".join(cells) + " |")
 
+def markdown_excess(results, group, max_frac):
+    "A table of each algorithm's worst excess time/k, with a column per CSV"
+    cases = sorted(p for p in results.iterdir() if p.is_dir())
+    r = {case: excesses(case, group, max_frac) for case in cases}
+    print("| | " + " | ".join(case.name for case in cases) + " |")
+    print("|---" * (len(cases) + 1) + "|")
+    for alg in group:
+        cells = [short(max(x for x, _ in r[case][alg])) for case in cases]
+        print(f"| `{alg}` | " + " | ".join(cells) + " |")
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("results", type=pathlib.Path)
@@ -71,10 +91,15 @@ def main():
         help="Only include points with k <= max_frac * n")
     parser.add_argument("--markdown", action="store_true",
         help="Print a table of median and worst ratios instead")
+    parser.add_argument("--markdown-excess", action="store_true",
+        help="Print a table of worst excess time/k in ns instead")
     args = parser.parse_args()
     group = sorted(args.group, key=ALGORITHMS.index)
     if args.markdown:
         markdown(args.results, group, args.max_frac)
+        return
+    if args.markdown_excess:
+        markdown_excess(args.results, group, args.max_frac)
         return
     for case in sorted(p for p in args.results.iterdir() if p.is_dir()):
         print(f"== {case.name}")
