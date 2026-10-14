@@ -63,6 +63,9 @@ cd python
 `python/pairwise` regenerates the pairwise comparisons, [`pairwise-ratio.md`](pairwise-ratio.md)
 and [`pairwise-difference.md`](pairwise-difference.md).
 
+`python/regions CASE A B` compares two algorithms by region of _n_/_k_ and _k_, as for the claims in
+the [results](results.md); `B` can be `others`, for the fastest of all the other algorithms.
+
 `make_plots` also writes the animated graphs in `results/latest`. Then build the PDF:
 
 ```

@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Compare two algorithms by region: for each band of n/k and of k, the range
+# of the first algorithm's time over the second's, over the points with
+# k >= 10 that both timed. If the second is "others", compare with the fastest
+# of all the other algorithms timed at each point, so a ratio below 1 means
+# the first algorithm is the fastest there.
+
+import argparse
+import pathlib
+
+import read_results
+from algorithms import ALGORITHMS
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+N_OVER_K = [1, 2, 4, 16, 256, 65536, float("inf")]
+K = [10, 1000, 10**5, 10**7, float("inf")]
+
+def band(x, edges):
+    for i in range(len(edges) - 1):
+        if edges[i] <= x < edges[i + 1]:
+            return i
+
+def label(edges, i):
+    lo, hi = edges[i], edges[i + 1]
+    return f"{lo:g}–{hi:g}" if hi != float("inf") else f"≥{lo:g}"
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("case", help="A case directory name, such as cpp-sorted")
+    parser.add_argument("a", choices=ALGORITHMS)
+    parser.add_argument("b", choices=ALGORITHMS + ["others"])
+    parser.add_argument("--results", type=pathlib.Path,
+        default=topdir / "results/latest")
+    args = parser.parse_args()
+    times = {}
+    for item in read_results.read(args.results / args.case):
+        if item.k >= 10:
+            times.setdefault((item.n, item.k), {})[item.alg] = item.time
+    cells = {}
+    for (n, k), t in times.items():
+        if args.b == "others":
+            others = [x for alg, x in t.items() if alg != args.a]
+            b = min(others)
+        else:
+            b = t.get(args.b)
+        if args.a in t and b is not None:
+            key = (band(n / k, N_OVER_K), band(k, K))
+            cells.setdefault(key, []).append(t[args.a] / b)
+    print(f"{args.a} time / {args.b} time, {args.case}: min–max (points)")
+    print(f"{'n/k \\ k':>12}" + "".join(f"{label(K, j):>22}" for j in range(len(K) - 1)))
+    for i in range(len(N_OVER_K) - 1):
+        row = f"{label(N_OVER_K, i):>12}"
+        for j in range(len(K) - 1):
+            r = cells.get((i, j))
+            row += f"{min(r):>9.2f}–{max(r):<5.2f}({len(r):3})" if r else f"{'':>22}"
+        print(row)
+
+if __name__ == '__main__':
+    main()
