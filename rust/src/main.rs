@@ -129,6 +129,33 @@ fn gitstate(topdir: &Path) -> Result<String> {
     Ok(state)
 }
 
+/// Like python/vmstat.py: the vm_stat counters that show memory pressure, in
+/// pages
+const VM_COUNTERS: [&str; 4] = ["Compressions", "Decompressions", "Swapins", "Swapouts"];
+
+fn vm_counters() -> Result<[u64; 4]> {
+    let out = std::process::Command::new("vm_stat").output()?;
+    ensure!(out.status.success(), "vm_stat failed");
+    let out = String::from_utf8(out.stdout)?;
+    let mut fields = HashMap::new();
+    for line in out.lines().skip(1) {
+        let (name, value) = line
+            .rsplit_once(':')
+            .context("vm_stat line without a colon")?;
+        fields.insert(
+            name.trim_matches('"'),
+            value.trim().trim_end_matches('.').parse::<u64>()?,
+        );
+    }
+    let mut res = [0; 4];
+    for (r, c) in res.iter_mut().zip(VM_COUNTERS) {
+        *r = *fields
+            .get(c)
+            .with_context(|| format!("vm_stat has no {c}"))?;
+    }
+    Ok(res)
+}
+
 /// Format like Python's repr of a list of strings, or empty for an unset option
 fn pylist<S: std::fmt::Display>(items: &[S]) -> String {
     if items.is_empty() {
@@ -251,8 +278,10 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
         let mut res = Vec::new();
         for (alg, f) in &timeables {
             if klim.get(alg).is_none_or(|&l| k < l) {
+                let before = writer.as_ref().map(|_| vm_counters()).transpose()?;
                 let t = timefunc_for(args.time_for, f, &mut rng, n, k);
                 if let Some(w) = &mut writer {
+                    let after = vm_counters()?;
                     w.write_record([
                         "result",
                         alg,
@@ -260,6 +289,19 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
                         &k.to_string(),
                         &format!("{t:e}"),
                     ])?;
+                    let mut memory = vec![
+                        "memory".to_string(),
+                        alg.to_string(),
+                        n.to_string(),
+                        k.to_string(),
+                    ];
+                    memory.extend(
+                        after
+                            .iter()
+                            .zip(before.unwrap())
+                            .map(|(a, b)| (a - b).to_string()),
+                    );
+                    w.write_record(&memory)?;
                     w.flush()?;
                 }
                 res.push((t, *alg));

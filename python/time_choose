@@ -22,6 +22,7 @@ import pathlib
 import gitstate
 import impl_load
 import nkvalues
+import vmstat
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -65,11 +66,16 @@ def run_timings(args, vitr, totime):
         res = []
         for tm in totime:
             if tm.alg not in klim or k < klim[tm.alg]:
+                if args.csv is not None:
+                    before = vmstat.counters()
                 t = timefunc_for(args.time_for, (n, k), tm)
                 if args.csv is not None:
+                    after = vmstat.counters()
                     with args.csv.open("a") as csvf:
                         writer = csv.writer(csvf)
                         writer.writerow(['result', tm.alg, n, k, t])
+                        writer.writerow(['memory', tm.alg, n, k,
+                            *(a - b for a, b in zip(after, before))])
                 res.append((t, tm.alg))
                 if t > args.time_limit:
                     print(f"hit tlim: {tm.alg}")

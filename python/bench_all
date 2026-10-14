@@ -7,6 +7,7 @@ import pathlib
 import subprocess
 
 import machine
+import vmstat
 from algorithms import ALGORITHMS
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
@@ -30,10 +31,11 @@ def parse_args():
 def run(name, cmd, csvfile):
     print(f"{datetime.datetime.now():%F %T} starting {name}", flush=True)
     setup = machine.get()
+    memory = vmstat.snapshot()
     subprocess.run([*cmd, "--csv", csvfile], check=True)
     with csvfile.open("a", newline="") as f:
         writer = csv.writer(f)
-        for k, v in setup.items():
+        for k, v in [*setup.items(), *memory.items()]:
             writer.writerow(["info", k, v])
     print(f"{datetime.datetime.now():%F %T} finished {name}", flush=True)
 
