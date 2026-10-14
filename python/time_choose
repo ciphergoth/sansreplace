@@ -58,14 +58,21 @@ def timefunc_for(time, params, timeable):
             iters *= 10
 
 def run_timings(args, vitr, totime):
-    klim = {}
+    # Once a call takes more than the time limit, skip larger k for the same
+    # n. Some algorithms are slow only near k = n, so try again at the next n;
+    # but if an algorithm goes over the limit at the same k for two different
+    # n, skip that k and larger for every n after.
+    hit = {}   # algorithm -> (n, k) where it last went over the limit
+    klim = {}  # algorithm -> k from which to skip it for every n
     done = set()
     for descrip, n, k in vitr:
         print(f"{descrip}")
         done.add((n, k))
         res = []
         for tm in totime:
-            if tm.alg not in klim or k < klim[tm.alg]:
+            skip = (tm.alg in klim and k >= klim[tm.alg]) or (
+                tm.alg in hit and hit[tm.alg][0] == n and k >= hit[tm.alg][1])
+            if not skip:
                 if args.csv is not None:
                     before = vmstat.counters()
                 t = timefunc_for(args.time_for, (n, k), tm)
@@ -79,7 +86,9 @@ def run_timings(args, vitr, totime):
                 res.append((t, tm.alg))
                 if t > args.time_limit:
                     print(f"hit tlim: {tm.alg}")
-                    klim[tm.alg] = k
+                    if tm.alg in hit and hit[tm.alg][1] == k:
+                        klim[tm.alg] = k
+                    hit[tm.alg] = (n, k)
             elif args.csv is not None:
                 with args.csv.open("a") as csvf:
                     csv.writer(csvf).writerow(['skipped', tm.alg, n, k])

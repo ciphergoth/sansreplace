@@ -60,7 +60,9 @@ Each row of a results CSV starts with its kind:
   compressed, decompressed, swapped in and swapped out while that point was timed. Large numbers
   mean the timing was slowed by memory pressure, from this benchmark or anything else running.
 * `skipped,ALG,N,K`: a point not timed because the algorithm took more than `--time-limit` seconds
-  at a smaller or equal _k_. Results from before these rows were added don't have them.
+  at a smaller or equal _k_ for the same _n_, or did so at the same _k_ for two different smaller
+  _n_. Some algorithms are slow only near _k_ = _n_, so going over the limit once only skips
+  larger _k_ for that _n_. Results from before these rows were added don't have them.
 
 Recording the setup and memory uses macOS's `sysctl`, `pmset` and `vm_stat`, so writing a
 results CSV currently needs macOS.

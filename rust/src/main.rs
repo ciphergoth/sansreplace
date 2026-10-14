@@ -272,12 +272,21 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
             Some(w)
         }
     };
+    // Like python/time_choose: once a call takes more than the time limit, skip
+    // larger k for the same n. Some algorithms are slow only near k = n, so try
+    // again at the next n; but if an algorithm goes over the limit at the same k
+    // for two different n, skip that k and larger for every n after.
+    // Algorithm -> (n, k) where it last went over the limit
+    let mut hit: HashMap<&str, (u32, u32)> = HashMap::new();
+    // Algorithm -> k from which to skip it for every n
     let mut klim: HashMap<&str, u32> = HashMap::new();
     for (descrip, n, k) in values.filter(|v| args.max_k.is_none_or(|m| v.2 <= m)) {
         println!("{descrip}");
         let mut res = Vec::new();
         for (alg, f) in &timeables {
-            if klim.get(alg).is_none_or(|&l| k < l) {
+            let skip = klim.get(alg).is_some_and(|&l| k >= l)
+                || hit.get(alg).is_some_and(|&(hn, hk)| hn == n && k >= hk);
+            if !skip {
                 let before = writer.as_ref().map(|_| vm_counters()).transpose()?;
                 let t = timefunc_for(args.time_for, f, &mut rng, n, k);
                 if let Some(w) = &mut writer {
@@ -307,7 +316,10 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
                 res.push((t, *alg));
                 if t > args.time_limit {
                     println!("hit tlim: {alg}");
-                    klim.insert(alg, k);
+                    if hit.get(alg).is_some_and(|&(_, hk)| hk == k) {
+                        klim.insert(alg, k);
+                    }
+                    hit.insert(alg, (n, k));
                 }
             } else if let Some(w) = &mut writer {
                 w.write_record(["skipped", alg, &n.to_string(), &k.to_string()])?;
