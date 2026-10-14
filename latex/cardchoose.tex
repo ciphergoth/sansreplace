@@ -91,8 +91,8 @@
     multisets and sets. It is the simplest of the three algorithms
     whose time per number output is never far above the fastest's, it
     belongs to the best set of two or three in three of the four cases,
-    and with a fast sort it is the fastest algorithm for sorted output
-    more often than any other.
+    and with a fast sort, for sorted output with \(k < 1000\) and
+    \(n \geq 2k\), it is the fastest algorithm or within 25\% of it.
 \end{abstract}
 
 \section{Introduction}
@@ -623,32 +623,43 @@ it, where the \(\bigO{n}\) algorithms are fastest; at \(k = n\) itself
 it has almost nothing to do. Along those points its excess grows
 slowly with \(k\), as the \(\log k\) factor of its sort would suggest.
 
-For sorted output, the fastest of these is Hidden Shuffle in C++ and
-cardchoose in Rust. Over the points with \(k \leq n/2\), Hidden Shuffle
-is the faster of the two at 601 of 663 in C++, where cardchoose takes a
-median of 1.68 times as long, and cardchoose at 406 of 663 in Rust,
-where Hidden Shuffle takes a median of 1.09 times as long. Hidden
-Shuffle takes about the same time in both languages, so the difference
-is in cardchoose, most likely in its sort. Hidden Shuffle is also
-faster than RANKSB at most of these points in both languages, with
-RANKSB taking a median of 1.3 to 1.5 times as long. As \(k\)
+We give worst cases and ranges over regions of \(n\) and \(k\)
+rather than averages, since any average depends on which values of
+\(n\) and \(k\) we chose to test.
+
+For sorted output in C++, Hidden Shuffle is the fastest algorithm
+wherever \(n \geq 256k\), and wherever \(n \geq 16k\) and
+\(k \geq 1000\); there, cardchoose takes up to 2.5 times as long. In
+Rust, cardchoose and Hidden Shuffle divide the range by \(k\): wherever
+\(k < 1000\) and \(n \geq 2k\), cardchoose is the fastest algorithm
+or within 25\% of it, and Hidden Shuffle takes up to 3.9 times as long,
+while wherever \(k \geq 10^5\) and \(n \geq 16k\), Hidden Shuffle is
+the fastest or within 3\% of it, and cardchoose takes up to 1.5 times
+as long. Hidden Shuffle takes about the same time in both languages,
+so the difference is in cardchoose, most likely in its sort. Hidden
+Shuffle is also faster than RANKSB wherever \(n \geq 16k\) and
+\(k \geq 1000\) in both languages, with RANKSB taking 1.09 to 1.9
+times as long in C++ and 1.1 to 2.1 times as long in Rust. As \(k\)
 approaches \(n\), RANKSB slows down, taking over 100 times
 as long as the fastest algorithm at \(k = n\); \cite{nijenhuiswilf}
 pairs it with iterative choosing (which Nijenhuis and Wilf refer to
 as RKS2) for \(k \geq n/2\). Vitter's
 Algorithm D, with its fallback to Algorithm A, has the smallest worst
-case of any single algorithm for sorted output, but over all the
-points tested takes a median of 1.3 times as long as cardchoose in C++
-and 2.3 times as long in Rust.
+case of any single algorithm for sorted output. Where \(n \geq 4k\),
+it takes 0.71 to 2.9 times as long as cardchoose in C++ and 1.06 to
+6.2 times as long in Rust; where \(n < 2k\) and \(k \geq 1000\), it is
+faster than cardchoose in both.
 
 For random output, the hash-based algorithms are competitive only with
 a fast hash table. With C++ standard library hash tables, cardchoose is
 faster than set-based rejection sampling, Floyd's F2 and HSEL at every
-point with \(k \leq n/2\), and they take a median of about 1.65 times as
-long, though Hidden Shuffle followed by a shuffle is faster still at
-most of these points. With Rust's flat hash tables, HSEL is the fastest of
-these four at most points, and cardchoose is never more than 1.51 times
-slower than the fastest of them for \(k \leq n/2\). The hash-based
+point with \(k \leq n/2\), where they take 1.02 to 4.7 times as long,
+though Hidden Shuffle followed by a shuffle is faster still wherever
+\(n \geq 16k\) and \(k \geq 1000\). With Rust's flat hash tables, HSEL
+is faster than cardchoose wherever \(1000 \leq k < 10^5\) and
+\(n \geq 2k\), and cardchoose is faster wherever \(k \geq 10^7\); it is
+never more than 1.51 times slower than the fastest of these four for
+\(k \leq n/2\). The hash-based
 algorithms slow down at large \(k\), once the hash table no longer fits
 in cache, and as \(k\) approaches \(n\). In theory, their
 \(\bigO{k}\) performance compared to the \(\bigO{k \log k}\)

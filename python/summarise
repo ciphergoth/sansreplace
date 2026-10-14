@@ -78,7 +78,7 @@ def not_timed(k):
     return f"?<br><sub>not timed from k={short(k)}</sub>"
 
 def markdown(results, group, max_frac):
-    "A table of each algorithm's median and worst ratio, with a column per CSV"
+    "A table of each algorithm's worst ratio, with a column per CSV"
     cases = sorted(p for p in results.iterdir() if p.is_dir())
     times = {case: read_times(case, max_frac) for case in cases}
     print("| | " + " | ".join(case.name for case in cases) + " |")
@@ -86,10 +86,11 @@ def markdown(results, group, max_frac):
     for alg in group:
         cells = []
         for case in cases:
-            x = [y for y, _ in ratios(times[case], group)[alg]]
             missing = untimed(times[case], group)
-            worst = not_timed(missing[alg]) if alg in missing else f"{short(max(x))}×"
-            cells.append(f"{short(statistics.median(x))}× / {worst}")
+            if alg in missing:
+                cells.append(not_timed(missing[alg]))
+                continue
+            cells.append(f"{short(max(x for x, _ in ratios(times[case], group)[alg]))}×")
         print(f"| `{alg}` | " + " | ".join(cells) + " |")
 
 def markdown_excess(results, group, max_frac):
@@ -116,7 +117,7 @@ def main():
     parser.add_argument("--max-frac", type=float, default=1.0,
         help="Only include points with k <= max_frac * n")
     parser.add_argument("--markdown", action="store_true",
-        help="Print a table of median and worst ratios instead")
+        help="Print a table of worst ratios instead")
     parser.add_argument("--markdown-excess", action="store_true",
         help="Print a table of worst excess time/k instead")
     args = parser.parse_args()
