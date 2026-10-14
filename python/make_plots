@@ -23,16 +23,24 @@ import read_results
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Write the animated graphs for the Markdown into results/latest/graphs, "
+            "or with --pgf, the paper's figures into a directory")
+    parser.add_argument("--pgf", type=pathlib.Path,
+        help="Write only the paper's figures, as pgf, into this directory")
+    args = parser.parse_args()
     results = topdir / "results/latest"
     for lang, langtitle in [("cpp", "C++"), ("rust", "Rust")]:
         for sorttype, ns in [("random", [1346269, 701408733]), ("sorted", [701408733])]:
             name = f"{lang}-{sorttype}"
             title = f"{langtitle}, {sorttype} order"
             all_algorithms, data = read_results.read_for_plot(results / name)
-            plot_anim.plot(all_algorithms, data, title, results / f"{name}.webp")
+            if args.pgf is None:
+                plot_anim.plot(all_algorithms, data, title, results / "graphs" / f"{name}.webp")
+                continue
             for n in ns:
                 plot_anim.plot(all_algorithms, [d for d in data if d[0] == n],
-                    title, topdir / "latex" / f"{name}-{n}.pgf")
+                    title, args.pgf / f"{name}-{n}.pgf")
 
 if __name__ == '__main__':
     main()

@@ -67,31 +67,33 @@ Each row of a results CSV starts with its kind:
 Recording the setup and memory uses macOS's `sysctl`, `pmset` and `vm_stat`, so writing a
 results CSV currently needs macOS.
 
-## Building the paper
+## Regenerating the Markdown
 
-The paper's figures and tables are generated from the CSVs in `results/latest`. After changing
-those, regenerate them with:
+The graphs and pairwise comparisons that the Markdown pages show are generated from the CSVs in
+`results/latest`, and checked in under it. After changing those CSVs, regenerate them with:
 
 ```
-cd python
-./make_plots
-./all_least_sq
-./cover --measure ratio --latex ../latex/cover-ratio.tex
-./cover --measure difference --latex ../latex/cover-difference.tex
+python/make_plots
+python/pairwise
 ```
 
-`python/pairwise` regenerates the pairwise comparisons, [`pairwise-ratio.md`](pairwise-ratio.md)
-and [`pairwise-difference.md`](pairwise-difference.md).
+`make_plots` writes the animated graphs into `results/latest/graphs`, and `pairwise` writes
+[`pairwise-ratio.md`](results/latest/pairwise-ratio.md) and
+[`pairwise-difference.md`](results/latest/pairwise-difference.md). The tables in the
+[results](results.md) come from `python/cover --measure ratio` and `--measure difference` and from
+`python/summarise`, as that page says.
 
 `python/regions CASE A B` compares two algorithms by region of _n_/_k_ and _k_, as for the claims in
 the [results](results.md); `B` can be `others`, for the fastest of all the other algorithms.
 
-`make_plots` also writes the animated graphs in `results/latest`. Then build the PDF:
+## Building the paper
 
 ```
 cd latex
 ./do_build
 ```
 
-This writes `latex/cardchoose.pdf`; the first run downloads `latexrun` into `latex/build`. The
-build prints some warnings from `latexrun` and from the LaTeX packages that can be ignored.
+This generates the paper's figures and tables from the CSVs in `results/latest` into
+`latex/generated`, which is not checked in, then writes `latex/cardchoose.pdf`. The first run
+downloads `latexrun` into `latex/build`. The build prints some warnings from `latexrun` and from
+the LaTeX packages that can be ignored.

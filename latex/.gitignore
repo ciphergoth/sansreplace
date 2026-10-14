@@ -1,3 +1,4 @@
 *.pdf
 python/__pycache__
 build
+generated

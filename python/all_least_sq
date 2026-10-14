@@ -45,7 +45,7 @@ def write_table(outfile, csv, pairs):
 
 def main():
     results = topdir / "results/latest"
-    latex = topdir / "latex"
+    latex = topdir / "latex/generated"
     for lang in ["cpp", "rust"]:
         write_table(latex / f"{lang}-random-table.tex", results / f"{lang}-random",
             [

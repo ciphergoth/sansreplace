@@ -21,6 +21,7 @@ import subprocess
 import sys
 
 scriptdir = pathlib.Path(__file__).parent
+pythondir = scriptdir.parent / "python"
 sys.path.append(str(scriptdir / "python"))
 
 import fetchhash
@@ -29,8 +30,21 @@ def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False)
     return p.parse_args()
 
+def generate():
+    "Generate the figures and tables from the results, into generated/"
+    generated = scriptdir / "generated"
+    generated.mkdir(exist_ok=True)
+    for cmd in [
+        ["make_plots", "--pgf", generated],
+        ["cover", "--measure", "ratio", "--latex", generated / "cover-ratio.tex"],
+        ["cover", "--measure", "difference", "--latex", generated / "cover-difference.tex"],
+    ]:
+        subprocess.run([sys.executable, pythondir / cmd[0], *cmd[1:]], check=True,
+            stdout=subprocess.DEVNULL)
+
 def main():
     args = parse_args()
+    generate()
     build = scriptdir / "build"
     fetch = build / "fetch"
     fetch.mkdir(parents = True, exist_ok = True)

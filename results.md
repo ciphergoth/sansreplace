@@ -128,8 +128,8 @@ and _k_.
 ## Each pair of algorithms
 
 For every pair of algorithms, the pairwise comparisons give how much slower one is than the other
-at its worst, and where, both as a [ratio of times](pairwise-ratio.md) and as a
-[difference in time/_k_](pairwise-difference.md).
+at its worst, and where, both as a [ratio of times](results/latest/pairwise-ratio.md) and as a
+[difference in time/_k_](results/latest/pairwise-difference.md).
 
 ## C++
 
@@ -146,9 +146,9 @@ shuffle is the fastest where _n_ ≥ 256 _k_. `cardchoose` is faster than `rejec
 `floydf2` and `hsel` at every point where _k_ ≤ _n_/2: they take 1.02–4.7× as long, and at least
 1.28× as long where _n_ ≥ 4 _k_.
 
-![graph](results/latest/cpp-random.webp)
+![graph](results/latest/graphs/cpp-random.webp)
 
-![graph](results/latest/cpp-sorted.webp)
+![graph](results/latest/graphs/cpp-sorted.webp)
 
 ## Rust
 
@@ -166,6 +166,6 @@ it, wherever _n_ < 16 _k_, and `hsel` is within 15% of the fastest wherever _n_ 
 _k_ ≥ 1000. `cardchoose` is never more than 1.51× slower than the fastest of `rejectionsample`,
 `floydf2`, `hsel` and itself where _k_ ≤ _n_/2.
 
-![graph](results/latest/rust-random.webp)
+![graph](results/latest/graphs/rust-random.webp)
 
-![graph](results/latest/rust-sorted.webp)
+![graph](results/latest/graphs/rust-sorted.webp)

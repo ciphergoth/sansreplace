@@ -34,7 +34,7 @@ _n_ ≥ 16 _k_ and _k_ ≥ 1000.
 * [Description of cardchoose](cardchoose.md)
 * [Prior art](priorart.md)
 * [Benchmark results](results.md)
-* Pairwise comparisons: [ratio of times](pairwise-ratio.md), [difference in time/_k_](pairwise-difference.md)
+* Pairwise comparisons: [ratio of times](results/latest/pairwise-ratio.md), [difference in time/_k_](results/latest/pairwise-difference.md)
 * [Running this software](running.md)
 
 Cardchoose in Python:
@@ -56,7 +56,7 @@ def sorted_choose(n, k):
     return d
 ```
 
-![graph](results/latest/cpp-sorted.webp)
+![graph](results/latest/graphs/cpp-sorted.webp)
 
 
 This is not an officially supported Google product.
