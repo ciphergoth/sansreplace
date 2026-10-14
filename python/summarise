@@ -22,6 +22,7 @@ import pathlib
 import statistics
 
 import read_results
+from duration import duration
 from algorithms import ALGORITHMS
 
 def compare(case, group, max_frac, measure):
@@ -45,8 +46,8 @@ def ratios(case, group, max_frac):
 
 def excesses(case, group, max_frac):
     """For each algorithm in group, how much its time/k exceeds the fastest in
-    group, in ns, per point"""
-    return compare(case, group, max_frac, lambda t, best, k: 1E9 * (t - best) / k)
+    group, in seconds, per point"""
+    return compare(case, group, max_frac, lambda t, best, k: (t - best) / k)
 
 def short(x):
     "x for a table, in standard form from 10^4"
@@ -79,7 +80,7 @@ def markdown_excess(results, group, max_frac):
     print("| | " + " | ".join(case.name for case in cases) + " |")
     print("|---" * (len(cases) + 1) + "|")
     for alg in group:
-        cells = [short(max(x for x, _ in r[case][alg])) for case in cases]
+        cells = [duration(max(x for x, _ in r[case][alg])) for case in cases]
         print(f"| `{alg}` | " + " | ".join(cells) + " |")
 
 def main():
@@ -92,7 +93,7 @@ def main():
     parser.add_argument("--markdown", action="store_true",
         help="Print a table of median and worst ratios instead")
     parser.add_argument("--markdown-excess", action="store_true",
-        help="Print a table of worst excess time/k in ns instead")
+        help="Print a table of worst excess time/k instead")
     args = parser.parse_args()
     group = sorted(args.group, key=ALGORITHMS.index)
     if args.markdown:
