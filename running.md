@@ -60,7 +60,8 @@ cd python
 ./cover --latex ../latex/cover-table.tex
 ```
 
-`python/pairwise > pairwise.md` regenerates the [pairwise comparisons](pairwise.md).
+`python/pairwise` regenerates the pairwise comparisons, [`pairwise-ratio.md`](pairwise-ratio.md)
+and [`pairwise-difference.md`](pairwise-difference.md).
 
 `make_plots` also writes the animated graphs in `results/latest`. Then build the PDF:
 

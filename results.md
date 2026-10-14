@@ -89,8 +89,9 @@ log _k_ factor of its sort.
 
 ## Each pair of algorithms
 
-[Pairwise comparisons](pairwise.md) give, for every pair of algorithms, how much slower one is
-than the other at its worst, and where.
+For every pair of algorithms, the pairwise comparisons give how much slower one is than the other
+at its worst, and where, both as a [ratio of times](pairwise-ratio.md) and as a
+[difference in time/_k_](pairwise-difference.md).
 
 ## C++
 
