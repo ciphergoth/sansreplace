@@ -18,7 +18,6 @@
 # of a group, over the points with k >= 10, as in the tables in results.md.
 
 import argparse
-import math
 import pathlib
 import statistics
 
@@ -47,8 +46,8 @@ def short(x):
         return f"{x:.1f}"
     if x < 10000:
         return f"{x:,.0f}"
-    e = math.floor(math.log10(x))
-    return f"{x / 10**e:.1f}×10<sup>{e}</sup>"
+    mantissa, e = f"{x:.1e}".split("e")
+    return f"{mantissa}×10<sup>{int(e)}</sup>"
 
 def markdown(results, group, max_frac):
     "A table of each algorithm's median and worst ratio, with a column per CSV"
