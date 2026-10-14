@@ -88,9 +88,11 @@
     beyond the output array and takes $\bigO{k \log k}$ time, using an
     integer sort; it combines a P\'olya urn, which chooses a
     multiset fairly, with the stars and bars bijection between
-    multisets and sets. It belongs to the best set of two or three in
-    three of the four cases, and with a fast sort it is the fastest
-    algorithm for sorted output more often than any other.
+    multisets and sets. It is the simplest of the three algorithms
+    whose time per number output is never far above the fastest's, it
+    belongs to the best set of two or three in three of the four cases,
+    and with a fast sort it is the fastest algorithm for sorted output
+    more often than any other.
 \end{abstract}
 
 \section{Introduction}
@@ -604,6 +606,17 @@ reservoir sampling and iterative choosing for small \(n/k\), but each of
 these is very slow elsewhere. The other algorithms run in
 \(\bigO{k}\) or \(\bigO{k \log k}\) time, and differ by smaller
 factors.
+
+A ratio overstates differences where both times are small, so we also
+measure how much each algorithm's time per number output exceeds that
+of the fastest. By this measure three algorithms are never far from
+the fastest: in every case, cardchoose, Hidden Shuffle and Algorithm D
+are never more than 26\,ns per number slower, while every other
+algorithm is at least 35\,ns slower somewhere, and most more than
+100\,ns. Cardchoose is the simplest of the three: it is a few lines of
+integer arithmetic, while the other two need floating point and
+several cases. Its worst point in every case is at the largest \(k\)
+timed, presumably from the \(\log k\) factor of its sort.
 
 For sorted output, the fastest of these is Hidden Shuffle in C++ and
 cardchoose in Rust. Over the points with \(k \leq n/2\), Hidden Shuffle
