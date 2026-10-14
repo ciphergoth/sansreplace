@@ -28,6 +28,7 @@
 \usepackage{floatrow}
 \usepackage[svgnames]{xcolor}
 \usepackage[breaklinks,colorlinks,urlcolor=DarkBlue,linkcolor=DarkRed,citecolor=DarkGreen]{hyperref}
+\renewcommand{\subsectionautorefname}{Section}
 \usepackage[style=alphabetic,backend=biber]{biblatex}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -120,7 +121,7 @@ which are what a library should choose between.
 One of the algorithms, which we call cardchoose, we believe to be new.
 It needs no storage beyond the array in which the result is written,
 and takes \(\bigO{k \log k}\) time. We first proposed it in October
-2018; \autoref{starsandbars} to \autoref{proof} explain it,
+2018; \autoref{cardchoose} explains it,
 and \autoref{priorart} places it relative to earlier work.
 
 \section{Algorithms}\label{otheralgs}
@@ -281,11 +282,13 @@ it to our attention.
 \inputminted{Python}{code/cardchoose.py}
 Choose a multiset of \(k\) values below \(n - k + 1\) fairly, using
 a P\'olya urn, then sort it and add each value's index to it to turn it
-into a set. \autoref{starsandbars} to \autoref{proof} explain
+into a set. \autoref{cardchoose} explains
 why this works. The output is sorted, and the only storage needed is
 the output array.
 
-\section{Notation}
+\section{Cardchoose}\label{cardchoose}
+
+\subsection{Notation}
 
 Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural
 numbers less than \(n\) where \(\NN = \{0, 1, 2, \ldots\}\). Let
@@ -302,7 +305,7 @@ of multisets of cardinality \(k\) whose elements are drawn from
 \left|\multichoose{\NN_{<n}}{k}\right|\) the number of distinct
 \(k\)-cardinality multisets over an \(n\)-element universe.
 
-\section{Subsets as stars and bars}\label{starsandbars}
+\subsection{Subsets as stars and bars}\label{starsandbars}
 
 Write the numbers \(0, \ldots, n-1\) in a row, marking each chosen
 number as a star and each unchosen one as a bar. For \(n = 7\), \(k =
@@ -358,7 +361,7 @@ random and converting it gives a subset chosen uniformly at random:
 each subset is reached from exactly one multiset. So what remains is
 to choose an element of \(\multichoose{\NN_{<t}}{k}\) fairly.
 
-\section{Choosing a multiset fairly}\label{fairmultiset}
+\subsection{Choosing a multiset fairly}\label{fairmultiset}
 
 Drawing \(k\) values independently from \(\NN_{<t}\) does not give a
 uniform multiset. With \(t = 2\), \(k = 2\), the multiset \([0, 1]\)
@@ -404,10 +407,10 @@ and one write per star, with no search.
 A value that \(c\) stars already have owns \(c + 1\) gaps: one fresh
 gap, and one after each of those stars. So a value drawn once is now
 twice as likely as one never drawn, a value drawn twice three times as
-likely, and so on. That is how repeats get favoured; the next section
+likely, and so on. That is how repeats get favoured; the next subsection
 shows it is by exactly the right amount.
 
-\section{Proof}\label{proof}
+\subsection{Proof}\label{proof}
 
 Tag each star with the number of the draw that placed it. Different
 values of \(r\) put the new star in different gaps, so a tagged row
@@ -468,7 +471,7 @@ distinct integers in \(\NN_{<n}\), uniformly among all such subsets:
 The listing in \autoref{otheralgs} is these two procedures merged into
 one.
 
-\section{Prior art}\label{priorart}
+\subsection{Prior art}\label{priorart}
 
 Physicists have names for the three distributions in this story
 \cite[Chapter II \S 5]{feller}. Distinguishable particles placed independently in
