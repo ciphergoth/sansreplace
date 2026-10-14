@@ -48,6 +48,23 @@ into `results/latest`. Each CSV records the machine, OS, compilers and power sta
 with, and the tools that compare algorithms warn if these differ. Timings on battery or in Low
 Power Mode are not comparable with timings on mains power.
 
+### The results CSVs
+
+Each row of a results CSV starts with its kind:
+
+* `config,NAME,VALUE`: an option the timer was run with.
+* `info,NAME,VALUE`: the commit and setup it was timed with. `bench_all` also records the memory
+  free, compressed and swapped when the run starts.
+* `result,ALG,N,K,SECONDS`: the time of one call.
+* `memory,ALG,N,K,COMPRESSIONS,DECOMPRESSIONS,SWAPINS,SWAPOUTS`: how many pages the whole machine
+  compressed, decompressed, swapped in and swapped out while that point was timed. Large numbers
+  mean the timing was slowed by memory pressure, from this benchmark or anything else running.
+* `skipped,ALG,N,K`: a point not timed because the algorithm took more than `--time-limit` seconds
+  at a smaller or equal _k_. Results from before these rows were added don't have them.
+
+Recording the setup and memory uses macOS's `sysctl`, `pmset` and `vm_stat`, so writing a
+results CSV currently needs macOS.
+
 ## Building the paper
 
 The paper's figures and tables are generated from the CSVs in `results/latest`. After changing
