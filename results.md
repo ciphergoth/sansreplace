@@ -87,9 +87,12 @@ By this measure three algorithms are never far from the fastest: `cardchoose`, `
 and `vitterd` are never more than 26 ns per number slower in any case, while every other algorithm
 is at least 35 ns slower at some point where it was timed, and most over 100 ns. `cardchoose` is
 the simplest of the three: it is a few lines of integer arithmetic, while the other two need
-floating point and several cases.
-`cardchoose`'s worst point in every case is at the largest _k_ timed, presumably from the log _k_
-factor of its sort.
+floating point and are considerably more involved: `vitterd` switches to Algorithm A once
+_n_ ≤ 13 _k_, and `hiddenshuffle` runs three stages in turn, the last of them Algorithm A.
+`cardchoose`'s worst point in every case is at the largest _k_, with _n_ the next Fibonacci number
+or so above it, where the O(_n_) algorithms are fastest; at _k_ = _n_ itself it has almost nothing
+to do. Along those points its excess grows slowly with _k_, as the log _k_ factor of its sort would
+suggest.
 
 ## Each pair of algorithms
 

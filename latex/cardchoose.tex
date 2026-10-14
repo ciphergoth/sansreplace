@@ -614,9 +614,14 @@ the fastest: in every case, cardchoose, Hidden Shuffle and Algorithm D
 are never more than 26\,ns per number slower, while every other
 algorithm is at least 35\,ns slower somewhere, and most more than
 100\,ns. Cardchoose is the simplest of the three: it is a few lines of
-integer arithmetic, while the other two need floating point and
-several cases. Its worst point in every case is at the largest \(k\)
-timed, presumably from the \(\log k\) factor of its sort.
+integer arithmetic, while the other two need floating point and are
+considerably more involved: Algorithm D switches to Algorithm A once
+\(n \leq 13k\), and Hidden Shuffle runs three stages in turn, the
+last of them Algorithm A. Cardchoose's worst point in every case is at
+the largest \(k\), with \(n\) the next Fibonacci number or so above
+it, where the \(\bigO{n}\) algorithms are fastest; at \(k = n\) itself
+it has almost nothing to do. Along those points its excess grows
+slowly with \(k\), as the \(\log k\) factor of its sort would suggest.
 
 For sorted output, the fastest of these is Hidden Shuffle in C++ and
 cardchoose in Rust. Over the points with \(k \leq n/2\), Hidden Shuffle
