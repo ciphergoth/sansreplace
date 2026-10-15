@@ -91,6 +91,21 @@ those pages say.
 `python/regions CASE A B` compares two algorithms by region of _n_/_k_ and _k_, as for the claims in
 the [results](results.md); `B` can be `others`, for the fastest of all the other algorithms.
 
+## The web explorer
+
+[The explorer](https://ciphergoth.github.io/sansreplace/) shows each algorithm's time/_k_ at a
+point (_n_, _k_) chosen on a triangle. It is the page in `web/`, with the results from
+`results/latest` that `python/export_web` writes as one JSON file into `web/generated`, which is
+not checked in. To try it locally:
+
+```
+python/export_web --out web/generated/data.json
+python3 -m http.server -d web
+```
+
+On every push to `main` that changes `web/`, `python/` or `results/latest`, the `pages` workflow
+does the same and publishes the result to GitHub Pages.
+
 ## Building the paper
 
 ```
