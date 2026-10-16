@@ -2,7 +2,7 @@ name: Publish the explorer to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - "web/**"
       - "results/latest/**"

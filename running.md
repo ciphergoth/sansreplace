@@ -103,7 +103,7 @@ python/export_web --out web/generated/data.json
 python3 -m http.server -d web
 ```
 
-On every push to `main` that changes `web/`, `python/` or `results/latest`, the `pages` workflow
+On every push to `master` that changes `web/`, `python/` or `results/latest`, the `pages` workflow
 does the same and publishes the result to GitHub Pages.
 
 ## Building the paper
