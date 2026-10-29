@@ -6,26 +6,26 @@ order.  Any algorithm can be turned into one with a "sorted" order guarantee
 with an O(_k_ log _k_) sort, or a "random" order guarantee with an O(_k_)
 Fisher-Yates shuffle.
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
-Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
-RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | Sorted | none | _k_
-Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
-Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | Random | none | _k_^2
-Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
-Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
-Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | Sorted | none | _k_
-Hidden Shuffle | [Python](python/algorithms/hiddenshuffle.py) | [C++](cpp/hiddenshuffle.cpp) | Sorted | none | _k_
-SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
-HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
-[Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | [Rust](rust/src/algorithms/quadraticreject.rs) | Random | none | _k_^2
+Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | [Rust](rust/src/algorithms/rejectionsample.rs) | Random | Set | _k_
+RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | [Rust](rust/src/algorithms/ranksb.rs) | Sorted | none | _k_
+Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | [Rust](rust/src/algorithms/floydf2.rs) | none | Set | _k_
+Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | [Rust](rust/src/algorithms/quadraticf2.rs) | Random | none | _k_^2
+Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | [Rust](rust/src/algorithms/iterativechoose.rs) | Sorted | none | _n_
+Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | [Rust](rust/src/algorithms/reservoirsample.rs) | Random | none | _n_
+Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | [Rust](rust/src/algorithms/vitterd.rs) | Sorted | none | _k_
+Hidden Shuffle | [Python](python/algorithms/hiddenshuffle.py) | [C++](cpp/hiddenshuffle.cpp) | [Rust](rust/src/algorithms/hiddenshuffle.rs) | Sorted | none | _k_
+SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | [Rust](rust/src/algorithms/select.rs) | Random | n-sized list | _n_
+HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | [Rust](rust/src/algorithms/hsel.rs) | Random | Dictionary | _k_
+[Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | [Rust](rust/src/algorithms/cardchoose.rs) | Sorted | none | _k_ log _k_
 
 ## Quadratic rejection sampling
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | Random | none | _k_^2
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | [Rust](rust/src/algorithms/quadraticreject.rs) | Random | none | _k_^2
 
 For each output, try choosing
 an integer in [0, _n_), but check every integer already in the output to see if
@@ -36,9 +36,9 @@ sampling.
 
 ## Set-based rejection sampling
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | Random | Set | _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | [Rust](rust/src/algorithms/rejectionsample.rs) | Random | Set | _k_
 
 Maintain a set of already-produced values. While the output isn't full,
 try choosing a random integer in [0, _n_). If this is in the set of already-produced
@@ -53,9 +53,9 @@ _k_ = _n_ it takes O(_n_ log _n_) time.
 
 ## RANKSB
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | Sorted | none | _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | [Rust](rust/src/algorithms/ranksb.rs) | Sorted | none | _k_
 
 Divide [0, _n_) into _k_ bins of nearly equal size. First decide how many of the chosen values
 fall in each bin, by simulating set-based rejection sampling while keeping only a count for each
@@ -79,9 +79,9 @@ to follow.
 
 ## Floyd's F2
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | none | Set | _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | [Rust](rust/src/algorithms/floydf2.rs) | none | Set | _k_
 
 I refer you to two excellent explanations:
 
@@ -92,9 +92,9 @@ The original presentation is as one of Jon Bentley's Programming Pearls, though 
 
 ## Quadratic F2
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | Random | none | _k_^2
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | [Rust](rust/src/algorithms/quadraticf2.rs) | Random | none | _k_^2
 
 A quadratic variant on Floyd's F2 which needs no external data structure. Inspired by the
 implementation in the [Rust rand crate](https://github.com/rust-random/rand/blob/19897e53c1908c5a193e2aacff59170e3e72b8de/src/seq/index.rs#L231),
@@ -103,9 +103,9 @@ this does very well for small _k_.
 
 ## Iterative choosing (Algorithm S)
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | Sorted | none | _n_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | [Rust](rust/src/algorithms/iterativechoose.rs) | Sorted | none | _n_
 
 Iterate through every possible value in [0, _n_) in order and decide whether to include it in the
 output, weighting the probability appropriately depending on the number of spaces left in the output
@@ -121,9 +121,9 @@ where _k_ is a large fraction of _n_.
 
 ## Reservoir sampling (Algorithm R)
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | Random | none | _n_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | [Rust](rust/src/algorithms/reservoirsample.rs) | Random | none | _n_
 
 Initialize the output with the integers [0, _k_) in random order.
 Then iterate through the remaining values [k, _n_) in order and decide
@@ -139,9 +139,9 @@ Fast for producing random output where _k_ is a large fraction of _n_.
 
 ## Vitter's Algorithm D
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | Sorted | none | _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | [Rust](rust/src/algorithms/vitterd.rs) | Sorted | none | _k_
 
 A sequential sampling algorithm: like iterative choosing, it produces the output in sorted order, but
 instead of deciding about each value in [0, _n_) in turn, it draws the number of values to skip
@@ -170,9 +170,9 @@ Python one states the method directly, which is easier to follow.
 
 ## Hidden Shuffle
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-Hidden Shuffle | [Python](python/algorithms/hiddenshuffle.py) | [C++](cpp/hiddenshuffle.cpp) | Sorted | none | _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Hidden Shuffle | [Python](python/algorithms/hiddenshuffle.py) | [C++](cpp/hiddenshuffle.cpp) | [Rust](rust/src/algorithms/hiddenshuffle.rs) | Sorted | none | _k_
 
 Picture a Fisher-Yates shuffle of [0, _n_) that stops after _k_ steps, so the sample is whatever
 ends up in the first _k_ positions. Call those the low positions and the rest the high positions.
@@ -200,9 +200,9 @@ authors' repository. Thanks to metasj for bringing this algorithm to my attentio
 
 ## SELECT
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | Random | n-sized list | _n_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | [Rust](rust/src/algorithms/select.rs) | Random | n-sized list | _n_
 
 Initialize an array of the values [0, _n_). Pick out values at random to include
 in the output, and delete them by replacing them with a value from one end and
@@ -213,9 +213,9 @@ I pick off the array at the start, rather than the end.
 
 ## HSEL
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | Random | Dictionary | _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | [Rust](rust/src/algorithms/hsel.rs) | Random | Dictionary | _k_
 
 This is a variation of the above which uses a hash table to simulate the array
 of values [0, _n_), storing only the entries that change. First proposed by Ernvall and Nevalainen
@@ -239,9 +239,9 @@ my attention.
 
 ## Cardchoose
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-[Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+[Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | [Rust](rust/src/algorithms/cardchoose.rs) | Sorted | none | _k_ log _k_
 
 This is my algorithm: a Pólya urn generates a uniform
 multiset, and stars and bars turns it into a uniform subset. [Detailed

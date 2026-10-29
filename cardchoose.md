@@ -1,8 +1,8 @@
 # Cardchoose algorithm
 
-Algorithm | Python | C++ | Order guarantee | Data structures | Time
-----|----|----|----|----|----
-[Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | Sorted | none | _k_ log _k_
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+[Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | [Rust](rust/src/algorithms/cardchoose.rs) | Sorted | none | _k_ log _k_
 
 Cardchoose returns _k_ distinct integers from 0 to _n_-1, with every _k_-element subset equally
 likely. The only storage is the output list. Everything except the final sort is O(_k_), and the
