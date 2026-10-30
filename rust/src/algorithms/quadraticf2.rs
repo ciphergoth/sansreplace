@@ -7,8 +7,10 @@ where
     for i in 0..amount {
         let j = length - amount + i;
         let t = rng.random_range(0..=j);
-        if let Some(pos) = res[..(i as usize)].iter().position(|&x| x == t) {
-            res[pos] = j;
+        // The entries are distinct, so at most one matches; writing every
+        // entry without stopping lets the compiler vectorise this loop.
+        for x in &mut res[..(i as usize)] {
+            *x = if *x == t { j } else { *x };
         }
         res[i as usize] = t;
     }

@@ -20,13 +20,14 @@
 
 #include "randbelow.h"
 
+// Scanning every entry without returning early lets the compiler vectorise
+// this loop.
 static inline bool contains(uint32_t needle, uint32_t size, const uint32_t* haystack) {
+    bool found = false;
     for (uint32_t i = 0; i < size; i++) {
-        if (haystack[i] == needle) {
-            return true;
-        }
+        found |= haystack[i] == needle;
     }
-    return false;
+    return found;
 }
 
 extern "C" void random_quadraticreject(uint32_t n, uint32_t k, uint32_t* result) {
