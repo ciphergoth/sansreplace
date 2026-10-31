@@ -19,6 +19,7 @@ import atexit
 import csv
 import pathlib
 
+import asleep
 import gitstate
 import impl_load
 import nkvalues
@@ -73,9 +74,18 @@ def run_timings(args, vitr, totime):
             skip = (tm.alg in klim and k >= klim[tm.alg]) or (
                 tm.alg in hit and hit[tm.alg][0] == n and k >= hit[tm.alg][1])
             if not skip:
-                if args.csv is not None:
-                    before = vmstat.counters()
-                t = timefunc_for(args.time_for, (n, k), tm)
+                # If the machine sleeps while this is timed, time it again
+                while True:
+                    asleep_before = asleep.total()
+                    if args.csv is not None:
+                        before = vmstat.counters()
+                    t = timefunc_for(args.time_for, (n, k), tm)
+                    if asleep.total() - asleep_before < asleep.THRESHOLD_S:
+                        break
+                    print(f"slept while timing {tm.alg}; timing again in {asleep.SETTLE_S}s",
+                        flush=True)
+                    asleep.settle()
+                    timefunc_for(args.time_for, (n, k), tm)
                 if args.csv is not None:
                     after = vmstat.counters()
                     with args.csv.open("a") as csvf:

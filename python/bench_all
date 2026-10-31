@@ -3,12 +3,15 @@
 import argparse
 import csv
 import datetime
+import os
 import pathlib
 import subprocess
+import sys
 
 import machine
 import vmstat
 from algorithms import ALGORITHMS
+from cases import CASES
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -20,9 +23,11 @@ def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Run the C++ and Rust benchmarks in both orders, timing each algorithm "
             "on its own, and writing OUTDIR/LANG-ORDER/ALGORITHM.csv. Stops at the first "
-            "failure.")
+            "failure. On macOS, keeps the machine from idle-sleeping while it runs.")
     p.add_argument("--algorithm", action="append", choices=ALGORITHMS,
         help="Time only this algorithm; may be repeated (default: all)")
+    p.add_argument("--case", action="append", choices=[name for name, _ in CASES],
+        help="Time only this case; may be repeated (default: all)")
     p.add_argument("outdir", type=pathlib.Path)
     p.add_argument("options", nargs=argparse.REMAINDER,
         help="time_choose options, replacing the defaults")
@@ -43,11 +48,19 @@ def main():
     args = parse_args()
     options = args.options or default_options
     algorithms = args.algorithm or ALGORITHMS
+    cases = args.case or [name for name, _ in CASES]
+    # Keep the Mac from idle-sleeping until this process exits; a sleep
+    # mid-run spoils the points timed across it
+    if sys.platform == "darwin":
+        subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
     subprocess.run(["cargo", "build", "--release",
         "--manifest-path", topdir / "rust/Cargo.toml"], check=True)
     for order in ["random", "sorted"]:
         for lang in ["cpp", "rust"]:
-            outdir = args.outdir / f"{lang}-{order}"
+            case = f"{lang}-{order}"
+            if case not in cases:
+                continue
+            outdir = args.outdir / case
             outdir.mkdir(parents=True, exist_ok=True)
             for alg in algorithms:
                 if lang == "cpp":
@@ -56,7 +69,7 @@ def main():
                 else:
                     cmd = [topdir / "rust/target/release/sansreplace", "time",
                         "--sorttype", order, "--algorithm", alg, *options]
-                run(f"{lang}-{order} {alg}", cmd, outdir / f"{alg}.csv")
+                run(f"{case} {alg}", cmd, outdir / f"{alg}.csv")
 
 if __name__ == '__main__':
     main()

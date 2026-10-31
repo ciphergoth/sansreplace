@@ -46,7 +46,10 @@ python/bench_all results/my-run
 
 This times each algorithm on its own, writing `results/my-run/cpp-random/hsel.csv` and so on, so
 after changing one algorithm you only need to time that one, with `--algorithm`, and copy its CSVs
-into `results/latest`. Each CSV records the machine, OS, compilers and power state it was timed
+into `results/latest`; `--case rust-random` and so on limits it to some cases. On macOS it keeps
+the machine from idle-sleeping while it runs. Closing the lid still sleeps it, but both
+`time_choose` and the Rust `time` notice when the machine slept during a point, and time that
+point again. Each CSV records the machine, OS, compilers and power state it was timed
 with, and the tools that compare algorithms warn if these differ. Timings on battery or in Low
 Power Mode are not comparable with timings on mains power.
 

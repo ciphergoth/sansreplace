@@ -133,6 +133,31 @@ fn gitstate(topdir: &Path) -> Result<String> {
 /// pages
 const VM_COUNTERS: [&str; 4] = ["Compressions", "Decompressions", "Swapins", "Swapouts"];
 
+fn clock_s(clock: libc::clockid_t) -> f64 {
+    let mut ts = libc::timespec {
+        tv_sec: 0,
+        tv_nsec: 0,
+    };
+    assert_eq!(unsafe { libc::clock_gettime(clock, &mut ts) }, 0);
+    ts.tv_sec as f64 + ts.tv_nsec as f64 * 1E-9
+}
+
+/// Like python/asleep.py: how long the machine has spent asleep since it
+/// booted. CLOCK_MONOTONIC_RAW counts while asleep and CLOCK_UPTIME_RAW
+/// doesn't, so the difference grows only while asleep.
+fn asleep_s() -> f64 {
+    clock_s(libc::CLOCK_MONOTONIC_RAW) - clock_s(libc::CLOCK_UPTIME_RAW)
+}
+
+/// Reading the two clocks one after the other makes the difference jitter by
+/// far less than this, and the shortest sleep is far longer
+const ASLEEP_THRESHOLD_S: f64 = 0.01;
+
+/// After waking, timings run slow for several seconds, so wait this long
+/// before timing again; the first timing after the wait also runs slow, so
+/// discard it
+const SETTLE_S: u64 = 5;
+
 fn vm_counters() -> Result<[u64; 4]> {
     let out = std::process::Command::new("vm_stat").output()?;
     ensure!(out.status.success(), "vm_stat failed");
@@ -287,8 +312,18 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
             let skip = klim.get(alg).is_some_and(|&l| k >= l)
                 || hit.get(alg).is_some_and(|&(hn, hk)| hn == n && k >= hk);
             if !skip {
-                let before = writer.as_ref().map(|_| vm_counters()).transpose()?;
-                let t = timefunc_for(args.time_for, f, &mut rng, n, k);
+                // If the machine sleeps while this is timed, time it again
+                let (before, t) = loop {
+                    let asleep_before = asleep_s();
+                    let before = writer.as_ref().map(|_| vm_counters()).transpose()?;
+                    let t = timefunc_for(args.time_for, f, &mut rng, n, k);
+                    if asleep_s() - asleep_before < ASLEEP_THRESHOLD_S {
+                        break (before, t);
+                    }
+                    println!("slept while timing {alg}; timing again in {SETTLE_S}s");
+                    std::thread::sleep(std::time::Duration::from_secs(SETTLE_S));
+                    timefunc_for(args.time_for, f, &mut rng, n, k);
+                };
                 if let Some(w) = &mut writer {
                     let after = vm_counters()?;
                     w.write_record([
