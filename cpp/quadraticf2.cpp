@@ -18,6 +18,7 @@
 
 #include <algorithm>
 
+#include "contains.h"
 #include "randbelow.h"
 
 extern "C" void random_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
@@ -33,8 +34,15 @@ extern "C" void random_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
     }
 }
 
+// Before sorting only the set matters, so where r is already present, add m
+// instead of moving the old r to m: the set is the same, and the scan only
+// reads.
 extern "C" void sorted_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
-    random_quadraticf2(n, k, result);
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t m = n + i - k;
+        uint32_t r = randbelow(m + 1);
+        result[i] = contains(r, i, result) ? m : r;
+    }
     std::sort(result, result + k);
 }
 

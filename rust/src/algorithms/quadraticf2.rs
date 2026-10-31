@@ -20,6 +20,15 @@ pub fn sorted_order<R>(rng: &mut R, length: u32, res: &mut [u32])
 where
     R: rand::RngExt + ?Sized,
 {
-    random_order(rng, length, res);
+    assert!(res.len() <= (length as usize));
+    let amount = res.len() as u32;
+    for i in 0..amount {
+        let j = length - amount + i;
+        let t = rng.random_range(0..=j);
+        // Before sorting only the set matters, so where t is already present,
+        // add j instead of moving the old t to j: the set is the same, and the
+        // scan only reads.
+        res[i as usize] = if res[..(i as usize)].contains(&t) { j } else { t };
+    }
     res.sort_unstable();
 }
