@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <algorithm>
 #include <memory>
@@ -23,8 +24,13 @@
 
 extern "C" void random_select(uint32_t n, uint32_t k, uint32_t* result) {
     // Unlike std::vector, this leaves the array uninitialised, so filling it
-    // is the only pass over it
-    auto options = std::make_unique_for_overwrite<uint32_t[]>(n);
+    // is the only pass over it. It's aligned to a cache line, since malloc
+    // only promises 16 bytes, and how many of the fill's stores straddle two
+    // cache lines would otherwise depend on where malloc happened to put it.
+    // aligned_alloc needs a size that's a multiple of the alignment.
+    size_t size = (n * sizeof(uint32_t) + 63) & ~size_t{63};
+    std::unique_ptr<uint32_t[], decltype(&free)> options(
+        static_cast<uint32_t*>(aligned_alloc(64, size)), free);
     for (uint32_t i = 0; i < n; i++) {
         options[i] = i;
     }

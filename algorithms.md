@@ -225,6 +225,14 @@ shortening the array.
 This is known as SELECT in Ernvall and Nevalainen, though in a slight variation
 I pick off the array at the start, rather than the end.
 
+Each call allocates the array afresh, so its cost depends on the allocator. The C++ and Rust
+implementations align the array to a 64-byte cache line: `malloc` only promises 16 bytes, and on
+x86-64, filling the array took 1.5 times as long in Rust when it started 16 bytes past a 32-byte
+boundary, which depended on where earlier allocations happened to leave it. On Linux, glibc's
+`malloc` serves blocks over 32 MB with a fresh `mmap` and unmaps them on `free`, so from _n_ ≈ 8
+million every call faults in every page of the array again; this makes filling it about ten times
+slower than on macOS, where nothing like this shows until the largest _n_ timed.
+
 ## HSEL
 
 Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
