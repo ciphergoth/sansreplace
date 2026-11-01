@@ -665,7 +665,7 @@ faster than Cardchoose in both.
 For random output, the hash-based algorithms are competitive only with
 a fast hash table. With C++ standard library hash tables, Cardchoose is
 faster than set-based rejection sampling, Floyd's F2 and HSEL at every
-point with \(k \leq n/2\), where they take 1.01 to 4.0 times as long,
+point with \(k \leq n/2\), where they take 1.04 to 4.1 times as long,
 though Hidden Shuffle followed by a shuffle is faster still wherever
 \(n \geq 16k\) and \(k \geq 1000\). With Rust's flat hash tables, HSEL
 is faster than Cardchoose wherever \(1000 \leq k < 10^5\) and
@@ -701,9 +701,9 @@ There are two ways to measure how close a set comes to the fastest,
 and each has a flaw. The first is the ratio: the largest factor by
 which the set is slower than the fastest. Its worst case is often at a
 tiny \(k\), where the stakes are tiny too. The best two algorithms for
-C++ random output by this measure are 2.98 times slower than the
-fastest at \(n = 39{,}088{,}169\), \(k = 13\), but that is 102\,ns
-against 34\,ns, only 68\,ns more per call. The second is the difference: the
+C++ random output by this measure are 3.96 times slower than the
+fastest at \(n = 514{,}229\), \(k = 13\), but that is 95\,ns
+against 24\,ns, only 71\,ns more per call. The second is the difference: the
 most the set's time per number output exceeds the fastest's. This
 discounts tiny \(k\), but ignores large relative losses where
 everything is cheap. The best three algorithms for Rust sorted output

@@ -34,6 +34,12 @@ _k_ the small constants can mean this algorithm does very well. It takes O(_k_^2
 _k_ ≤ _n_/2, and more as _k_ approaches _n_ and more draws are rejected, as for set-based rejection
 sampling.
 
+The check is the inner loop, so it matters that the compiler can vectorise it, comparing several
+entries in one instruction. My C++ checks every entry rather than stopping at a match, since a
+loop that can stop early doesn't vectorise. My Rust uses the standard library's `contains`, which
+gets both: it compares entries 16 at a time with vector instructions, and stops after the first
+block of 16 that has a match.
+
 ## Set-based rejection sampling
 
 Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
@@ -100,6 +106,14 @@ A quadratic variant on Floyd's F2 which needs no external data structure. Inspir
 implementation in the [Rust rand crate](https://github.com/rust-random/rand/blob/19897e53c1908c5a193e2aacff59170e3e72b8de/src/seq/index.rs#L231),
 but with some optimizations. Like quadratic rejection sampling, the small constants mean
 this does very well for small _k_.
+
+For random order, each step draws _t_ and replaces the existing _t_, if there is one, with _j_.
+At most one entry matches, so my implementations write every entry, keeping its value unless it
+matches, rather than stopping at the match; a loop that can stop early doesn't vectorise. For
+sorted order, only the set matters until the final sort, so where _t_ is already present, a step
+adds _j_ instead of moving the existing _t_ to _j_. That gives the same set, and the step only has
+to check whether _t_ is present, as in quadratic rejection sampling, which is faster than
+rewriting every entry.
 
 ## Iterative choosing (Algorithm S)
 
