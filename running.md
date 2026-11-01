@@ -60,28 +60,38 @@ timers. On macOS it keeps the machine from idle-sleeping while it runs, so give 
 you want timed, rather than running it several times in a row: the machine can fall asleep between
 one run and the next. Closing the lid still sleeps it, but both
 `time_choose` and the Rust `time` notice when the machine slept during a point, and time that
-point again. Each CSV records the machine, OS, compilers and power state it was timed
-with, and the tools that compare algorithms warn if these differ. Timings on battery or in Low
-Power Mode are not comparable with timings on mains power.
+point again. Each CSV records the machine, OS, compilers and, on macOS, power state it was
+timed with, and the tools that compare algorithms warn if these differ. Timings on battery or in
+Low Power Mode are not comparable with timings on mains power.
+
+On x86-64, both the C++ and the Rust are compiled for `x86-64-v3`, the baseline with AVX2, rather
+than the compilers' default of the original x86-64 baseline, whose vectors are only SSE2; see
+[`cpp/meson.build`](cpp/meson.build) and [`.cargo/config.toml`](.cargo/config.toml).
 
 ### The results CSVs
 
 Each row of a results CSV starts with its kind:
 
 * `config,NAME,VALUE`: an option the timer was run with.
-* `info,NAME,VALUE`: the commit and setup it was timed with. `bench_all` also records the memory
-  free, compressed and swapped when the run starts.
+* `info,NAME,VALUE`: the commit and setup it was timed with. `bench_all` also records the state of
+  memory when the run starts, and in `memory_counters` the names of the counters in the
+  `memory` rows.
 * `result,ALG,N,K,SECONDS`: the time of one call.
-* `memory,ALG,N,K,COMPRESSIONS,DECOMPRESSIONS,SWAPINS,SWAPOUTS`: how many pages the whole machine
-  compressed, decompressed, swapped in and swapped out while that point was timed. Large numbers
-  mean the timing was slowed by memory pressure, from this benchmark or anything else running.
+* `memory,ALG,N,K,C1,C2,C3,C4`: how much four counters of the whole machine's memory activity grew
+  while that point was timed. Large numbers mean the timing was slowed by memory pressure, from
+  this benchmark or anything else running. On macOS they are the pages compressed,
+  decompressed, swapped in and swapped out, from `vm_stat`. On Linux they are the pages swapped in
+  and out, the major page faults and the pages scanned by direct reclaim, from `/proc/vmstat`
+  (`pswpin`, `pswpout`, `pgmajfault` and `pgscan_direct`); servers often have no swap, and then
+  memory pressure shows up as direct reclaim, which evicts pages that may have to be read back in
+  through major faults.
 * `skipped,ALG,N,K`: a point not timed because the algorithm took more than `--time-limit` seconds
   at a smaller or equal _k_ for the same _n_, or did so at the same _k_ for two different smaller
   _n_. Some algorithms are slow only near _k_ = _n_, so going over the limit once only skips
   larger _k_ for that _n_. Results from before these rows were added don't have them.
 
-Recording the setup and memory uses macOS's `sysctl`, `pmset` and `vm_stat`, so writing a
-results CSV currently needs macOS.
+Recording the setup and memory works on macOS and Linux. On Linux, the machine recorded is the
+DMI product name, which on EC2 is the instance type, and the CPU model.
 
 ## Regenerating the Markdown
 

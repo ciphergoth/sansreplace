@@ -13,14 +13,20 @@
 # limitations under the License.
 
 
-# The state of memory on macOS, from vm_stat and sysctl. A benchmark that
-# needs more memory than is free makes macOS compress pages, or swap them
-# out, and pays for it in time.
+# The state of memory. A benchmark that needs more memory than is free pays for
+# it in time: macOS compresses pages or swaps them out, and Linux reclaims
+# memory as it allocates, evicting pages it may have to read back in.
 
+import pathlib
 import subprocess
+import sys
 
-# The vm_stat counters that show memory pressure while something runs
-COUNTERS = ["Compressions", "Decompressions", "Swapins", "Swapouts"]
+# The counters that show memory pressure while something runs, from vm_stat on
+# macOS and /proc/vmstat on Linux
+if sys.platform == "darwin":
+    COUNTERS = ["Compressions", "Decompressions", "Swapins", "Swapouts"]
+else:
+    COUNTERS = ["pswpin", "pswpout", "pgmajfault", "pgscan_direct"]
 
 def output(*cmd):
     return subprocess.run(cmd, check=True, capture_output=True, text=True).stdout
@@ -35,13 +41,28 @@ def vm_stat():
         fields[name.strip('"')] = int(value.strip().rstrip("."))
     return page_size, fields
 
+def proc_fields(path):
+    "The fields of /proc/vmstat or /proc/meminfo, as numbers"
+    fields = {}
+    for line in pathlib.Path(path).read_text().splitlines():
+        name, value = line.split()[:2]
+        fields[name.rstrip(":")] = int(value)
+    return fields
+
 def counters():
-    "The current values of COUNTERS, in pages"
-    _, fields = vm_stat()
+    "The current values of COUNTERS"
+    if sys.platform == "darwin":
+        _, fields = vm_stat()
+    else:
+        fields = proc_fields("/proc/vmstat")
     return [fields[c] for c in COUNTERS]
 
 def snapshot():
     "How much memory is free, compressed and swapped, in bytes"
+    return {**(snapshot_macos() if sys.platform == "darwin" else snapshot_linux()),
+        "memory_counters": " ".join(COUNTERS)}
+
+def snapshot_macos():
     page_size, fields = vm_stat()
     swap = output("sysctl", "-n", "vm.swapusage").split()
     return {
@@ -50,4 +71,14 @@ def snapshot():
         "memory_compressed_bytes": page_size * fields["Pages stored in compressor"],
         "memory_compressor_bytes": page_size * fields["Pages occupied by compressor"],
         "swap_used": swap[swap.index("used") + 2],
+    }
+
+# /proc/meminfo gives sizes in kB
+def snapshot_linux():
+    fields = proc_fields("/proc/meminfo")
+    return {
+        "memory_bytes": 1024 * fields["MemTotal"],
+        "memory_free_bytes": 1024 * fields["MemFree"],
+        "memory_available_bytes": 1024 * fields["MemAvailable"],
+        "swap_used_bytes": 1024 * (fields["SwapTotal"] - fields["SwapFree"]),
     }

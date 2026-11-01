@@ -12,14 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import time
 
-# How long the machine has spent asleep since it booted. On macOS
-# CLOCK_MONOTONIC_RAW counts while asleep and CLOCK_UPTIME_RAW doesn't, so the
-# difference grows only while asleep. A timing during which this grows can't
-# be trusted.
+# Of each pair, the first clock counts while the machine is asleep and the
+# second doesn't, so the difference grows only while asleep
+if sys.platform == "darwin":
+    CLOCKS = (time.CLOCK_MONOTONIC_RAW, time.CLOCK_UPTIME_RAW)
+else:
+    CLOCKS = (time.CLOCK_BOOTTIME, time.CLOCK_MONOTONIC)
+
+# How long the machine has spent asleep since it booted. A timing during which
+# this grows can't be trusted.
 def total():
-    return time.clock_gettime(time.CLOCK_MONOTONIC_RAW) - time.clock_gettime(time.CLOCK_UPTIME_RAW)
+    return time.clock_gettime(CLOCKS[0]) - time.clock_gettime(CLOCKS[1])
 
 # Reading the two clocks one after the other makes the difference jitter by
 # far less than this, and the shortest sleep is far longer

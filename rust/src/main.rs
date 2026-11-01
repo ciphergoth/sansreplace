@@ -129,9 +129,12 @@ fn gitstate(topdir: &Path) -> Result<String> {
     Ok(state)
 }
 
-/// Like python/vmstat.py: the vm_stat counters that show memory pressure, in
-/// pages
+/// Like python/vmstat.py: the counters that show memory pressure, from vm_stat
+/// on macOS and /proc/vmstat on Linux
+#[cfg(target_os = "macos")]
 const VM_COUNTERS: [&str; 4] = ["Compressions", "Decompressions", "Swapins", "Swapouts"];
+#[cfg(target_os = "linux")]
+const VM_COUNTERS: [&str; 4] = ["pswpin", "pswpout", "pgmajfault", "pgscan_direct"];
 
 fn clock_s(clock: libc::clockid_t) -> f64 {
     let mut ts = libc::timespec {
@@ -142,11 +145,19 @@ fn clock_s(clock: libc::clockid_t) -> f64 {
     ts.tv_sec as f64 + ts.tv_nsec as f64 * 1E-9
 }
 
-/// Like python/asleep.py: how long the machine has spent asleep since it
-/// booted. CLOCK_MONOTONIC_RAW counts while asleep and CLOCK_UPTIME_RAW
-/// doesn't, so the difference grows only while asleep.
+/// Like python/asleep.py: of each pair, the first clock counts while the
+/// machine is asleep and the second doesn't, so the difference grows only
+/// while asleep
+#[cfg(target_os = "macos")]
+const ASLEEP_CLOCKS: (libc::clockid_t, libc::clockid_t) =
+    (libc::CLOCK_MONOTONIC_RAW, libc::CLOCK_UPTIME_RAW);
+#[cfg(target_os = "linux")]
+const ASLEEP_CLOCKS: (libc::clockid_t, libc::clockid_t) =
+    (libc::CLOCK_BOOTTIME, libc::CLOCK_MONOTONIC);
+
+/// How long the machine has spent asleep since it booted
 fn asleep_s() -> f64 {
-    clock_s(libc::CLOCK_MONOTONIC_RAW) - clock_s(libc::CLOCK_UPTIME_RAW)
+    clock_s(ASLEEP_CLOCKS.0) - clock_s(ASLEEP_CLOCKS.1)
 }
 
 /// Reading the two clocks one after the other makes the difference jitter by
@@ -158,7 +169,8 @@ const ASLEEP_THRESHOLD_S: f64 = 0.01;
 /// discard it
 const SETTLE_S: u64 = 5;
 
-fn vm_counters() -> Result<[u64; 4]> {
+#[cfg(target_os = "macos")]
+fn vm_fields() -> Result<HashMap<String, u64>> {
     let out = std::process::Command::new("vm_stat").output()?;
     ensure!(out.status.success(), "vm_stat failed");
     let out = String::from_utf8(out.stdout)?;
@@ -168,15 +180,32 @@ fn vm_counters() -> Result<[u64; 4]> {
             .rsplit_once(':')
             .context("vm_stat line without a colon")?;
         fields.insert(
-            name.trim_matches('"'),
+            name.trim_matches('"').to_string(),
             value.trim().trim_end_matches('.').parse::<u64>()?,
         );
     }
+    Ok(fields)
+}
+
+#[cfg(target_os = "linux")]
+fn vm_fields() -> Result<HashMap<String, u64>> {
+    let mut fields = HashMap::new();
+    for line in std::fs::read_to_string("/proc/vmstat")?.lines() {
+        let (name, value) = line
+            .split_once(' ')
+            .context("/proc/vmstat line without a space")?;
+        fields.insert(name.to_string(), value.parse::<u64>()?);
+    }
+    Ok(fields)
+}
+
+fn vm_counters() -> Result<[u64; 4]> {
+    let fields = vm_fields()?;
     let mut res = [0; 4];
     for (r, c) in res.iter_mut().zip(VM_COUNTERS) {
         *r = *fields
             .get(c)
-            .with_context(|| format!("vm_stat has no {c}"))?;
+            .with_context(|| format!("no memory counter {c}"))?;
     }
     Ok(res)
 }

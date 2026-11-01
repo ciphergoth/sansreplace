@@ -1,0 +1,7 @@
+# Cargo reads this from the directory it runs in and its parents, so it applies
+# whether cargo runs in rust/ or, as bench_all runs it, at the top.
+#
+# The x86-64 default is the 2003 baseline, with only SSE2 vectors; target the
+# AVX2 baseline instead, as cpp/meson.build does for C++
+[target.'cfg(target_arch = "x86_64")']
+rustflags = ["-C", "target-cpu=x86-64-v3"]

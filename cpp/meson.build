@@ -19,6 +19,13 @@ project('sansreplace', ['c', 'cpp'],
 add_project_arguments(
     '-O3',
     language : ['c', 'cpp'])
+# The x86-64 default is the 2003 baseline, with only SSE2 vectors; target the
+# AVX2 baseline instead, as /.cargo/config.toml does for Rust
+if host_machine.cpu_family() == 'x86_64'
+    add_project_arguments(
+        '-march=x86-64-v3',
+        language : ['c', 'cpp'])
+endif
 libsrc = [
     'donothing.cpp',
     'randbelow.c',
