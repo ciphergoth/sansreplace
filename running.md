@@ -45,9 +45,20 @@ python/bench_all results/my-run
 ```
 
 This times each algorithm on its own, writing `results/my-run/cpp-random/hsel.csv` and so on, so
-after changing one algorithm you only need to time that one, with `--algorithm`, and copy its CSVs
-into `results/latest`; `--case rust-random` and so on limits it to some cases. On macOS it keeps
-the machine from idle-sleeping while it runs. Closing the lid still sleeps it, but both
+after changing one algorithm you only need to time that one and copy its CSVs into
+`results/latest`. `--run LANG/ORDER/ALGORITHM` times only what it names, where any of the three
+parts may be `*` to mean all of them; it may be repeated, and `--dry-run` lists what would be
+timed without timing it. For example, this times `select` in C++ in both orders, and both quadratic
+algorithms in every case:
+
+```
+python/bench_all --run 'cpp/*/select' --run '*/*/quadraticreject' --run '*/*/quadraticf2' results/my-run
+```
+
+Options for `bench_all` itself go before the output directory; anything after it is passed on to the
+timers. On macOS it keeps the machine from idle-sleeping while it runs, so give one run everything
+you want timed, rather than running it several times in a row: the machine can fall asleep between
+one run and the next. Closing the lid still sleeps it, but both
 `time_choose` and the Rust `time` notice when the machine slept during a point, and time that
 point again. Each CSV records the machine, OS, compilers and power state it was timed
 with, and the tools that compare algorithms warn if these differ. Timings on battery or in Low

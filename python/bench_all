@@ -11,7 +11,6 @@ import sys
 import machine
 import vmstat
 from algorithms import ALGORITHMS
-from cases import CASES
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -19,15 +18,33 @@ topdir = pathlib.Path(__file__).resolve().parent.parent
 default_options = ["--values", "small", "--values", "fib",
     "--time-for", "0.2", "--time-limit", "20", "--max-k", "102334155"]
 
+LANGUAGES = ["cpp", "rust"]
+ORDERS = ["random", "sorted"]
+
+def run_spec(spec):
+    "Parse LANG/ORDER/ALGORITHM, where any part may be * to mean all of them"
+    parts = spec.split("/")
+    if len(parts) != 3:
+        raise argparse.ArgumentTypeError(f"{spec!r} is not LANG/ORDER/ALGORITHM")
+    for part, names in zip(parts, [LANGUAGES, ORDERS, ALGORITHMS]):
+        if part != "*" and part not in names:
+            raise argparse.ArgumentTypeError(
+                f"{part!r} in {spec!r} is not * or one of {', '.join(names)}")
+    return parts
+
+def matches(spec, lang, order, alg):
+    return all(part in ("*", name) for part, name in zip(spec, [lang, order, alg]))
+
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
         description="Run the C++ and Rust benchmarks in both orders, timing each algorithm "
             "on its own, and writing OUTDIR/LANG-ORDER/ALGORITHM.csv. Stops at the first "
             "failure. On macOS, keeps the machine from idle-sleeping while it runs.")
-    p.add_argument("--algorithm", action="append", choices=ALGORITHMS,
-        help="Time only this algorithm; may be repeated (default: all)")
-    p.add_argument("--case", action="append", choices=[name for name, _ in CASES],
-        help="Time only this case; may be repeated (default: all)")
+    p.add_argument("--run", action="append", type=run_spec, metavar="LANG/ORDER/ALGORITHM",
+        help="Time only these, where any part may be * to mean all of them, as in "
+            "cpp/*/select; may be repeated (default: everything)")
+    p.add_argument("--dry-run", action="store_true",
+        help="List what would be timed, and stop")
     p.add_argument("outdir", type=pathlib.Path)
     p.add_argument("options", nargs=argparse.REMAINDER,
         help="time_choose options, replacing the defaults")
@@ -47,29 +64,30 @@ def run(name, cmd, csvfile):
 def main():
     args = parse_args()
     options = args.options or default_options
-    algorithms = args.algorithm or ALGORITHMS
-    cases = args.case or [name for name, _ in CASES]
+    specs = args.run or [["*", "*", "*"]]
+    todo = [(lang, order, alg) for order in ORDERS for lang in LANGUAGES for alg in ALGORITHMS
+        if any(matches(spec, lang, order, alg) for spec in specs)]
+    for lang, order, alg in todo:
+        print(f"will time {lang}-{order} {alg}")
+    if args.dry_run:
+        return
     # Keep the Mac from idle-sleeping until this process exits; a sleep
     # mid-run spoils the points timed across it
     if sys.platform == "darwin":
         subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
     subprocess.run(["cargo", "build", "--release",
         "--manifest-path", topdir / "rust/Cargo.toml"], check=True)
-    for order in ["random", "sorted"]:
-        for lang in ["cpp", "rust"]:
-            case = f"{lang}-{order}"
-            if case not in cases:
-                continue
-            outdir = args.outdir / case
-            outdir.mkdir(parents=True, exist_ok=True)
-            for alg in algorithms:
-                if lang == "cpp":
-                    cmd = [topdir / "python/time_choose", "--sorttype", order,
-                        "--algorithm", alg, *options]
-                else:
-                    cmd = [topdir / "rust/target/release/sansreplace", "time",
-                        "--sorttype", order, "--algorithm", alg, *options]
-                run(f"{case} {alg}", cmd, outdir / f"{alg}.csv")
+    for lang, order, alg in todo:
+        case = f"{lang}-{order}"
+        outdir = args.outdir / case
+        outdir.mkdir(parents=True, exist_ok=True)
+        if lang == "cpp":
+            cmd = [topdir / "python/time_choose", "--sorttype", order,
+                "--algorithm", alg, *options]
+        else:
+            cmd = [topdir / "rust/target/release/sansreplace", "time",
+                "--sorttype", order, "--algorithm", alg, *options]
+        run(f"{case} {alg}", cmd, outdir / f"{alg}.csv")
 
 if __name__ == '__main__':
     main()
