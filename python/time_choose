@@ -18,6 +18,7 @@ import argparse
 import atexit
 import csv
 import pathlib
+import resource
 
 import asleep
 import gitstate
@@ -42,15 +43,21 @@ def fix_freq():
         governors.append((sg, old))
         sg.write_bytes(b"performance")
 
+def minor_faults():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_minflt
+
 def timefunc_for(time, params, timeable):
+    "Time per call, and the minor faults and calls of the pass it was timed over"
     iters = 1
     remaining = time
     while True:
+        faults_before = minor_faults()
         t = timeable.time(params, iters)
+        faults = minor_faults() - faults_before
         #print(f"{func}({n}, {k}) * {iters} = {t}")
         remaining -= t
         if t >= remaining:
-            return t / iters
+            return t / iters, faults, iters
         elif t * 100 > remaining:
             iters = int(iters * remaining / t)
         elif t * 10000 > remaining:
@@ -79,7 +86,7 @@ def run_timings(args, vitr, totime):
                     asleep_before = asleep.total()
                     if args.csv is not None:
                         before = vmstat.counters()
-                    t = timefunc_for(args.time_for, (n, k), tm)
+                    t, faults, calls = timefunc_for(args.time_for, (n, k), tm)
                     if asleep.total() - asleep_before < asleep.THRESHOLD_S:
                         break
                     print(f"slept while timing {tm.alg}; timing again in {asleep.SETTLE_S}s",
@@ -93,6 +100,7 @@ def run_timings(args, vitr, totime):
                         writer.writerow(['result', tm.alg, n, k, t])
                         writer.writerow(['memory', tm.alg, n, k,
                             *(a - b for a, b in zip(after, before))])
+                        writer.writerow(['faults', tm.alg, n, k, faults, calls])
                 res.append((t, tm.alg))
                 if t > args.time_limit:
                     print(f"hit tlim: {tm.alg}")
@@ -164,7 +172,7 @@ def main():
             info = {
                 'version': gitstate.get(topdir),
                 'donothing_s': timefunc_for(args.time_for, (0, 0),
-                    timeables["donothing"]["donothing"]),
+                    timeables["donothing"]["donothing"])[0],
                 'algorithms': list(t.alg for t in totime),
             }
             for k, v in info.items():

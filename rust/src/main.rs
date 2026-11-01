@@ -80,21 +80,30 @@ fn time_iters(
     start.elapsed().as_secs_f64()
 }
 
-/// Time per call, like timefunc_for in python/time_choose
+fn minor_faults() -> i64 {
+    let mut ru: libc::rusage = unsafe { std::mem::zeroed() };
+    assert_eq!(unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut ru) }, 0);
+    ru.ru_minflt as i64
+}
+
+/// Time per call, and the minor faults and calls of the pass it was timed
+/// over, like timefunc_for in python/time_choose
 fn timefunc_for(
     time: f64,
     f: &dyn Fn(&mut Rng, u32, &mut [u32]),
     rng: &mut Rng,
     n: u32,
     k: u32,
-) -> f64 {
+) -> (f64, i64, u64) {
     let mut iters: u64 = 1;
     let mut remaining = time;
     loop {
+        let faults_before = minor_faults();
         let t = time_iters(f, rng, n, k, iters);
+        let faults = minor_faults() - faults_before;
         remaining -= t;
         if t >= remaining {
-            return t / iters as f64;
+            return (t / iters as f64, faults, iters);
         } else if t * 100.0 > remaining {
             iters = (iters as f64 * remaining / t) as u64;
         } else if t * 10000.0 > remaining {
@@ -311,7 +320,7 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
                     "donothing_s",
                     format!(
                         "{:e}",
-                        timefunc_for(args.time_for, &donothing, &mut rng, 0, 0)
+                        timefunc_for(args.time_for, &donothing, &mut rng, 0, 0).0
                     ),
                 ),
                 (
@@ -342,12 +351,12 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
                 || hit.get(alg).is_some_and(|&(hn, hk)| hn == n && k >= hk);
             if !skip {
                 // If the machine sleeps while this is timed, time it again
-                let (before, t) = loop {
+                let (before, (t, faults, calls)) = loop {
                     let asleep_before = asleep_s();
                     let before = writer.as_ref().map(|_| vm_counters()).transpose()?;
-                    let t = timefunc_for(args.time_for, f, &mut rng, n, k);
+                    let timed = timefunc_for(args.time_for, f, &mut rng, n, k);
                     if asleep_s() - asleep_before < ASLEEP_THRESHOLD_S {
-                        break (before, t);
+                        break (before, timed);
                     }
                     println!("slept while timing {alg}; timing again in {SETTLE_S}s");
                     std::thread::sleep(std::time::Duration::from_secs(SETTLE_S));
@@ -375,6 +384,14 @@ fn time_choose(mut args: TimeArgs) -> Result<()> {
                             .map(|(a, b)| (a - b).to_string()),
                     );
                     w.write_record(&memory)?;
+                    w.write_record([
+                        "faults",
+                        alg,
+                        &n.to_string(),
+                        &k.to_string(),
+                        &faults.to_string(),
+                        &calls.to_string(),
+                    ])?;
                     w.flush()?;
                 }
                 res.push((t, *alg));

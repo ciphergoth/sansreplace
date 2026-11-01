@@ -85,6 +85,11 @@ Each row of a results CSV starts with its kind:
   (`pswpin`, `pswpout`, `pgmajfault` and `pgscan_direct`); servers often have no swap, and then
   memory pressure shows up as direct reclaim, which evicts pages that may have to be read back in
   through major faults.
+* `faults,ALG,N,K,MINOR_FAULTS,CALLS`: the minor page faults the timer itself took in the pass that
+  timed that point, and how many calls that pass made. A minor fault maps a page in without reading
+  anything from disk, as when memory that the allocator gave back to the kernel is used again; an
+  algorithm that allocates memory and frees it on every call may pay for this on every call,
+  depending on the allocator. Results from before these rows were added don't have them.
 * `skipped,ALG,N,K`: a point not timed because the algorithm took more than `--time-limit` seconds
   at a smaller or equal _k_ for the same _n_, or did so at the same _k_ for two different smaller
   _n_. Some algorithms are slow only near _k_ = _n_, so going over the limit once only skips
