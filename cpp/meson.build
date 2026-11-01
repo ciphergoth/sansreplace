@@ -14,7 +14,7 @@
 
 project('sansreplace', ['c', 'cpp'],
     default_options : ['buildtype=debugoptimized', 'c_std=c11',
-'cpp_std=c++17'])
+'cpp_std=c++20'])
 
 add_project_arguments(
     '-O3',

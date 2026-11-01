@@ -17,12 +17,14 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <vector>
+#include <memory>
 
 #include "randbelow.h"
 
 extern "C" void random_select(uint32_t n, uint32_t k, uint32_t* result) {
-    std::vector<uint32_t> options(n);
+    // Unlike std::vector, this leaves the array uninitialised, so filling it
+    // is the only pass over it
+    auto options = std::make_unique_for_overwrite<uint32_t[]>(n);
     for (uint32_t i = 0; i < n; i++) {
         options[i] = i;
     }
