@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sampling explorer</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Sampling without replacement: time per output</h1>
+  <p>Pick a point (<i>n</i>, <i>k</i>) on the triangle to see each algorithm's time/<i>k</i> there.
+    Each point is coloured by its fastest algorithm. Arrow keys move between points.
+    <a href="https://github.com/ciphergoth/sansreplace">Source and write-up</a>.</p>
+  <div class="controls">
+    <div id="cases" role="radiogroup" aria-label="Case"></div>
+    <label>Scale top <select id="ymax"></select> ns</label>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <svg id="triangle" tabindex="0" aria-label="n and k"></svg>
+  </section>
+  <section class="panel">
+    <div id="readout"></div>
+    <svg id="bars"></svg>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

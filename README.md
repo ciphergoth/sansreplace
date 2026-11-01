@@ -19,6 +19,7 @@ best single algorithm is somewhere 2.9–13× slower.
 
 * [Guide to algorithms tested](algorithms.md)
 * [Benchmark results](results.md)
+* [Explorer](https://ciphergoth.github.io/sansreplace/): pick _n_ and _k_ and compare every algorithm there
 * [Choosing algorithms](choosing.md)
 * Pairwise comparisons: [ratio of times](results/latest/pairwise-ratio.md),
   [difference in time/_k_](results/latest/pairwise-difference.md)

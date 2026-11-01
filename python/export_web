@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Write the results the web explorer shows as one JSON file: for each case,
+# the (n, k) points with k > 0 that any algorithm was timed at, and each
+# algorithm's time/k in ns at each, or null where it was not timed.
+
+import argparse
+import json
+import pathlib
+
+import matplotlib.colors
+
+import read_results
+from cases import CASES
+from plot_anim import FAMILIES
+
+def sig(x, digits=4):
+    return float(f"{x:.{digits}g}")
+
+def export_case(path):
+    times = {}
+    for item in read_results.read(path):
+        if item.k != 0:
+            times.setdefault(item.alg, {})[(item.n, item.k)] = 1E9 * item.time / item.k
+    points = sorted({p for t in times.values() for p in t})
+    return {
+        "points": points,
+        "times": {alg: [sig(t[p]) if p in t else None for p in points]
+            for alg, t in times.items()},
+    }
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("results", type=pathlib.Path, nargs="?",
+        default=pathlib.Path(__file__).parent.parent / "results" / "latest")
+    parser.add_argument("--out", type=pathlib.Path, required=True)
+    args = parser.parse_args()
+    data = {
+        "families": [[[alg, matplotlib.colors.to_hex(colour)]
+            for alg, colour in colours.items()] for _, colours in FAMILIES],
+        "cases": [{"name": name, "title": title, **export_case(args.results / name)}
+            for name, title in CASES],
+    }
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open("w") as f:
+        json.dump(data, f, separators=(",", ":"))
+
+if __name__ == "__main__":
+    main()
