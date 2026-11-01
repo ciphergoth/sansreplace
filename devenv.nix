@@ -55,6 +55,10 @@ in
 
   languages.rust.enable = true;
 
+  # Build C and C++ with clang everywhere: on Linux the default stdenv is GCC's,
+  # so $CC and $CXX, which Meson uses, would be gcc and g++
+  stdenv = pkgs.clangStdenv;
+
   # Nix's compiler wrapper adds hardening flags to every compile, among them
   # libc++ bounds checks, stack protectors, -fwrapv and zeroing registers on
   # return. The C++ benchmarks should measure the standard library as an

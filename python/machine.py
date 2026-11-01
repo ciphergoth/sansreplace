@@ -17,6 +17,7 @@
 
 import pathlib
 import platform
+import os
 import subprocess
 import sys
 
@@ -27,7 +28,8 @@ def output(*cmd):
 
 def get():
     return {**(get_macos() if sys.platform == "darwin" else get_linux()),
-        "cxx": output("c++", "--version").splitlines()[0],
+        # Meson builds with $CXX, which need not be the c++ on the PATH
+        "cxx": output(os.environ["CXX"], "--version").splitlines()[0],
         "rustc": output("rustc", "--version").strip(),
     }
 
