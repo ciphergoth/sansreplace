@@ -203,7 +203,9 @@ def parse_args():
     p.add_argument("--time-for", type=float, default=0.2,
         help="How long to time each point for, in seconds; a point slower than this is "
             "timed with one call (default: %(default)s)")
-    p.add_argument("--time-limit", type=float, default=20.0,
+    # The hash algorithms take about 20s at the largest k on the r8a.xlarge
+    # the published results come from, so a limit of 20s skipped them there
+    p.add_argument("--time-limit", type=float, default=30.0,
         help="Once a call takes longer than this, in seconds, skip larger k for the same n, "
             "and if that happens at the same k for two n, that k and larger for every later n "
             "(default: %(default)s)")
