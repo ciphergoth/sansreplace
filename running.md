@@ -24,19 +24,9 @@ cd python
 ./scatter --help
 ```
 
-Even the C++ tests are driven from Python. The C++ tools automatically create the build directory
-and build the code before running if needed; try eg `./test_choose 5 3`.
-
-The Rust implementation is separate, but its subcommands mirror the Python tools and take the same
-options: `time` is like `time_choose`, and writes CSV files in the same format, and `test` is like
-`test_choose`:
-
-```
-cd rust
-cargo run --release -- time --values small --values fib --csv results.csv
-cargo run --release -- time --sorttype random --nk 1000000 1000
-cargo run --release -- test 5 3 --algorithm hsel
-```
+Both the C++ and the Rust tests are driven from Python: each is built as a library, which the
+tools build if needed and load; `--language` chooses which, and is `cpp` by default. Try eg
+`./test_choose 5 3` or `./time_choose --language rust --sorttype random --nk 1000000 1000`.
 
 To run the full C++ and Rust benchmarks in both orders (this takes several hours):
 
@@ -58,9 +48,8 @@ python/bench_all --run 'cpp/*/select' --run '*/*/quadraticreject' --run '*/*/qua
 Options for `bench_all` itself go before the output directory; anything after it is passed on to the
 timers. On macOS it keeps the machine from idle-sleeping while it runs, so give one run everything
 you want timed, rather than running it several times in a row: the machine can fall asleep between
-one run and the next. Closing the lid still sleeps it, but both
-`time_choose` and the Rust `time` notice when the machine slept during a point, and time that
-point again. Each CSV records the machine, OS, compilers, C++ standard library and, on macOS,
+one run and the next. Closing the lid still sleeps it, but `time_choose` notices when the machine
+slept during a point, and times that point again. Each CSV records the machine, OS, compilers, C++ standard library and, on macOS,
 power state it was timed with, and the tools that compare algorithms warn if these differ. Timings on battery or in
 Low Power Mode are not comparable with timings on mains power.
 

@@ -11,7 +11,7 @@ mod reservoirsample;
 mod select;
 mod vitterd;
 
-#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+#[derive(Clone, Copy, Debug)]
 pub enum SortType {
     Random,
     Sorted,

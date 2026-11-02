@@ -75,18 +75,12 @@ def main():
     # mid-run spoils the points timed across it
     if sys.platform == "darwin":
         subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
-    subprocess.run(["cargo", "build", "--release",
-        "--manifest-path", topdir / "rust/Cargo.toml"], check=True)
     for lang, order, alg in todo:
         case = f"{lang}-{order}"
         outdir = args.outdir / case
         outdir.mkdir(parents=True, exist_ok=True)
-        if lang == "cpp":
-            cmd = [topdir / "python/time_choose", "--sorttype", order,
-                "--algorithm", alg, *options]
-        else:
-            cmd = [topdir / "rust/target/release/sansreplace", "time",
-                "--sorttype", order, "--algorithm", alg, *options]
+        cmd = [topdir / "python/time_choose", "--language", lang, "--sorttype", order,
+            "--algorithm", alg, *options]
         run(f"{case} {alg}", cmd, outdir / f"{alg}.csv")
 
 if __name__ == '__main__':

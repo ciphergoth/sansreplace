@@ -5,14 +5,10 @@ edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-csv = "1.1"
-anyhow = "1.0.68"
-libc = "0.2"
-
-[dependencies.clap]
-version = "4.0.32"
-features = ["derive"]
+# A library for python/load_rust.py to load, as python/load_cpp.py loads the
+# C++ one
+[lib]
+crate-type = ["cdylib"]
 
 # We deliberately don't enable the "unbiased" feature. The default
 # random_range is very slightly biased (at worst 1 in 2^96 for u32), but

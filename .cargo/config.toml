@@ -1,5 +1,5 @@
 # Cargo reads this from the directory it runs in and its parents, so it applies
-# whether cargo runs in rust/ or, as bench_all runs it, at the top.
+# whether cargo runs at the top or, as python/load_rust.py runs it, in rust/.
 #
 # The x86-64 default is the 2003 baseline, with only SSE2 vectors; target the
 # AVX2 baseline instead, as cpp/meson.build does for C++
