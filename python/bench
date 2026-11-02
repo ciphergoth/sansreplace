@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+
+# Copyright 2018 Google LLC
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import argparse
+import atexit
+import concurrent.futures
+import csv
+import datetime
+import importlib
+import multiprocessing
+import os
+import pathlib
+import resource
+import subprocess
+import sys
+
+import asleep
+import gitstate
+import machine
+import nkvalues
+import vmstat
+from algorithms import ALGORITHMS
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+# What * means in --run; python, the Python implementations, can be named too
+LANGUAGES = ["cpp", "rust"]
+ORDERS = ["random", "sorted"]
+
+def run_spec(spec):
+    "Parse LANG/ORDER/ALGORITHM, where any part may be * to mean all of them"
+    parts = spec.split("/")
+    if len(parts) != 3:
+        raise argparse.ArgumentTypeError(f"{spec!r} is not LANG/ORDER/ALGORITHM")
+    for part, names in zip(parts, [LANGUAGES + ["python"], ORDERS, ALGORITHMS]):
+        if part != "*" and part not in names:
+            raise argparse.ArgumentTypeError(
+                f"{part!r} in {spec!r} is not * or one of {', '.join(names)}")
+    return parts
+
+def todo(specs):
+    "The (language, order, algorithm) triples the specs name, in the order to time them"
+    langs = LANGUAGES + ["python"]
+    return [(lang, order, alg) for order in ORDERS for lang in langs for alg in ALGORITHMS
+        if any(all(part == name or (part == "*" and name in names)
+            for part, name, names in zip(spec, [lang, order, alg],
+                [LANGUAGES, ORDERS, ALGORITHMS]))
+            for spec in specs)]
+
+def fix_freq():
+    governors = []
+    def reset():
+        for p, v in governors:
+            p.write_bytes(v)
+    atexit.register(reset)
+    cpufreq = pathlib.Path('/sys/devices/system/cpu/cpufreq')
+    for child in cpufreq.iterdir():
+        if not child.name.startswith("policy"):
+            continue
+        sg = child / "scaling_governor"
+        old = sg.read_bytes()
+        governors.append((sg, old))
+        sg.write_bytes(b"performance")
+
+def minor_faults():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_minflt
+
+def timefunc_for(time, params, timeable):
+    "Time per call, and the minor faults and calls of the pass it was timed over"
+    iters = 1
+    remaining = time
+    while True:
+        faults_before = minor_faults()
+        t = timeable.time(params, iters)
+        faults = minor_faults() - faults_before
+        remaining -= t
+        if t >= remaining:
+            return t / iters, faults, iters
+        elif t * 100 > remaining:
+            iters = int(iters * remaining / t)
+        elif t * 10000 > remaining:
+            iters = int(iters * remaining * 0.1 / t)
+        else:
+            iters *= 10
+
+def format_time(t):
+    for unit, mul in [("ns", 1E9), ("μs", 1E6), ("ms", 1E3)]:
+        if t * mul < 1000:
+            return f"{t*mul:.1f}{unit}"
+    return f"{t:.1f}s"
+
+def values(args):
+    "The (description, n, k) points to time"
+    if args.nk is not None:
+        points = ((f"n = {n}, k = {k}", n, k) for n, k in args.nk)
+    else:
+        points = nkvalues.iter_values(args.values)
+    return (p for p in points if p[2] <= args.max_k)
+
+def time_one(args, lang, order, alg, csvfile):
+    """Time one algorithm at every point, writing its CSV if csvfile isn't None,
+    and return its time at each point it timed. Runs in a process of its own."""
+    if args.fix_freq:
+        fix_freq()
+    timeables = importlib.import_module(f"load_{lang}").get_timeables(topdir, args)
+    tm = timeables[order][alg]
+    writer = None
+    if csvfile is not None:
+        csvfile.parent.mkdir(parents=True, exist_ok=True)
+        f = csvfile.open("w", newline="")
+        writer = csv.writer(f)
+        config = {"algorithm": [alg], "build_dir": args.build_dir, "csv": csvfile,
+            "fix_freq": args.fix_freq, "language": lang, "max_k": args.max_k, "nk": args.nk,
+            "sorttype": order, "time_for": args.time_for, "time_limit": args.time_limit,
+            "values": args.values}
+        for k, v in config.items():
+            writer.writerow(["config", k, v])
+        info = {
+            "version": gitstate.get(topdir),
+            "donothing_s": timefunc_for(args.time_for, (0, 0),
+                timeables["donothing"]["donothing"])[0],
+            "algorithms": [alg],
+            **machine.get(),
+            **vmstat.snapshot(),
+        }
+        for k, v in info.items():
+            writer.writerow(["info", k, v])
+        f.flush()
+    # Once a call takes more than the time limit, skip larger k for the same
+    # n. Some algorithms are slow only near k = n, so try again at the next n;
+    # but if it goes over the limit at the same k for two different n, skip
+    # that k and larger for every n after.
+    hit = None   # (n, k) where it last went over the limit
+    klim = None  # k from which to skip it for every n
+    res = {}
+    for descrip, n, k in values(args):
+        if (klim is not None and k >= klim) or (hit is not None and hit[0] == n and k >= hit[1]):
+            if writer is not None:
+                writer.writerow(["skipped", alg, n, k])
+                f.flush()
+            continue
+        # If the machine sleeps while this is timed, time it again
+        while True:
+            asleep_before = asleep.total()
+            before = vmstat.counters()
+            t, faults, calls = timefunc_for(args.time_for, (n, k), tm)
+            if asleep.total() - asleep_before < asleep.THRESHOLD_S:
+                break
+            print(f"slept while timing {alg}; timing again in {asleep.SETTLE_S}s", flush=True)
+            asleep.settle()
+            timefunc_for(args.time_for, (n, k), tm)
+        after = vmstat.counters()
+        print(f"{descrip}: {format_time(t)}", flush=True)
+        if writer is not None:
+            writer.writerow(["result", alg, n, k, t])
+            writer.writerow(["memory", alg, n, k, *(a - b for a, b in zip(after, before))])
+            writer.writerow(["faults", alg, n, k, faults, calls])
+            f.flush()
+        res[descrip] = t
+        if t > args.time_limit:
+            print(f"over the time limit: {alg}", flush=True)
+            if hit is not None and hit[1] == k:
+                klim = k
+            hit = (n, k)
+    if writer is not None:
+        f.close()
+    return res
+
+def parse_args():
+    p = argparse.ArgumentParser(allow_abbrev=False,
+        description="Time the C++ and Rust implementations, each algorithm in a process of "
+            "its own, and with --out write OUT/LANG-ORDER/ALGORITHM.csv for each. Stops at "
+            "the first failure. On macOS, keeps the machine from idle-sleeping while it runs.")
+    p.add_argument("--run", action="append", type=run_spec, metavar="LANG/ORDER/ALGORITHM",
+        help="Time only these, where any part may be * to mean all of them, as in "
+            "cpp/*/select; may be repeated (default: everything, in C++ and Rust)")
+    p.add_argument("--out", type=pathlib.Path, help="Directory to write the CSVs into")
+    p.add_argument("--dry-run", action="store_true",
+        help="List what would be timed, and stop")
+    values = p.add_mutually_exclusive_group()
+    values.add_argument("--values", action="append",
+        help="Named set of n,k values to time, from python/nkvalues.py; may be repeated "
+            "(default: small and fib)")
+    values.add_argument("--nk", action="append", nargs=2, type=int, metavar=("N", "K"),
+        help="Single n,k value to time; may be repeated")
+    # F_40; larger k needs more memory than a 16GB machine has
+    p.add_argument("--max-k", type=int, default=102334155,
+        help="Skip n,k values with k larger than this (default: %(default)s)")
+    p.add_argument("--time-for", type=float, default=0.2,
+        help="How long to time each point for, in seconds; a point slower than this is "
+            "timed with one call (default: %(default)s)")
+    p.add_argument("--time-limit", type=float, default=20.0,
+        help="Once a call takes longer than this, in seconds, skip larger k for the same n, "
+            "and if that happens at the same k for two n, that k and larger for every later n "
+            "(default: %(default)s)")
+    p.add_argument("--fix-freq", action="store_true",
+        help="Set the CPU frequency governors to performance while timing (Linux, as root)")
+    p.add_argument("--build-dir", type=pathlib.Path, help="C++ build directory")
+    args = p.parse_args()
+    if args.values is None and args.nk is None:
+        args.values = ["small", "fib"]
+    for n, k in args.nk or []:
+        if k > n:
+            p.error(f"--nk {n} {k}: k must be at most n")
+    return args
+
+def main():
+    args = parse_args()
+    runs = todo(args.run or [["*", "*", "*"]])
+    for lang, order, alg in runs:
+        print(f"will time {lang}-{order} {alg}")
+    if args.dry_run:
+        return
+    # Keep the Mac from idle-sleeping until this process exits; a sleep
+    # mid-run spoils the points timed across it
+    if sys.platform == "darwin":
+        subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
+    # A fresh process for each algorithm, so none inherits another's heap
+    pool = concurrent.futures.ProcessPoolExecutor(max_workers=1,
+        mp_context=multiprocessing.get_context("spawn"), max_tasks_per_child=1)
+    results = {}
+    for lang, order, alg in runs:
+        case = f"{lang}-{order}"
+        print(f"{datetime.datetime.now():%F %T} starting {case} {alg}", flush=True)
+        csvfile = None if args.out is None else args.out / case / f"{alg}.csv"
+        results[(case, alg)] = pool.submit(time_one, args, lang, order, alg, csvfile).result()
+        print(f"{datetime.datetime.now():%F %T} finished {case} {alg}", flush=True)
+    # Compare the algorithms timed in each case, point by point
+    by_point = {}
+    for (case, alg), res in results.items():
+        for descrip, t in res.items():
+            by_point.setdefault((case, descrip), []).append((t, alg))
+    for (case, descrip), times in by_point.items():
+        if len(times) > 1:
+            print(f"\n{case}, {descrip}")
+            for t, alg in sorted(times):
+                print(f"{format_time(t):>12} {alg}")
+
+if __name__ == '__main__':
+    main()

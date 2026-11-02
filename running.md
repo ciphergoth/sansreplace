@@ -17,41 +17,52 @@ and its needed packages, Meson, Ninja, and Rust.
 need to read the source code to figure out what it does.
 
 ```
-cd python
-./test_choose --help
-./time_choose --help
-./plot --help
-./scatter --help
+python/bench --help
+python/test_choose --help
+python/plot --help
+python/scatter --help
 ```
 
-Both the C++ and the Rust tests are driven from Python: each is built as a library, which the
-tools build if needed and load; `--language` chooses which, and is `cpp` by default. Try eg
-`./test_choose 5 3` or `./time_choose --language rust --sorttype random --nk 1000000 1000`.
+Both the C++ and the Rust implementations are driven from Python: each is built as a library,
+which the tools build if needed and load. `python/bench` times them, and `python/test_choose` tests
+one for fairness, with `--language` choosing which, `cpp` by default; try eg
+`python/test_choose 5 3`.
 
-To run the full C++ and Rust benchmarks in both orders (this takes several hours):
+`python/bench --run LANG/ORDER/ALGORITHM` times what it names, where any of the three parts may be
+`*` to mean all of them, and `LANG` is `cpp` or `rust`, or `python` for the Python
+implementations, which `*` leaves out; it may be repeated, and `--dry-run` lists what would be timed
+without timing it. Each algorithm is timed in a process of its own, so none inherits another's
+heap. With `--nk N K`, it times that point only, and compares the algorithms at each point at the
+end:
 
 ```
-python/bench_all results/my-run
+python/bench --run 'rust/random/*' --nk 1000000 1000
 ```
 
-This times each algorithm on its own, writing `results/my-run/cpp-random/hsel.csv` and so on, so
-after changing one algorithm you only need to time that one and copy its CSVs into
-`results/latest`. `--run LANG/ORDER/ALGORITHM` times only what it names, where any of the three
-parts may be `*` to mean all of them; it may be repeated, and `--dry-run` lists what would be
-timed without timing it. For example, this times `select` in C++ in both orders, and both quadratic
+By default it times every algorithm in C++ and Rust in both orders, over the points the published
+results use; with `--out`, it writes a CSV for each, as `OUT/cpp-random/hsel.csv` and so on. This
+takes several hours:
+
+```
+python/bench --out results/my-run
+```
+
+So after changing one algorithm you only need to time that one and copy its CSVs into
+`results/latest`. For example, this times `select` in C++ in both orders, and both quadratic
 algorithms in every case:
 
 ```
-python/bench_all --run 'cpp/*/select' --run '*/*/quadraticreject' --run '*/*/quadraticf2' results/my-run
+python/bench --run 'cpp/*/select' --run '*/*/quadraticreject' --run '*/*/quadraticf2' --out results/my-run
 ```
 
-Options for `bench_all` itself go before the output directory; anything after it is passed on to the
-timers. On macOS it keeps the machine from idle-sleeping while it runs, so give one run everything
-you want timed, rather than running it several times in a row: the machine can fall asleep between
-one run and the next. Closing the lid still sleeps it, but `time_choose` notices when the machine
-slept during a point, and times that point again. Each CSV records the machine, OS, compilers, C++ standard library and, on macOS,
-power state it was timed with, and the tools that compare algorithms warn if these differ. Timings on battery or in
-Low Power Mode are not comparable with timings on mains power.
+The timer's settings, such as `--time-for` and `--time-limit`, are options too, each defaulting to
+what the published results use; see `--help`. On macOS it keeps the machine from idle-sleeping while
+it runs, so give one run everything you want timed, rather than running it several times in a row:
+the machine can fall asleep between one run and the next. Closing the lid still sleeps it, but
+`bench` notices when the machine slept during a point, and times that point again. Each CSV records
+the machine, OS, compilers, C++ standard library and, on macOS, power state it was timed with, and
+the tools that compare algorithms warn if these differ. Timings on battery or in Low Power Mode are
+not comparable with timings on mains power.
 
 On x86-64, both the C++ and the Rust are compiled for `x86-64-v3`, the baseline with AVX2, rather
 than the compilers' default of the original x86-64 baseline, whose vectors are only SSE2; see
@@ -64,9 +75,9 @@ libstdc++, whose `std::sort` and hash tables are different code; see [`devenv.ni
 Each row of a results CSV starts with its kind:
 
 * `config,NAME,VALUE`: an option the timer was run with.
-* `info,NAME,VALUE`: the commit and setup it was timed with. `bench_all` also records the state of
-  memory when the run starts, and in `memory_counters` the names of the counters in the
-  `memory` rows.
+* `info,NAME,VALUE`: the commit and setup it was timed with, the state of memory when timing
+  started, and in `memory_counters` the names of the counters in the `memory` rows. Results from
+  before `bench` replaced `bench_all` have these rows after the others rather than before them.
 * `result,ALG,N,K,SECONDS`: the time of one call.
 * `memory,ALG,N,K,C1,C2,C3,C4`: how much four counters of the whole machine's memory activity grew
   while that point was timed. Large numbers mean the timing was slowed by memory pressure, from
