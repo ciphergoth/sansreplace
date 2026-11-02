@@ -21,7 +21,7 @@ import os
 import subprocess
 import sys
 
-KEYS = ["machine", "os", "cxx", "rustc", "power"]
+KEYS = ["machine", "os", "cxx", "cxxlib", "rustc", "power"]
 
 def output(*cmd):
     return subprocess.run(cmd, check=True, capture_output=True, text=True).stdout
@@ -30,8 +30,21 @@ def get():
     return {**(get_macos() if sys.platform == "darwin" else get_linux()),
         # Meson builds with $CXX, which need not be the c++ on the PATH
         "cxx": output(os.environ["CXX"], "--version").splitlines()[0],
+        "cxxlib": cxx_library(),
         "rustc": output("rustc", "--version").strip(),
     }
+
+# The same compiler can use either C++ standard library, whose std::sort and
+# hash tables differ; each defines its version macro in <version>
+def cxx_library():
+    macros = {}
+    for line in output(os.environ["CXX"], "-x", "c++", "-dM", "-E", "-include", "version",
+            "/dev/null").splitlines():
+        _, name, *value = line.split(maxsplit=2)
+        macros[name] = value[0] if value else ""
+    if "_LIBCPP_VERSION" in macros:
+        return f"libc++ {macros['_LIBCPP_VERSION']}"
+    return f"libstdc++ {macros['_GLIBCXX_RELEASE']} {macros['__GLIBCXX__']}"
 
 def get_macos():
     lowpower = [line.split()[1] for line in output("pmset", "-g").splitlines()

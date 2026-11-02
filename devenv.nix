@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
   # The latexminted 0.6.0 bundled with minted 3.7.0 fails on Python 3.14
   # (https://github.com/NixOS/nixpkgs/issues/542483). This applies the fix from
@@ -55,9 +55,19 @@ in
 
   languages.rust.enable = true;
 
-  # Build C and C++ with clang everywhere: on Linux the default stdenv is GCC's,
-  # so $CC and $CXX, which Meson uses, would be gcc and g++
-  stdenv = pkgs.clangStdenv;
+  # Build C and C++ with clang and libc++ everywhere, as on macOS: on Linux the
+  # default stdenv is GCC's, so $CC and $CXX, which Meson uses, would be gcc and
+  # g++, and clangStdenv's clang uses GCC's libstdc++, whose std::sort and hash
+  # tables are not libc++'s
+  stdenv = pkgs.libcxxStdenv;
+  # The stdenv's compiler wrapper sets $CC and $CXX to bare names, but on Linux
+  # languages.rust also puts pkgs.clang, which uses libstdc++, ahead of it on
+  # the PATH, as Rust's linker driver; name the stdenv's compiler in full. The
+  # wrapper's setup hook overwrites env, so this runs after it, in enterShell.
+  enterShell = ''
+    export CC=${config.stdenv.cc}/bin/clang
+    export CXX=${config.stdenv.cc}/bin/clang++
+  '';
 
   # Nix's compiler wrapper adds hardening flags to every compile, among them
   # libc++ bounds checks, stack protectors, -fwrapv and zeroing registers on
