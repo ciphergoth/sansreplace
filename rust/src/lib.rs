@@ -64,10 +64,18 @@ pub unsafe extern "C" fn call(f: *const Algorithm, n: u32, k: u32, result: *mut 
 pub unsafe extern "C" fn timefunc_s(f: *const Algorithm, n: u32, k: u32, iters: u64) -> f64 {
     let f = unsafe { &*f };
     RNG.with_borrow_mut(|rng| {
-        let mut result = vec![0; k as usize];
+        // Start the output on a cache line, since malloc only promises 16
+        // bytes, and the quadratic algorithms scan it on every draw: how many
+        // of their loads and stores straddle two cache lines would otherwise
+        // depend on where malloc happened to put it. Vec can't ask for more
+        // alignment, so allocate 15 spare elements and start at the first one
+        // on a 64-byte boundary.
+        let mut buf = vec![0; k as usize + 15];
+        let offset = buf.as_ptr().align_offset(64);
+        let result = &mut buf[offset..offset + k as usize];
         let start = Instant::now();
         for _ in 0..iters {
-            f(rng, n, &mut result);
+            f(rng, n, result);
             std::hint::black_box(&result);
         }
         start.elapsed().as_secs_f64()
