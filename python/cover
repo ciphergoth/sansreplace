@@ -114,6 +114,38 @@ def latex(results, out):
                 + (bands.latex_duration(row.extra) if row.extra > 0 else "") + " \\\\\n")
     out.write("\\end{tabular}\n")
 
+def dominated_by_bands(times):
+    """For each algorithm, the others that score no worse in any band and
+    better in at least one"""
+    per_band = [bands.in_band(times, band) for band in bands.BANDS]
+    algs = sorted({a for t in times.values() for a in t}, key=ALGORITHMS.index)
+    scores = {a: [bands.score(b, [a]) for b in per_band] for a in algs}
+    return {a: [b for b in algs if b != a and scores[b] != scores[a]
+        and all(x <= y for x, y in zip(scores[b], scores[a]))] for a in algs}
+
+def dominated_by_points(times):
+    "For each algorithm, the others timed at every point and no slower at any"
+    algs = sorted({a for t in times.values() for a in t}, key=ALGORITHMS.index)
+    return {a: [b for b in algs if b != a
+        and all(b in t and (a not in t or t[b] <= t[a]) for t in times.values())] for a in algs}
+
+def dominated(results):
+    "Markdown tables of the algorithms dominated by bands in every case, and by points in each"
+    by_bands = {name: dominated_by_bands(bands.read_times(results / name)) for name, _ in CASES}
+    print("| Dominated by bands in every case | By, in every case |")
+    print("|---|---|")
+    for a in ALGORITHMS:
+        common = [b for b in ALGORITHMS if all(b in d[a] for d in by_bands.values())]
+        if common:
+            print(f"| `{a}` | " + ", ".join(f"`{b}`" for b in common) + " |")
+    print()
+    print("| | Dominated at every point |")
+    print("|---|---|")
+    for name, title in CASES:
+        d = dominated_by_points(bands.read_times(results / name))
+        cells = [f"`{a}` by " + ", ".join(f"`{b}`" for b in by) for a, by in d.items() if by]
+        print(f"| {title} | " + "<br>".join(cells) + " |")
+
 def main():
     parser = argparse.ArgumentParser(description="Print the best sets of up to three "
         "algorithms in each case, by worst time per number output in each band of k")
@@ -122,8 +154,13 @@ def main():
         help="Instead, list this many of the best sets of each size in each case")
     parser.add_argument("--latex", type=pathlib.Path,
         help="Write the table as a LaTeX tabular to this file instead")
+    parser.add_argument("--dominated", action="store_true",
+        help="Instead, print the algorithms another scores no worse than in every band in "
+            "every case, and in each case those another is no slower than at every point")
     args = parser.parse_args()
-    if args.top is not None:
+    if args.dominated:
+        dominated(args.results)
+    elif args.top is not None:
         for name, _ in CASES:
             times = bands.read_times(args.results / name)
             print(f"== {name}")

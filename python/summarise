@@ -47,7 +47,7 @@ def rows(times):
 
 def markdown(results):
     for name, title in CASES:
-        print(f"#### {title}\n")
+        print(f"### {title}\n")
         print("| _k_ from | Best | Best integer-only | `cardchoose` | Floor |")
         print("|---|---|---|---|---|")
         for band, best, integer, cc, fl in rows(bands.read_times(results / name)):

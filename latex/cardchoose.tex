@@ -628,6 +628,61 @@ of these is very slow elsewhere. The other algorithms run in
 \(\bigO{k}\) or \(\bigO{k \log k}\) time, and differ by smaller
 factors.
 
+\autoref{choosing} compares the algorithms by their worst time per
+number output in each decade of \(k\). The rest of this section
+describes regions of \(n\) and \(k\), by the range of one algorithm's
+time over another's.
+
+For sorted output in C++, Hidden Shuffle is the fastest algorithm
+wherever \(n \geq 16k\) and \(k \geq 1000\); there, Cardchoose takes
+up to 2.4 times as long. In Rust, Cardchoose and Hidden Shuffle divide
+the range by \(k\): wherever \(k < 1000\) and \(n \geq 2k\),
+Cardchoose is the fastest algorithm or within 22\% of it, and Hidden
+Shuffle takes up to 3.7 times as long, while for larger \(k\) they
+trade places: wherever \(k \geq 10^5\) and \(n \geq 16k\), each is
+within 26\% of the fastest, and Hidden Shuffle is the fastest wherever
+\(k \geq 10^7\) and \(n \geq 16k\). Hidden Shuffle takes about the
+same time in both languages, so the difference is in Cardchoose, most
+likely in its sort. Hidden Shuffle is also faster than RANKSB wherever
+\(n \geq 16k\) and \(k \geq 1000\) in both languages, with RANKSB
+taking 1.1 to 2.7 times as long. As \(k\) approaches \(n\), RANKSB
+slows down, taking up to 470 times as long as the fastest algorithm at
+\(k = n\) in C++, and 900 times in Rust; \cite{nijenhuiswilf} pairs
+it with iterative choosing (which Nijenhuis and Wilf refer to as RKS2)
+for \(k \geq n/2\). Vitter's Algorithm D, with its fallback to
+Algorithm A, has the smallest worst case of any single algorithm for
+sorted output in Rust, and in C++ only Hidden Shuffle's is smaller.
+Where \(n \geq 4k\), it takes 0.63 to 2.5 times as long as Cardchoose
+in C++ and 0.89 to 5.0 times as long in Rust; where \(n < 2k\) and
+\(k \geq 10^5\), it is faster than Cardchoose in both.
+
+For random output, the hash-based algorithms are competitive only with
+a fast hash table. With C++ standard library hash tables, Cardchoose is
+faster than set-based rejection sampling, Floyd's F2 and HSEL at every
+point with \(k \leq n/2\), where they take 1.12 to 8.3 times as long,
+though Hidden Shuffle followed by a shuffle is faster still wherever
+\(n \geq 16k\) and \(k \geq 1000\). With Rust's flat hash tables, HSEL
+is faster than Cardchoose wherever \(1000 \leq k < 10^5\) and
+\(n \geq 2k\), and Cardchoose is faster wherever \(k \geq 10^7\) and
+\(n \geq 2k\); it is never more than 1.57 times slower than the fastest
+of these four for \(k \leq n/2\). In both languages, SELECT is the
+fastest algorithm wherever \(2k \leq n < 16k\) and \(n\) is under 8
+million; for larger \(n\), its array is large enough that glibc's
+\mintinline{c}{malloc} maps it afresh on every call, and faulting its
+pages in again makes it up to 1.8 times slower than the fastest. The hash-based
+algorithms slow down at large \(k\), once the hash table no longer fits
+in cache, and as \(k\) approaches \(n\). In theory, their
+\(\bigO{k}\) performance compared to the \(\bigO{k \log k}\)
+performance of Cardchoose should mean that there is a value of \(k\)
+at which they perform better. However, the poor cache coherence of
+these algorithms means that their performance more closely resembles
+\(\bigO{k \log k}\) in practice. For very large \(k\), a parallel
+algorithm such as \cite{sandersetal} should generally be used; this
+algorithm calls a sequential algorithm at the leaves of the parallel
+tree it builds.
+
+\section{Choosing algorithms}\label{choosing}
+
 We score each algorithm by its worst time per number output in each
 decade of \(k\): for each band, the most its time per call divided by
 \(k\) reaches at any point with \(k\) in the band, over every \(n\)
@@ -699,58 +754,18 @@ fast hash tables, HSEL is the best from there to \(10^6\). Wherever
 the best algorithm needs floating point, the best one that does not is
 Cardchoose.
 
-The rest of this section describes regions of \(n\) and \(k\), by
-the range of one algorithm's time over another's.
-
-For sorted output in C++, Hidden Shuffle is the fastest algorithm
-wherever \(n \geq 16k\) and \(k \geq 1000\); there, Cardchoose takes
-up to 2.4 times as long. In Rust, Cardchoose and Hidden Shuffle divide
-the range by \(k\): wherever \(k < 1000\) and \(n \geq 2k\),
-Cardchoose is the fastest algorithm or within 22\% of it, and Hidden
-Shuffle takes up to 3.7 times as long, while for larger \(k\) they
-trade places: wherever \(k \geq 10^5\) and \(n \geq 16k\), each is
-within 26\% of the fastest, and Hidden Shuffle is the fastest wherever
-\(k \geq 10^7\) and \(n \geq 16k\). Hidden Shuffle takes about the
-same time in both languages, so the difference is in Cardchoose, most
-likely in its sort. Hidden Shuffle is also faster than RANKSB wherever
-\(n \geq 16k\) and \(k \geq 1000\) in both languages, with RANKSB
-taking 1.1 to 2.7 times as long. As \(k\) approaches \(n\), RANKSB
-slows down, taking up to 470 times as long as the fastest algorithm at
-\(k = n\) in C++, and 900 times in Rust; \cite{nijenhuiswilf} pairs
-it with iterative choosing (which Nijenhuis and Wilf refer to as RKS2)
-for \(k \geq n/2\). Vitter's Algorithm D, with its fallback to
-Algorithm A, has the smallest worst case of any single algorithm for
-sorted output in Rust, and in C++ only Hidden Shuffle's is smaller.
-Where \(n \geq 4k\), it takes 0.63 to 2.5 times as long as Cardchoose
-in C++ and 0.89 to 5.0 times as long in Rust; where \(n < 2k\) and
-\(k \geq 10^5\), it is faster than Cardchoose in both.
-
-For random output, the hash-based algorithms are competitive only with
-a fast hash table. With C++ standard library hash tables, Cardchoose is
-faster than set-based rejection sampling, Floyd's F2 and HSEL at every
-point with \(k \leq n/2\), where they take 1.12 to 8.3 times as long,
-though Hidden Shuffle followed by a shuffle is faster still wherever
-\(n \geq 16k\) and \(k \geq 1000\). With Rust's flat hash tables, HSEL
-is faster than Cardchoose wherever \(1000 \leq k < 10^5\) and
-\(n \geq 2k\), and Cardchoose is faster wherever \(k \geq 10^7\) and
-\(n \geq 2k\); it is never more than 1.57 times slower than the fastest
-of these four for \(k \leq n/2\). In both languages, SELECT is the
-fastest algorithm wherever \(2k \leq n < 16k\) and \(n\) is under 8
-million; for larger \(n\), its array is large enough that glibc's
-\mintinline{c}{malloc} maps it afresh on every call, and faulting its
-pages in again makes it up to 1.8 times slower than the fastest. The hash-based
-algorithms slow down at large \(k\), once the hash table no longer fits
-in cache, and as \(k\) approaches \(n\). In theory, their
-\(\bigO{k}\) performance compared to the \(\bigO{k \log k}\)
-performance of Cardchoose should mean that there is a value of \(k\)
-at which they perform better. However, the poor cache coherence of
-these algorithms means that their performance more closely resembles
-\(\bigO{k \log k}\) in practice. For very large \(k\), a parallel
-algorithm such as \cite{sandersetal} should generally be used; this
-algorithm calls a sequential algorithm at the leaves of the parallel
-tree it builds.
-
-\section{Choosing algorithms}\label{choosing}
+An algorithm is dominated by bands if another scores no worse in any
+band and better in at least one. Seven algorithms are dominated by
+bands in every case: quadratic rejection, set-based rejection, RANKSB,
+Floyd's F2, iterative choosing, reservoir sampling and SELECT, and
+Cardchoose dominates all seven in every case. Because a band's score is
+the worst over every \(n\), that does not make them useless: iterative
+choosing, reservoir sampling and SELECT are among the fastest where
+\(n/k\) is small, and iterative choosing belongs to the best sets for
+sorted output below. No algorithm is at least as fast as another at
+every point timed in every case, but in each case Cardchoose is at
+least as fast as some of the others at every point: in Rust with
+sorted output, as fast as six of the other eleven.
 
 Since no algorithm is the best at every \(k\), an implementation might
 implement several, and choose which one to use based on the values of
