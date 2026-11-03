@@ -102,22 +102,24 @@ DMI product name, which on EC2 is the instance type, and the CPU model.
 
 ## Regenerating the Markdown
 
-The graphs and pairwise comparisons that the Markdown pages show are generated from the CSVs in
-`results/latest`, and checked in under it. After changing those CSVs, regenerate them with:
+The graphs, pairwise comparisons and scores by band of _k_ that the Markdown pages show are generated
+from the CSVs in `results/latest`, and checked in under it. After changing those CSVs, regenerate
+them with:
 
 ```
 python/make_plots
-python/pareto
 python/pairwise
+python/summarise --every-algorithm results/latest/by-band.md
 ```
 
-`make_plots` writes the animated graphs and `pareto` the scattergrams for
-[choosing algorithms](choosing.md), both into `results/latest/graphs`, and `pairwise` writes
+`make_plots` writes the animated graphs into `results/latest/graphs`, `pairwise` writes
 [`pairwise-ratio.md`](results/latest/pairwise-ratio.md) and
-[`pairwise-difference.md`](results/latest/pairwise-difference.md). The tables in
-[choosing algorithms](choosing.md) come from `python/cover --measure ratio` and
-`--measure difference`, and the ones in the [results](results.md) from `python/summarise`, as
-those pages say.
+[`pairwise-difference.md`](results/latest/pairwise-difference.md), and `summarise` writes
+[every algorithm's score in every band](results/latest/by-band.md). The tables in the
+[results](results.md) come from `python/summarise` and the one in
+[choosing algorithms](choosing.md) from `python/cover`, which print them as Markdown; both score
+algorithms as [`python/bands.py`](python/bands.py) defines, and `python/cover --top N` lists more of
+the best sets.
 
 `python/regions CASE A B...` compares two algorithms by region of _n_/_k_ and _k_, as for the claims
 in the [results](results.md); given several algorithms after `A`, it compares `A` with the fastest of

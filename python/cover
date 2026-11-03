@@ -14,145 +14,127 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# For each case, the sets of up to --size algorithms that come closest
-# to the fastest of all the algorithms at every point with k >= 10, if each
-# point uses the fastest algorithm in the set. Sets are ranked by --measure:
-# their worst ratio to the fastest, or the most their time/k exceeds the
-# fastest's. Each set's worst on the other measure breaks ties, and is shown
-# beside it.
-#
-# Vitter's Algorithm D switches to Algorithm A once n <= 13k, so it is really
-# two algorithms. Wherever the best set includes it, the tables also give the
-# best set without it.
+# The best sets of one, two or three algorithms in each case, choosing the
+# fastest in the set at each point, by how far the set's worst time per number
+# output in a band of k exceeds the band's floor, in the worst band; see
+# python/bands.py. For each, and for Cardchoose alone, also the most its score
+# exceeds that of the best set of three in any band, in time per number.
 
 import argparse
+import collections
 import itertools
-import math
 import pathlib
 
-import read_results
-from cases import CASES
+import bands
 from algorithms import ALGORITHMS
+from cases import CASES
 from duration import duration
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
-LATEX_NAMES = {
-    "quadraticreject": "quadratic rejection",
-    "rejectionsample": "set-based rejection",
-    "ranksb": "RANKSB",
-    "floydf2": "Floyd's F2",
-    "quadraticf2": "quadratic F2",
-    "iterativechoose": "iterative choosing",
-    "reservoirsample": "reservoir sampling",
-    "vitterd": "Vitter's D",
-    "hiddenshuffle": "Hidden Shuffle",
-    "select": "SELECT",
-    "hsel": "HSEL",
-    "cardchoose": "Cardchoose",
-}
-
-def read_times(case):
-    times = {}
-    for item in read_results.read(case):
-        if item.k >= 10:
-            times.setdefault((item.n, item.k), {})[item.alg] = item.time
-    return times
-
-# For each measure, how badly a set does at one point, given the set's time
-# there (the fastest of its algorithms) and the fastest of all algorithms'
-MEASURES = {
-    "ratio": lambda mine, best, k: mine / best,
-    "difference": lambda mine, best, k: (mine - best) / k,
-}
-
-def ranked_sets(times, size, measure, exclude=()):
-    """(worst on measure, worst on the other measure, set, point where it is
-    worst on measure, ratio, difference) for every set of size algorithms, best
-    first"""
-    other = "difference" if measure == "ratio" else "ratio"
-    algs = sorted({a for t in times.values() for a in t} - set(exclude),
-        key=ALGORITHMS.index)
+def ranked_sets(times, size, exclude=()):
+    """(worst band over its floor, set) for every set of size algorithms, best
+    first; ties go to the set closer to the floors over all the bands"""
+    per_band = [bands.in_band(times, band) for band in bands.BANDS]
+    floors = [bands.floor(b) for b in per_band]
+    algs = sorted({a for t in times.values() for a in t} - set(exclude), key=ALGORITHMS.index)
     ranked = []
     for s in itertools.combinations(algs, size):
-        worst = {}
-        for m, f in MEASURES.items():
-            worst[m] = max((f(min(t.get(a, math.inf) for a in s), min(t.values()), k), (n, k))
-                for (n, k), t in times.items())
-        ranked.append((worst[measure][0], worst[other][0], s, worst[measure][1],
-            worst["ratio"][0], worst["difference"][0]))
+        r = [bands.score(b, s) / f for b, f in zip(per_band, floors)]
+        ranked.append((max(r), sum(r), s))
     ranked.sort()
-    return ranked
+    return [(worst, s) for worst, _, s in ranked]
 
-def table_cells(times, max_size, measure):
-    "For each size, the best set, and the best without Vitter's D if it differs"
-    cells = []
-    for size in range(1, max_size + 1):
-        best = ranked_sets(times, size, measure)[0]
-        cell = [best]
-        if "vitterd" in best[2]:
-            cell.append(ranked_sets(times, size, measure, exclude=["vitterd"])[0])
-        cells.append(cell)
-    return cells
+def over(times, s, ref):
+    "The most the score of s exceeds that of ref in any band, in seconds per number"
+    return max(bands.score(b, s) - bands.score(b, ref)
+        for b in (bands.in_band(times, band) for band in bands.BANDS))
 
-def markdown_cell(cell):
-    lines = []
-    for i, (_, _, s, _, ratio, difference) in enumerate(cell):
-        prefix = "_no D:_ " if i > 0 else ""
-        lines.append(prefix + " + ".join(f"`{a}`" for a in s)
-            + f" {ratio:.2f}× / {duration(difference)}")
-    return "<br>".join(lines)
+# A row of the table: size is 1 to 3, or None for Cardchoose alone; s is None
+# for a set no better than the best of one size smaller of the same kind
+Row = collections.namedtuple("Row", "size integer s worst extra")
 
-def latex_duration(x):
-    "duration(x), with a thin space before the unit"
-    d = duration(x)
-    number = d.rstrip("nµms")
-    return f"{number}\\,{d[len(number):]}"
+def table(times):
+    """For each size, the best set, and the best integer-only set if the best
+    needs floating point; then Cardchoose alone. Each with its worst band over
+    its floor and the most its score exceeds the best three's"""
+    best = {size: ranked_sets(times, size)[0] for size in (1, 2, 3)}
+    integer = {size: ranked_sets(times, size, exclude=bands.FLOATING_POINT)[0]
+        for size in (1, 2, 3)}
+    three = best[3][1]
+    rows = []
+    for size in (1, 2, 3):
+        for is_integer, chosen in [(False, best), (True, integer)]:
+            if is_integer and not bands.FLOATING_POINT & set(best[size][1]):
+                continue
+            worst, s = chosen[size]
+            if size > 1 and worst >= chosen[size - 1][0]:
+                rows.append(Row(size, is_integer, None, worst, 0))
+            else:
+                rows.append(Row(size, is_integer, s, worst, over(times, s, three)))
+    s = ("cardchoose",)
+    rows.append(Row(None, False, s, bands.against_floor(times, s), over(times, s, three)))
+    return rows
 
-def latex_rows(title, cells):
-    "A row naming the case, then one row per set"
-    rows = [f"\\multicolumn{{4}}{{l}}{{\\emph{{{title}}}}}"]
-    for size, cell in enumerate(cells, 1):
-        for i, (_, _, s, _, ratio, difference) in enumerate(cell):
-            label = str(size) if i == 0 else "no D"
-            rows.append(f"{label} & " + " + ".join(LATEX_NAMES[a] for a in s)
-                + f" & \\({ratio:.2f}\\times\\) & {latex_duration(difference)}")
-    return "".join(row + " \\\\\n" for row in rows)
+def markdown_cell(row):
+    prefix = "_integer only:_ " if row.integer else ""
+    if row.s is None:
+        return f"{prefix}no better than {row.size - 1}"
+    cell = prefix + " + ".join(f"`{a}`" for a in row.s) + f" {row.worst:.2f}×"
+    if row.extra > 0:
+        cell += f", +{duration(row.extra)}"
+    return cell
+
+def markdown(results):
+    print("| | Best one | Best two | Best three | `cardchoose` alone |")
+    print("|---|---|---|---|---|")
+    for name, title in CASES:
+        cells = {size: [] for size in (1, 2, 3, None)}
+        for row in table(bands.read_times(results / name)):
+            cells[row.size].append(markdown_cell(row))
+        print(f"| {title} | " + " | ".join("<br>".join(c) for c in cells.values()) + " |")
+
+def latex(results, out):
+    out.write("\\begin{tabular}{ llrr }\n"
+        "Set & Algorithms & " + bands.latex_stack(["Against", "floor"]) + " & "
+        + bands.latex_stack(["Most over", "best three"]) + " \\\\\n"
+        "\\hline\n")
+    for name, title in CASES:
+        out.write(f"\\multicolumn{{4}}{{l}}{{\\emph{{{title}}}}} \\\\\n")
+        for row in table(bands.read_times(results / name)):
+            label = "Cardchoose alone" if row.size is None else (
+                bands.latex_stack([f"best {row.size}", "integer only"]) if row.integer
+                else f"best {row.size}")
+            if row.s is None:
+                out.write(f"{label} & no better than {row.size - 1} & & \\\\\n")
+                continue
+            out.write(f"{label} & " + bands.latex_stack([("+ " if i else "") + bands.LATEX_NAMES[a]
+                    for i, a in enumerate(row.s)])
+                + f" & \\({row.worst:.2f}\\times\\) & "
+                + (bands.latex_duration(row.extra) if row.extra > 0 else "") + " \\\\\n")
+    out.write("\\end{tabular}\n")
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--results", type=pathlib.Path,
-        default=topdir / "results/latest")
-    parser.add_argument("--size", type=int, default=3)
-    parser.add_argument("--top", type=int, default=5)
-    parser.add_argument("--measure", choices=MEASURES, default="ratio",
-        help="Rank sets by their worst ratio to the fastest, or worst excess time/k")
+    parser = argparse.ArgumentParser(description="Print the best sets of up to three "
+        "algorithms in each case, by worst time per number output in each band of k")
+    parser.add_argument("--results", type=pathlib.Path, default=topdir / "results/latest")
+    parser.add_argument("--top", type=int,
+        help="Instead, list this many of the best sets of each size in each case")
     parser.add_argument("--latex", type=pathlib.Path,
-        help="Write the table of best sets here, as a LaTeX tabular")
+        help="Write the table as a LaTeX tabular to this file instead")
     args = parser.parse_args()
-    all_cells = {}
-    for name, title in CASES:
-        times = read_times(args.results / name)
-        print(f"== {name}")
-        for size in range(1, args.size + 1):
-            for _, _, s, wpoint, ratio, difference in ranked_sets(times, size, args.measure)[:args.top]:
-                print(f"  ratio {ratio:5.2f}  difference {duration(difference):>7}"
-                    f"  worst {args.measure} at n={wpoint[0]}, k={wpoint[1]}  {' + '.join(s)}")
-        all_cells[name] = table_cells(times, args.size, args.measure)
-    print()
-    print("| | " + " | ".join(f"best {size}" for size in range(1, args.size + 1)) + " |")
-    print("|---" * (args.size + 1) + "|")
-    for name, title in CASES:
-        print(f"| {title} | "
-            + " | ".join(markdown_cell(c) for c in all_cells[name]) + " |")
-    if args.latex is not None:
+    if args.top is not None:
+        for name, _ in CASES:
+            times = bands.read_times(args.results / name)
+            print(f"== {name}")
+            for size in (1, 2, 3):
+                for worst, s in ranked_sets(times, size)[:args.top]:
+                    print(f"  {worst:5.2f}x the floor  {' + '.join(s)}")
+    elif args.latex is not None:
         with args.latex.open("w") as out:
-            out.write("\\begin{tabular}{ llrr }\n"
-                "Size & Algorithms & Ratio & Difference \\\\\n"
-                "\\hline\n")
-            for name, title in CASES:
-                out.write(latex_rows(title, all_cells[name]))
-            out.write("\\end{tabular}\n")
+            latex(args.results, out)
+    else:
+        markdown(args.results)
 
 if __name__ == '__main__':
     main()

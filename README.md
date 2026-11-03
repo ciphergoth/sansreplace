@@ -12,10 +12,11 @@ both sorted and random order output. The C++ implementations use only what the C
 library provides; the Rust ones use Rust's standard library, whose hash tables and sort are much
 faster.
 
-No algorithm is close to the fastest everywhere, so a good implementation chooses between a few
-algorithms based on _n_ and _k_. [Choosing algorithms](choosing.md) gives the best such sets: in
-each case the best set of three is never more than 1.3–2.5× slower than the fastest, while the
-best single algorithm is somewhere 3.9–21× slower.
+No algorithm is the best at every _n_ and _k_, so an implementation might choose between a few.
+[Choosing algorithms](choosing.md) gives the best such sets, scored by the worst time per number
+output in each decade of _k_. But Cardchoose alone is never more than 9–22 ns per number slower
+than the best three algorithms together, in any case, and it is the best single algorithm in three
+of the four cases.
 
 * [Guide to algorithms tested](algorithms.md)
 * [Benchmark results](results.md)

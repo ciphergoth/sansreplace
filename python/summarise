@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+# Copyright 2018 Google LLC
 # Copyright 2026 Paul Crowley
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,127 +15,112 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Summarise a results directory: how each algorithm compares with the fastest
-# of a group, over the points with k >= 10, as in the tables in results.md.
+# The best algorithms by worst time per number output in each band of k, as
+# python/bands.py defines it: a Markdown table per case, the scores of every
+# algorithm in every band, or the tables as LaTeX for the paper.
 
 import argparse
 import pathlib
-import statistics
 
-import read_results
+import bands
+from algorithms import ALGORITHMS
 from cases import CASES
 from duration import duration
-from algorithms import ALGORITHMS
 
-def read_times(case, max_frac):
-    "The time of each algorithm at each point with k >= 10 and k <= max_frac * n"
-    times = {}
-    for item in read_results.read(case):
-        if item.k >= 10 and item.k <= max_frac * item.n:
-            times.setdefault((item.n, item.k), {})[item.alg] = item.time
-    return times
+topdir = pathlib.Path(__file__).resolve().parent.parent
 
-def compare(times, group, measure):
-    """For each algorithm in group, measure(its time, the fastest time in group,
-    k) per point"""
-    res = {alg: [] for alg in group}
-    for point, t in sorted(times.items()):
-        present = [alg for alg in group if alg in t]
-        best = min(t[alg] for alg in present)
-        for alg in present:
-            res[alg].append((measure(t[alg], best, point[1]), point))
+def rows(times):
+    """For each band: its label, the best algorithms with their scores, the best
+    integer-only one if any of those needs floating point, Cardchoose's score
+    and the floor"""
+    res = []
+    for band in bands.BANDS:
+        b = bands.in_band(times, band)
+        algs = {a for t in b.values() for a in t}
+        scores = sorted((bands.score(b, [a]), ALGORITHMS.index(a), a) for a in algs)
+        best = [(a, s) for s, _, a in scores if s <= scores[0][0] * bands.TIE]
+        integer = None
+        if any(a in bands.FLOATING_POINT for a, _ in best):
+            integer = next((a, s) for s, _, a in scores if a not in bands.FLOATING_POINT)
+        res.append((band, best, integer, bands.score(b, ["cardchoose"]), bands.floor(b)))
     return res
 
-def ratios(times, group):
-    "For each algorithm in group, its time over the fastest in group, per point"
-    return compare(times, group, lambda t, best, k: t / best)
+def markdown(results):
+    for name, title in CASES:
+        print(f"#### {title}\n")
+        print("| _k_ from | Best | Best integer-only | `cardchoose` | Floor |")
+        print("|---|---|---|---|---|")
+        for band, best, integer, cc, fl in rows(bands.read_times(results / name)):
+            cells = [bands.band_label(band),
+                " = ".join(f"`{a}` {duration(s)}" for a, s in best),
+                "" if integer is None else f"`{integer[0]}` {duration(integer[1])}",
+                duration(cc), duration(fl)]
+            print("| " + " | ".join(cells) + " |")
+        print()
 
-def excesses(times, group):
-    """For each algorithm in group, how much its time/k exceeds the fastest in
-    group, in seconds, per point"""
-    return compare(times, group, lambda t, best, k: (t - best) / k)
+def latex(results, outdir):
+    for name, title in CASES:
+        with (outdir / f"bands-{name}.tex").open("w") as out:
+            out.write("\\begin{tabular}{ lllrr }\n"
+                "\\(k\\) from & Best & " + bands.latex_stack(["Best", "integer-only"])
+                + " & Cardchoose & Floor \\\\\n"
+                "\\hline\n")
+            for band, best, integer, cc, fl in rows(bands.read_times(results / name)):
+                cells = [bands.band_label(band, latex=True),
+                    bands.latex_stack([("= " if i else "") + f"{bands.LATEX_NAMES[a]} {bands.latex_duration(s)}"
+                        for i, (a, s) in enumerate(best)]),
+                    "" if integer is None
+                        else f"{bands.LATEX_NAMES[integer[0]]} {bands.latex_duration(integer[1])}",
+                    bands.latex_duration(cc), bands.latex_duration(fl)]
+                out.write(" & ".join(cells) + " \\\\\n")
+            out.write("\\end{tabular}\n")
 
-def untimed(times, group):
-    """For each algorithm in group that was not timed at some points, the
-    smallest k of those points"""
-    res = {}
-    for (n, k), t in times.items():
-        for alg in group:
-            if alg not in t:
-                res[alg] = min(res.get(alg, k), k)
-    return res
-
-def short(x):
-    "x for a table, in standard form from 10^4"
-    if x < 10:
-        return f"{x:.2f}"
-    if x < 100:
-        return f"{x:.1f}"
-    if x < 10000:
-        return f"{x:,.0f}"
-    mantissa, e = f"{x:.1e}".split("e")
-    return f"{mantissa}×10<sup>{int(e)}</sup>"
-
-def not_timed(k):
-    return f"?<br><sub>not timed from k={short(k)}</sub>"
-
-def markdown(results, group, max_frac):
-    "A table of each algorithm's worst ratio, with a column per CSV"
-    times = {name: read_times(results / name, max_frac) for name, _ in CASES}
-    print("| | " + " | ".join(title for _, title in CASES) + " |")
-    print("|---" * (len(CASES) + 1) + "|")
-    for alg in group:
-        cells = []
-        for name, _ in CASES:
-            missing = untimed(times[name], group)
-            if alg in missing:
-                cells.append(not_timed(missing[alg]))
-                continue
-            cells.append(f"{short(max(x for x, _ in ratios(times[name], group)[alg]))}×")
-        print(f"| `{alg}` | " + " | ".join(cells) + " |")
-
-def markdown_excess(results, group, max_frac):
-    "A table of each algorithm's worst excess time/k, with a column per CSV"
-    times = {name: read_times(results / name, max_frac) for name, _ in CASES}
-    print("| | " + " | ".join(title for _, title in CASES) + " |")
-    print("|---" * (len(CASES) + 1) + "|")
-    for alg in group:
-        cells = []
-        for name, _ in CASES:
-            missing = untimed(times[name], group)
-            if alg in missing:
-                cells.append(not_timed(missing[alg]))
-                continue
-            cells.append(duration(max(x for x, _ in excesses(times[name], group)[alg])))
-        print(f"| `{alg}` | " + " | ".join(cells) + " |")
+def every_algorithm(results, out):
+    "Every algorithm's score in every band, for each case, as a Markdown page"
+    out.write("# Worst time per number output, by band of _k_\n\n"
+        "For each algorithm, the most its time per call divided by _k_ reaches at any point with _k_ in\n"
+        "the band, over every _n_ timed; the floor is the same for the fastest of all the algorithms\n"
+        "at each point. ? marks an algorithm not timed at some points in the band, with the smallest\n"
+        "_k_ it was not timed at, because it went over the time limit at a smaller _k_. Generated by\n"
+        "[`python/summarise`](../../python/summarise)\n"
+        "`--every-algorithm`; see [choosing algorithms](../../choosing.md).\n")
+    for name, title in CASES:
+        times = bands.read_times(results / name)
+        per_band = [bands.in_band(times, band) for band in bands.BANDS]
+        out.write(f"\n## {title}\n\n")
+        out.write("| | " + " | ".join(f"_k_ from {bands.band_label(band)}" for band in bands.BANDS)
+            + " |\n")
+        out.write("|---" * (len(bands.BANDS) + 1) + "|\n")
+        algs = sorted({a for t in times.values() for a in t}, key=ALGORITHMS.index)
+        for alg in algs:
+            cells = []
+            for b in per_band:
+                k = bands.untimed(b, alg)
+                if not any(alg in t for t in b.values()):
+                    cells.append("not timed")
+                elif k is not None:
+                    cells.append(f"? from {bands.power(k)}")
+                else:
+                    cells.append(duration(bands.score(b, [alg])))
+            out.write(f"| `{alg}` | " + " | ".join(cells) + " |\n")
+        out.write("| floor | " + " | ".join(duration(bands.floor(b)) for b in per_band) + " |\n")
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("results", type=pathlib.Path)
-    parser.add_argument("--group", nargs="+",
-        default=["rejectionsample", "floydf2", "hsel", "cardchoose"])
-    parser.add_argument("--max-frac", type=float, default=1.0,
-        help="Only include points with k <= max_frac * n")
-    parser.add_argument("--markdown", action="store_true",
-        help="Print a table of worst ratios instead")
-    parser.add_argument("--markdown-excess", action="store_true",
-        help="Print a table of worst excess time/k instead")
+    parser = argparse.ArgumentParser(description="Print a Markdown table for each case of "
+        "the best algorithms in each band of k, by worst time per number output")
+    parser.add_argument("--results", type=pathlib.Path, default=topdir / "results/latest")
+    parser.add_argument("--latex", type=pathlib.Path,
+        help="Write the tables as LaTeX tabulars into this directory instead")
+    parser.add_argument("--every-algorithm", type=pathlib.Path,
+        help="Write every algorithm's score in every band to this Markdown file instead")
     args = parser.parse_args()
-    group = sorted(args.group, key=ALGORITHMS.index)
-    if args.markdown:
-        markdown(args.results, group, args.max_frac)
-        return
-    if args.markdown_excess:
-        markdown_excess(args.results, group, args.max_frac)
-        return
-    for name, _ in CASES:
-        print(f"== {name}")
-        for alg, r in ratios(read_times(args.results / name, args.max_frac), group).items():
-            worst, wpoint = max(r)
-            fastest = sum(1 for x, _ in r if x == 1.0)
-            print(f"{alg:16} fastest {fastest:4} of {len(r):4}"
-                f"  median {statistics.median(x for x, _ in r):5.2f}"
-                f"  worst {worst:6.2f} at n={wpoint[0]}, k={wpoint[1]}")
+    if args.latex is not None:
+        latex(args.results, args.latex)
+    elif args.every_algorithm is not None:
+        with args.every_algorithm.open("w") as out:
+            every_algorithm(args.results, out)
+    else:
+        markdown(args.results)
 
 if __name__ == '__main__':
     main()

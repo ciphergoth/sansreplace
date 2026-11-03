@@ -36,9 +36,8 @@ def generate():
     generated.mkdir(exist_ok=True)
     for cmd in [
         ["make_plots", "--pgf", generated],
-        ["pareto", "--pgf", generated],
-        ["cover", "--measure", "ratio", "--latex", generated / "cover-ratio.tex"],
-        ["cover", "--measure", "difference", "--latex", generated / "cover-difference.tex"],
+        ["summarise", "--latex", generated],
+        ["cover", "--latex", generated / "cover.tex"],
     ]:
         subprocess.run([sys.executable, pythondir / cmd[0], *cmd[1:]], check=True,
             stdout=subprocess.DEVNULL)

@@ -82,19 +82,18 @@
     one, Cardchoose, which we believe to be new, and benchmark C++ and
     Rust implementations of each over a wide range of \(n\) and \(k\),
     for both sorted and random order output. No algorithm is close to
-    the fastest everywhere: in each case the best single algorithm is
-    somewhere 3.9 to 21 times slower than the fastest, while the best
-    set of three, choosing between them based on \(n\) and \(k\), is
-    never more than 1.3 to 2.5 times slower. Cardchoose needs no storage
+    the fastest everywhere, but scored by the worst time per number
+    output in each decade of \(k\), Cardchoose alone is never more
+    than 9 to 22\,ns per number slower than the best set of three,
+    choosing between them based on \(n\) and \(k\). Cardchoose needs no storage
     beyond the output array and takes $\bigO{k \log k}$ time, using an
     integer sort; it combines a P\'olya urn, which chooses a
     multiset fairly, with the stars and bars bijection between
     multisets and sets. It is the simplest of the three algorithms
-    whose time per number output is never far above the fastest's, it
-    is the best single algorithm by ratio for random output in both
-    languages, if narrowly in C++, and with a fast sort, for sorted output with
-    \(k < 1000\) and \(n \geq 2k\), it is the fastest algorithm or
-    within 22\% of it.
+    whose time per number output is never far above the fastest's, the
+    best single algorithm in three of the four cases, and the best that
+    needs no floating point in all four; with a fast sort, it is the best
+    algorithm for sorted output at every \(k\) below \(10^7\).
 \end{abstract}
 
 \section{Introduction}
@@ -567,7 +566,15 @@ hash-based algorithms take about 0.3 times as long in Rust as in C++,
 and Cardchoose about 0.5--0.6 times as long, while RANKSB, Vitter's
 Algorithm D and Hidden Shuffle, which need neither, take about the
 same time in both languages for sorted output, and about 10\% longer
-in Rust for random output.
+in Rust for random output. The difference is in the shuffle that turns
+their sorted output into random order, the same loop in both languages,
+which costs up to about twice as much per number in Rust: it draws each
+index with the \mintinline{rust}{rand} crate's
+\mintinline{rust}{random_range}, while the C++ uses its own, which
+takes two indices from each 64-bit random number. At large \(k\), the
+shuffle is close to half of Cardchoose's time in Rust, against a
+quarter in C++. The \mintinline{rust}{rand} crate's own
+\mintinline{rust}{SliceRandom::shuffle} is slower still.
 
 In \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} we graph
 time/\(k\) in ns against \(k\) for two different values of \(n\) for
@@ -614,34 +621,86 @@ and complete benchmark data at
     \label{rustsortedlargen}
 \end{figure}
 
-No algorithm is close to the fastest for all \(n, k\). Quadratic
-rejection and quadratic F2 are the fastest for small \(k\), and SELECT,
-reservoir sampling and iterative choosing for small \(n/k\), but each of
-these is very slow elsewhere. The other algorithms run in
+No algorithm is the fastest for all \(n, k\). Quadratic rejection
+and quadratic F2 are the fastest for small \(k\), and SELECT,
+reservoir sampling and iterative choosing for small \(n/k\), but each
+of these is very slow elsewhere. The other algorithms run in
 \(\bigO{k}\) or \(\bigO{k \log k}\) time, and differ by smaller
 factors.
 
-A ratio overstates differences where both times are small, so we also
-measure how much each algorithm's time per number output exceeds that
-of the fastest. By this measure three algorithms are never far from
-the fastest: in every case, Cardchoose, Hidden Shuffle and Algorithm D
-are never more than 33\,ns per number slower, while every other
-algorithm is at least 240\,ns slower somewhere, and all but HSEL more
-than 290\,ns. Cardchoose is the simplest of the three: it is a few lines of
-integer arithmetic, while the other two need floating point and are
-considerably more involved. Algorithm D switches to Algorithm A once
-\(n \leq 13k\), and Hidden Shuffle runs three stages in turn, the
-last of them Algorithm A. Cardchoose's worst point in every case is at
-one of the two largest \(k\), with \(n\) the next Fibonacci number
-above it, where the \(\bigO{n}\) algorithms are fastest; at \(k = n\)
-itself it has almost nothing to do. Along those points its excess
-grows slowly with \(k\), as the \(\log k\) factor of its sort would
-suggest, until \(k\) is several million; beyond that, the output
-array no longer fits in the L3 cache, and the excess grows faster.
+We score each algorithm by its worst time per number output in each
+decade of \(k\): for each band, the most its time per call divided by
+\(k\) reaches at any point with \(k\) in the band, over every \(n\)
+tested. This says what it costs at worst, per number, for any \(n\)
+and any \(k\) in that range. The bands start at \(k = 10\), 100,
+1,000 and so on, the last running from \(10^7\) to the largest \(k\)
+tested; below 10, per-call overhead swamps everything. Each band also
+has a floor: the score of choosing the fastest of all twelve
+algorithms separately at every point, which no algorithm or set of
+algorithms can beat. We give worst cases rather than averages, since
+any average depends on which values of \(n\) and \(k\) we chose to
+test, and score each band of \(k\) separately since otherwise the
+largest \(k\), where everything is slowest per number, would decide
+every ranking.
 
-We give worst cases and ranges over regions of \(n\) and \(k\)
-rather than averages, since any average depends on which values of
-\(n\) and \(k\) we chose to test.
+\autoref{bandscpprandom} to \autoref{bandsrustsorted} give, for each
+band, the best algorithm, with any within 3\% of it, which is within
+the noise between runs; where any of those needs floating point
+(Hidden Shuffle and Algorithm D), the best algorithm that does not;
+then Cardchoose, and the floor. Each algorithm was timed only until a
+call took more than 30 seconds; only the quadratic algorithms reached
+that, from \(k = 1.3 \times 10^6\).
+
+\begin{table}
+    \footnotesize
+    \input{generated/bands-cpp-random.tex}
+    \caption{C++, random order: the best algorithms by worst time per
+    number output in each band of \(k\)}\label{bandscpprandom}
+\end{table}
+
+\begin{table}
+    \footnotesize
+    \input{generated/bands-cpp-sorted.tex}
+    \caption{C++, sorted order: the best algorithms by worst time per
+    number output in each band of \(k\)}\label{bandscppsorted}
+\end{table}
+
+\begin{table}
+    \footnotesize
+    \input{generated/bands-rust-random.tex}
+    \caption{Rust, random order: the best algorithms by worst time per
+    number output in each band of \(k\)}\label{bandsrustrandom}
+\end{table}
+
+\begin{table}
+    \footnotesize
+    \input{generated/bands-rust-sorted.tex}
+    \caption{Rust, sorted order: the best algorithms by worst time per
+    number output in each band of \(k\)}\label{bandsrustsorted}
+\end{table}
+
+Three algorithms are never far from the fastest per number output at
+any \(k\): Cardchoose, Hidden Shuffle and Algorithm D are never worse
+than 46\,ns per number in any case, while every other algorithm is
+worse than 100\,ns per number somewhere it was tested. Cardchoose is
+the simplest of the three: it is a few lines of integer arithmetic,
+while the other two need floating point and are considerably more
+involved. Algorithm D switches to Algorithm A once \(n \leq 13k\),
+and Hidden Shuffle runs three stages in turn, the last of them
+Algorithm A.
+
+With sorted output, Cardchoose is the best algorithm at every \(k\)
+below \(10^7\) in Rust, and Hidden Shuffle above that; in C++,
+Cardchoose is the best below \(10^4\), tied with Hidden Shuffle up to
+\(10^6\), and Hidden Shuffle is the best above. With random output,
+quadratic F2 is the best for small \(k\), below 1,000 in C++ and 100
+in Rust, where it needs neither a sort nor a shuffle; in Rust, with its
+fast hash tables, HSEL is the best from there to \(10^6\). Wherever
+the best algorithm needs floating point, the best one that does not is
+Cardchoose.
+
+The rest of this section describes regions of \(n\) and \(k\), by
+the range of one algorithm's time over another's.
 
 For sorted output in C++, Hidden Shuffle is the fastest algorithm
 wherever \(n \geq 16k\) and \(k \geq 1000\); there, Cardchoose takes
@@ -693,110 +752,51 @@ tree it builds.
 
 \section{Choosing algorithms}\label{choosing}
 
-A good implementation will implement multiple algorithms, and choose
-which one to use based on the values of \(n\) and \(k\).
-\autoref{coverratio} and \autoref{coverdifference} show, for each
-language and order, the set of one, two or three algorithms that comes
-closest to the fastest of all of them at every point tested with
-\(k \geq 10\), if each point uses the fastest algorithm in the set.
-This assumes the best choice is made at every point; an implementation
-has to choose by a rule, such as a threshold on \(n/k\). Vitter's
-Algorithm D is itself two algorithms, since it switches to Algorithm A
-once \(n \leq 13k\), so wherever the best set includes it we also give
-the best set without it.
-
-There are two ways to measure how close a set comes to the fastest,
-and each has a flaw. The first is the ratio: the largest factor by
-which the set is slower than the fastest. Its worst case is often at a
-tiny \(k\), where the stakes are tiny too. The best two algorithms for
-C++ random output by this measure are 4.80 times slower than the
-fastest at \(n = 2{,}178{,}309\), \(k = 34\), but that is 428\,ns
-against 89\,ns, only 339\,ns more per call. The second is the difference: the
-most the set's time per number output exceeds the fastest's. This
-discounts tiny \(k\), but ignores large relative losses where
-everything is cheap. The best three algorithms for C++ sorted output
-by this measure are only 1.31\,ns per number slower than the fastest
-at worst, but at \(n = k = 5{,}702{,}887\) that makes them 2.82 times
-slower: 9.5\,ms against 3.4\,ms. What a caller probably wants is somewhere in
-between: being a few times slower doesn't matter on a call that takes
-nanoseconds, but does on one that takes milliseconds. So we
-give the best sets by each measure, each with its worst ratio and
-worst difference, which need not occur at the same point.
+Since no algorithm is the best at every \(k\), an implementation might
+implement several, and choose which one to use based on the values of
+\(n\) and \(k\). \autoref{cover} shows, for each language and
+order, the best set of one, two or three algorithms, if each point uses
+the fastest algorithm in the set. A set's score in a band is its worst
+time per number output there, as for a single algorithm, and the table
+gives the most that exceeds the band's floor, as a ratio, in the set's
+worst band: \(1.00\times\) means the set is as good as all twelve
+algorithms together in every band. It also gives the most each set is
+slower than the best set of three, in time per number, in any band.
+Where the best set needs floating point, it also gives the best set
+that does not, or says that a third such algorithm is no better than
+two. This assumes the best choice is made at every point; an
+implementation has to choose by a rule, such as thresholds on \(k\)
+and \(n/k\).
 
 \begin{table}
     \footnotesize
-    \input{generated/cover-ratio.tex}
-    \caption{The best sets of up to three algorithms by their worst
-    ratio to the fastest, with their worst difference in time per
-    number output}\label{coverratio}
+    \input{generated/cover.tex}
+    \caption{The best sets of up to three algorithms, by how far their
+    worst time per number output in a band of \(k\) exceeds the band's
+    floor in their worst band, with the most they are slower than the
+    best three in any band}\label{cover}
 \end{table}
 
-\begin{table}
-    \footnotesize
-    \input{generated/cover-difference.tex}
-    \caption{The best sets of up to three algorithms by their worst
-    difference in time per number output from the fastest, with their
-    worst ratio}\label{coverdifference}
-\end{table}
+With sorted output, the best partner is iterative choosing, which wins
+where \(k\) is a large fraction of \(n\); with random output, it is
+quadratic F2, which wins at small \(k\). In C++, three algorithms
+including Hidden Shuffle are as good as all twelve together; in sorted
+order, no third integer-only algorithm improves on the best
+integer-only pair.
 
-\autoref{cpprandompareto} to \autoref{rustsortedpareto} plot, for
-each language and order, sets of one, two or three algorithms by their
-worst ratio and worst difference, both on log scales, so that down and
-to the left is better. Each figure shows every set that no other set
-of the same size beats on both measures, both among all sets and among
-sets without Algorithm D, so it includes every set in
-\autoref{coverratio} and \autoref{coverdifference} and the compromises
-between them. It also shows Cardchoose, Hidden Shuffle and Algorithm D
-on their own, which are never far from the fastest by difference, and
-RANKSB with iterative choosing, which \cite{nijenhuiswilf} pair. The
-labels abbreviate the algorithms: CC is Cardchoose, D is Vitter's
-Algorithm D, F2 is Floyd's F2, HS is Hidden Shuffle, HSEL is HSEL, IC
-is iterative choosing, QF2 is quadratic F2, QR is quadratic rejection
-sampling, RES is reservoir sampling, RKSB is RANKSB, RS is set-based
-rejection sampling and SEL is SELECT.
-
-With sorted output, in both languages, four algorithms are each the
-fastest in their own region: Cardchoose for small \(k\), Hidden
-Shuffle for large \(k\) when \(n\) is much larger, iterative choosing
-where \(k/n\) is large, and reservoir sampling near \(k = n\). (SELECT
-is the fastest at some points too, but never by more than 1.12 times in
-C++ or 1.22 times in Rust.) Every set of three has to leave one region
-to a slower algorithm, so the best three by ratio and the best three by
-difference are different sets, and no set of three comes between them.
-But all four of iterative choosing, reservoir sampling, Hidden Shuffle
-and Cardchoose together are never more than 1.13 times slower than the
-fastest in C++, or 1.22 times in Rust, while being no more per number
-slower than the best three by difference: 1.31\,ns in C++ and
-1.41\,ns in Rust. So for sorted output, \autoref{cppsortedpareto} and
-\autoref{rustsortedpareto} also show sets of four.
-
-\begin{figure}
-    \input{generated/cpp-random-pareto.pgf}
-    \caption{The best sets of algorithms for C++, random order, by worst ratio
-    and worst difference}
-    \label{cpprandompareto}
-\end{figure}
-
-\begin{figure}
-    \input{generated/cpp-sorted-pareto.pgf}
-    \caption{The best sets of algorithms for C++, sorted order, by worst ratio
-    and worst difference}
-    \label{cppsortedpareto}
-\end{figure}
-
-\begin{figure}
-    \input{generated/rust-random-pareto.pgf}
-    \caption{The best sets of algorithms for Rust, random order, by worst ratio
-    and worst difference}
-    \label{rustrandompareto}
-\end{figure}
-
-\begin{figure}
-    \input{generated/rust-sorted-pareto.pgf}
-    \caption{The best sets of algorithms for Rust, sorted order, by worst ratio
-    and worst difference}
-    \label{rustsortedpareto}
-\end{figure}
+If an implementation has only one algorithm, Cardchoose is a good
+choice. It is the best single algorithm in three of the four cases; in
+the fourth, C++ with sorted output, only the two floating-point
+algorithms beat it, because libc++'s \mintinline{cpp}{std::sort} is
+slower than Rust's sort. It is the best integer-only algorithm in every
+case. Implemented alone, it is never more than 9 to 22\,ns per number
+slower than the best three algorithms together, in any case and at any
+\(k\). Its largest ratios to the floor are where calls are cheap: with
+random output, it is 3.66 times the floor in C++ and 2.42 times in Rust
+for \(k < 100\), where quadratic F2 needs neither a sort nor a
+shuffle, but no call to Cardchoose there takes more than 1.6\,\textmu
+s. With sorted output, it is 2.30 times the floor in C++ and 1.55 times
+in Rust for \(k \geq 10^7\), where Hidden Shuffle wins.
 
 % Flush the remaining figures before the bibliography
 \clearpage
