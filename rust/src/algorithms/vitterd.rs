@@ -123,7 +123,7 @@ where
 {
     vitterd(rng, length, res);
     for i in 0..res.len() as u32 {
-        let r = rng.random_range(0..=i);
+        let r = rng.random_range(0..i + 1);
         res.swap(i as usize, r as usize);
     }
 }

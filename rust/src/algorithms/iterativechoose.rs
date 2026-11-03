@@ -24,7 +24,7 @@ where
     for i in 0..length {
         let r = rng.random_range(0..length - i);
         if r < amount - ix {
-            let rr = rng.random_range(0..=ix) as usize;
+            let rr = rng.random_range(0..ix + 1) as usize;
             res[ix as usize] = res[rr];
             res[rr] = i;
             ix += 1;

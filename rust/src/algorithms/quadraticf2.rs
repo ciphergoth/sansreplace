@@ -6,7 +6,7 @@ where
     let amount = res.len() as u32;
     for i in 0..amount {
         let j = length - amount + i;
-        let t = rng.random_range(0..=j);
+        let t = rng.random_range(0..j + 1);
         // The entries are distinct, so at most one matches; writing every
         // entry without stopping lets the compiler vectorise this loop.
         for x in &mut res[..(i as usize)] {
@@ -24,7 +24,7 @@ where
     let amount = res.len() as u32;
     for i in 0..amount {
         let j = length - amount + i;
-        let t = rng.random_range(0..=j);
+        let t = rng.random_range(0..j + 1);
         // Before sorting only the set matters, so where t is already present,
         // add j instead of moving the old t to j: the set is the same, and the
         // scan only reads.

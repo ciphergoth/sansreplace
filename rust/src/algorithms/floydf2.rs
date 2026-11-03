@@ -7,7 +7,7 @@ where
     let mut done = std::collections::HashSet::with_capacity(amount as usize);
     for i in 0..amount {
         let j = length - amount + i;
-        let t = rng.random_range(0..=j);
+        let t = rng.random_range(0..j + 1);
         if done.insert(t) {
             res[i as usize] = t;
         } else {
@@ -27,7 +27,7 @@ where
     let mut done = std::collections::HashSet::with_capacity(amount as usize);
     for i in 0..amount {
         let j = length - amount + i;
-        let t = rng.random_range(0..=j);
+        let t = rng.random_range(0..j + 1);
         if done.insert(t) {
             res[i as usize] = t;
         } else {

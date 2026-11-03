@@ -5,12 +5,12 @@ where
     assert!(res.len() <= (length as usize));
     let amount = res.len() as u32;
     for i in 0..amount {
-        let r = rng.random_range(0..=i) as usize;
+        let r = rng.random_range(0..i + 1) as usize;
         res[i as usize] = res[r];
         res[r] = i;
     }
     for i in amount..length {
-        let r = rng.random_range(0..=i);
+        let r = rng.random_range(0..i + 1);
         if r < amount {
             res[r as usize] = i;
         }
@@ -27,7 +27,7 @@ where
         *r = i;
     }
     for i in amount..length {
-        let r = rng.random_range(0..=i);
+        let r = rng.random_range(0..i + 1);
         if r < amount {
             res[r as usize] = i;
         }
