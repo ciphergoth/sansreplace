@@ -119,8 +119,9 @@ python/pairwise
 `--measure difference`, and the ones in the [results](results.md) from `python/summarise`, as
 those pages say.
 
-`python/regions CASE A B` compares two algorithms by region of _n_/_k_ and _k_, as for the claims in
-the [results](results.md); `B` can be `others`, for the fastest of all the other algorithms.
+`python/regions CASE A B...` compares two algorithms by region of _n_/_k_ and _k_, as for the claims
+in the [results](results.md); given several algorithms after `A`, it compares `A` with the fastest of
+them, and given `others`, with the fastest of all the other algorithms.
 
 ## The web explorer
 
