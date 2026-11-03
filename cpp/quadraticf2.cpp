@@ -40,7 +40,7 @@ extern "C" void sorted_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
-        result[i] = std::find(result, result + i, r) != result + i ? m : r;
+        result[i] = std::ranges::contains(result, result + i, r) ? m : r;
     }
     std::sort(result, result + k);
 }

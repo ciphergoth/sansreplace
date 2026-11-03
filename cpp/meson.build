@@ -15,8 +15,8 @@
 # b_ndebug: Meson otherwise adds bounds checks to the standard library, defining
 # _LIBCPP_HARDENING_MODE for libc++ and _GLIBCXX_ASSERTIONS for libstdc++
 project('sansreplace', ['c', 'cpp'],
-    default_options : ['buildtype=debugoptimized', 'c_std=c11',
-'cpp_std=c++20', 'b_ndebug=true'])
+    default_options : ['buildtype=debugoptimized', 'c_std=c23',
+'cpp_std=c++23', 'b_ndebug=true'])
 
 add_project_arguments(
     '-O3',

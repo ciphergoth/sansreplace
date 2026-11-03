@@ -23,7 +23,7 @@
 extern "C" void random_quadraticreject(uint32_t n, uint32_t k, uint32_t* result) {
     for (uint32_t i = 0; i < k;) {
         uint32_t r = randbelow(n);
-        if (std::find(result, result + i, r) == result + i) {
+        if (!std::ranges::contains(result, result + i, r)) {
             result[i++] = r;
         }
     }
