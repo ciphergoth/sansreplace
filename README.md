@@ -24,6 +24,7 @@ of the four cases.
 * [Choosing algorithms](choosing.md)
 * Pairwise comparisons: [ratio of times](results/latest/pairwise-ratio.md),
   [difference in time/_k_](results/latest/pairwise-difference.md)
+* [Making the timings trustworthy](measurement.md)
 * [Running this software](running.md)
 
 ## Cardchoose
