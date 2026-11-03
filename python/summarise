@@ -52,7 +52,7 @@ def markdown(results):
         print("|---|---|---|---|---|")
         for band, best, integer, cc, fl in rows(bands.read_times(results / name)):
             cells = [bands.band_label(band),
-                " = ".join(f"`{a}` {duration(s)}" for a, s in best),
+                " ≈ ".join(f"`{a}` {duration(s)}" for a, s in best),
                 "" if integer is None else f"`{integer[0]}` {duration(integer[1])}",
                 duration(cc), duration(fl)]
             print("| " + " | ".join(cells) + " |")
@@ -67,7 +67,7 @@ def latex(results, outdir):
                 "\\hline\n")
             for band, best, integer, cc, fl in rows(bands.read_times(results / name)):
                 cells = [bands.band_label(band, latex=True),
-                    bands.latex_stack([("= " if i else "") + f"{bands.LATEX_NAMES[a]} {bands.latex_duration(s)}"
+                    bands.latex_stack([("\\(\\approx\\) " if i else "") + f"{bands.LATEX_NAMES[a]} {bands.latex_duration(s)}"
                         for i, (a, s) in enumerate(best)]),
                     "" if integer is None
                         else f"{bands.LATEX_NAMES[integer[0]]} {bands.latex_duration(integer[1])}",
