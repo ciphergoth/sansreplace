@@ -14,8 +14,8 @@ faster.
 
 No algorithm is close to the fastest everywhere, so a good implementation chooses between a few
 algorithms based on _n_ and _k_. [Choosing algorithms](choosing.md) gives the best such sets: in
-each case the best set of three is never more than 1.2–1.7× slower than the fastest, while the
-best single algorithm is somewhere 2.9–13× slower.
+each case the best set of three is never more than 1.3–2.5× slower than the fastest, while the
+best single algorithm is somewhere 3.9–21× slower.
 
 * [Guide to algorithms tested](algorithms.md)
 * [Benchmark results](results.md)

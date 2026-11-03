@@ -40,9 +40,9 @@ SHORT = {
     "select": "SEL", "hsel": "HSEL", "cardchoose": "CC",
 }
 
-# In Rust with sorted output, four algorithms are each fastest in their own
-# region, and a set of all four beats every set of three on both measures
-SIZES = {"rust-sorted": 4}
+# With sorted output, four algorithms are each fastest in their own region,
+# and a set of all four is as good as every set of three on both measures
+SIZES = {"cpp-sorted": 4, "rust-sorted": 4}
 
 # Sets the text discusses: the three algorithms never far from the fastest in
 # time/k, and Nijenhuis and Wilf's pairing of RANKSB with iterative choosing
@@ -110,9 +110,11 @@ def _plot(times, sizes, title, output):
         ax.scatter([p[0] for p in front], [p[1] for p in front], s=40,
             marker=markers[size], color=colours[size],
             label=f"{size} algorithm{'s' if size > 1 else ''}")
+        # Sets of four sit just below sets of three that share most of
+        # their algorithms, so label them below their points
         for r, d, s in front:
             ax.annotate("+".join(SHORT[a] for a in s), (r, d), fontsize=8,
-                xytext=(5, -3 + 4 * size), textcoords="offset points",
+                xytext=(5, -3 + 4 * size if size < 4 else -12), textcoords="offset points",
                 color=colours[size])
     ax.set_xscale("log")
     ax.set_yscale("log")
