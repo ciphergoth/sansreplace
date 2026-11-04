@@ -11,70 +11,70 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 
 | | _k_ from 10 | _k_ from 100 | _k_ from 1,000 | _k_ from 10<sup>4</sup> | _k_ from 10<sup>5</sup> | _k_ from 10<sup>6</sup> | _k_ from 10<sup>7</sup> |
 |---|---|---|---|---|---|---|---|
-| `quadraticreject` | 32.1ns | 217ns | 1.60µs | 24.7µs | 376µs | ? from 1.3×10<sup>6</sup> | not timed |
-| `rejectionsample` | 39.7ns | 47.2ns | 53.0ns | 89.4ns | 344ns | 857ns | 1.12µs |
-| `ranksb` | 25.5ns | 29.1ns | 32.2ns | 61.8ns | 68.2ns | 202ns | 364ns |
-| `floydf2` | 34.4ns | 37.5ns | 38.5ns | 40.7ns | 69.5ns | 201ns | 214ns |
-| `quadraticf2` | 4.92ns | 17.4ns | 103ns | 1.28µs | 16.9µs | ? from 1.3×10<sup>6</sup> | not timed |
-| `iterativechoose` | 101ms | 9.05ms | 822µs | 121µs | 10.8µs | 972ns | 117ns |
-| `reservoirsample` | 90.0ms | 8.19ms | 738µs | 108µs | 9.78µs | 944ns | 141ns |
-| `vitterd` | 26.6ns | 26.7ns | 26.8ns | 26.7ns | 26.9ns | 28.8ns | 34.6ns |
-| `hiddenshuffle` | 26.1ns | 26.5ns | 25.8ns | 24.6ns | 24.3ns | 25.5ns | 34.8ns |
-| `select` | 36.5ms | 3.31ms | 291µs | 42.9µs | 3.89µs | 376ns | 47.5ns |
-| `hsel` | 35.8ns | 39.3ns | 39.7ns | 42.4ns | 66.8ns | 229ns | 236ns |
-| `cardchoose` | 17.2ns | 20.7ns | 21.4ns | 24.1ns | 26.3ns | 31.5ns | 45.2ns |
-| floor | 4.69ns | 11.4ns | 11.9ns | 12.8ns | 14.9ns | 18.3ns | 22.8ns |
+| `quadraticreject` | 31.6ns | 215ns | 1.75µs | 29.3µs | 390µs | ? from 1.3×10<sup>6</sup> | not timed |
+| `rejectionsample` | 39.6ns | 47.6ns | 53.4ns | 78.6ns | 289ns | 979ns | 1.11µs |
+| `ranksb` | 25.0ns | 28.3ns | 31.3ns | 59.3ns | 66.9ns | 208ns | 329ns |
+| `floydf2` | 33.2ns | 36.1ns | 36.2ns | 39.1ns | 83.2ns | 208ns | 220ns |
+| `quadraticf2` | 4.83ns | 17.0ns | 91.9ns | 830ns | 13.9µs | ? from 1.3×10<sup>6</sup> | not timed |
+| `iterativechoose` | 96.2ms | 8.68ms | 783µs | 114µs | 10.3µs | 938ns | 109ns |
+| `reservoirsample` | 91.1ms | 8.09ms | 755µs | 110µs | 9.95µs | 923ns | 141ns |
+| `vitterd` | 26.7ns | 26.9ns | 26.9ns | 26.8ns | 27.0ns | 28.1ns | 34.9ns |
+| `hiddenshuffle` | 23.9ns | 22.6ns | 22.9ns | 23.1ns | 22.4ns | 24.7ns | 31.7ns |
+| `select` | 34.5ms | 3.11ms | 281µs | 41.0µs | 3.74µs | 355ns | 45.7ns |
+| `hsel` | 32.8ns | 36.1ns | 36.5ns | 39.2ns | 106ns | 228ns | 225ns |
+| `cardchoose` | 16.4ns | 18.8ns | 20.9ns | 23.1ns | 24.7ns | 29.4ns | 43.8ns |
+| floor | 4.63ns | 10.8ns | 11.2ns | 11.8ns | 14.2ns | 17.7ns | 22.1ns |
 
 ## C++, sorted order
 
 | | _k_ from 10 | _k_ from 100 | _k_ from 1,000 | _k_ from 10<sup>4</sup> | _k_ from 10<sup>5</sup> | _k_ from 10<sup>6</sup> | _k_ from 10<sup>7</sup> |
 |---|---|---|---|---|---|---|---|
-| `quadraticreject` | 45.2ns | 237ns | 1.74µs | 22.1µs | 459µs | ? from 1.3×10<sup>6</sup> | not timed |
-| `rejectionsample` | 51.9ns | 64.5ns | 73.1ns | 105ns | 312ns | 1.00µs | 1.19µs |
-| `ranksb` | 24.6ns | 28.3ns | 30.7ns | 56.7ns | 66.3ns | 190ns | 310ns |
-| `floydf2` | 46.5ns | 56.4ns | 57.0ns | 59.0ns | 92.2ns | 226ns | 240ns |
-| `quadraticf2` | 17.1ns | 35.3ns | 135ns | 1.19µs | 15.6µs | ? from 1.3×10<sup>6</sup> | not timed |
-| `iterativechoose` | 96.5ms | 8.67ms | 777µs | 116µs | 10.9µs | 1.01µs | 93.6ns |
-| `reservoirsample` | 92.7ms | 8.46ms | 783µs | 112µs | 10.1µs | 979ns | 162ns |
-| `vitterd` | 27.1ns | 26.8ns | 27.2ns | 27.7ns | 26.5ns | 28.3ns | 28.2ns |
-| `hiddenshuffle` | 23.9ns | 23.2ns | 23.6ns | 23.4ns | 23.7ns | 23.3ns | 23.6ns |
-| `select` | 34.9ms | 3.12ms | 281µs | 41.3µs | 3.76µs | 373ns | 67.9ns |
-| `hsel` | 47.9ns | 56.8ns | 56.7ns | 62.0ns | 81.0ns | 248ns | 253ns |
-| `cardchoose` | 16.6ns | 19.1ns | 20.8ns | 23.1ns | 24.1ns | 26.8ns | 34.4ns |
-| floor | 13.6ns | 14.8ns | 14.1ns | 14.1ns | 14.3ns | 14.0ns | 15.0ns |
+| `quadraticreject` | 44.0ns | 234ns | 1.53µs | 20.7µs | 365µs | ? from 1.3×10<sup>6</sup> | not timed |
+| `rejectionsample` | 50.7ns | 62.7ns | 69.8ns | 106ns | 303ns | 1.04µs | 1.19µs |
+| `ranksb` | 23.7ns | 27.2ns | 29.8ns | 57.3ns | 63.6ns | 168ns | 293ns |
+| `floydf2` | 45.5ns | 50.8ns | 52.0ns | 55.2ns | 140ns | 214ns | 232ns |
+| `quadraticf2` | 17.3ns | 35.3ns | 130ns | 1.12µs | 14.4µs | ? from 1.3×10<sup>6</sup> | not timed |
+| `iterativechoose` | 94.4ms | 8.52ms | 767µs | 112µs | 10.1µs | 912ns | 88.1ns |
+| `reservoirsample` | 87.3ms | 7.91ms | 713µs | 104µs | 9.45µs | 908ns | 152ns |
+| `vitterd` | 25.4ns | 25.6ns | 25.6ns | 25.8ns | 25.8ns | 25.7ns | 25.7ns |
+| `hiddenshuffle` | 22.3ns | 21.6ns | 21.4ns | 21.4ns | 21.5ns | 21.7ns | 22.1ns |
+| `select` | 34.3ms | 3.10ms | 280µs | 41.0µs | 3.76µs | 373ns | 67.3ns |
+| `hsel` | 44.9ns | 50.9ns | 51.9ns | 57.2ns | 78.4ns | 234ns | 245ns |
+| `cardchoose` | 15.8ns | 17.9ns | 19.5ns | 21.5ns | 23.4ns | 26.8ns | 33.8ns |
+| floor | 13.2ns | 13.9ns | 13.9ns | 13.9ns | 13.9ns | 14.3ns | 14.7ns |
 
 ## Rust, random order
 
 | | _k_ from 10 | _k_ from 100 | _k_ from 1,000 | _k_ from 10<sup>4</sup> | _k_ from 10<sup>5</sup> | _k_ from 10<sup>6</sup> | _k_ from 10<sup>7</sup> |
 |---|---|---|---|---|---|---|---|
-| `quadraticreject` | 53.8ns | 174ns | 1.02µs | 16.6µs | 219µs | ? from 1.3×10<sup>6</sup> | not timed |
-| `rejectionsample` | 39.3ns | 52.2ns | 69.5ns | 93.8ns | 189ns | 1.28µs | 2.11µs |
-| `ranksb` | 29.4ns | 33.4ns | 36.5ns | 61.1ns | 70.1ns | 204ns | 379ns |
-| `floydf2` | 17.1ns | 15.6ns | 16.1ns | 17.4ns | 30.8ns | 192ns | 315ns |
-| `quadraticf2` | 6.01ns | 18.0ns | 99.5ns | 890ns | 16.3µs | ? from 1.3×10<sup>6</sup> | not timed |
-| `iterativechoose` | 102ms | 9.17ms | 826µs | 119µs | 10.8µs | 1.00µs | 135ns |
-| `reservoirsample` | 128ms | 11.6ms | 1.05ms | 153µs | 13.9µs | 1.30µs | 277ns |
-| `vitterd` | 29.8ns | 30.6ns | 29.9ns | 29.1ns | 28.9ns | 32.2ns | 46.3ns |
-| `hiddenshuffle` | 26.7ns | 25.9ns | 25.9ns | 25.3ns | 26.3ns | 29.5ns | 45.4ns |
-| `select` | 35.4ms | 3.16ms | 284µs | 41.3µs | 3.80µs | 360ns | 51.7ns |
-| `hsel` | 11.4ns | 10.4ns | 10.4ns | 11.2ns | 15.3ns | 78.4ns | 100.0ns |
-| `cardchoose` | 13.4ns | 12.1ns | 13.0ns | 14.9ns | 16.1ns | 22.5ns | 45.9ns |
-| floor | 5.52ns | 8.99ns | 9.37ns | 10.2ns | 13.4ns | 21.7ns | 31.2ns |
+| `quadraticreject` | 48.1ns | 130ns | 622ns | 11.0µs | 171µs | ? from 1.3×10<sup>6</sup> | not timed |
+| `rejectionsample` | 39.3ns | 52.3ns | 68.8ns | 94.2ns | 169ns | 1.07µs | 2.07µs |
+| `ranksb` | 24.0ns | 27.4ns | 29.9ns | 54.8ns | 61.5ns | 188ns | 351ns |
+| `floydf2` | 15.2ns | 14.5ns | 14.8ns | 16.1ns | 29.6ns | 173ns | 315ns |
+| `quadraticf2` | 5.21ns | 13.9ns | 87.0ns | 816ns | 13.5µs | ? from 1.3×10<sup>6</sup> | not timed |
+| `iterativechoose` | 82.9ms | 7.48ms | 675µs | 98.4µs | 8.88µs | 809ns | 100.0ns |
+| `reservoirsample` | 89.1ms | 8.06ms | 726µs | 106µs | 9.59µs | 898ns | 107ns |
+| `vitterd` | 26.6ns | 26.8ns | 26.8ns | 26.8ns | 27.2ns | 29.4ns | 39.6ns |
+| `hiddenshuffle` | 24.4ns | 23.5ns | 23.4ns | 23.4ns | 23.7ns | 26.7ns | 37.6ns |
+| `select` | 34.4ms | 3.16ms | 281µs | 41.1µs | 3.77µs | 357ns | 51.4ns |
+| `hsel` | 11.0ns | 10.0ns | 9.77ns | 10.4ns | 13.5ns | 54.4ns | 99.2ns |
+| `cardchoose` | 11.8ns | 11.2ns | 12.1ns | 13.2ns | 14.9ns | 20.0ns | 38.1ns |
+| floor | 4.55ns | 8.24ns | 8.84ns | 9.55ns | 12.7ns | 18.3ns | 27.5ns |
 
 ## Rust, sorted order
 
 | | _k_ from 10 | _k_ from 100 | _k_ from 1,000 | _k_ from 10<sup>4</sup> | _k_ from 10<sup>5</sup> | _k_ from 10<sup>6</sup> | _k_ from 10<sup>7</sup> |
 |---|---|---|---|---|---|---|---|
-| `quadraticreject` | 55.9ns | 175ns | 986ns | 11.5µs | 225µs | ? from 1.3×10<sup>6</sup> | not timed |
-| `rejectionsample` | 44.1ns | 58.4ns | 75.6ns | 97.9ns | 194ns | 1.08µs | 1.97µs |
-| `ranksb` | 23.2ns | 26.6ns | 29.1ns | 55.5ns | 62.0ns | 181ns | 342ns |
-| `floydf2` | 21.3ns | 20.8ns | 22.5ns | 24.5ns | 31.7ns | 125ns | 193ns |
-| `quadraticf2` | 13.9ns | 23.6ns | 80.5ns | 845ns | 13.6µs | ? from 1.3×10<sup>6</sup> | not timed |
-| `iterativechoose` | 83.6ms | 7.55ms | 681µs | 99.4µs | 8.97µs | 815ns | 80.6ns |
-| `reservoirsample` | 134ms | 12.1ms | 1.09ms | 160µs | 14.5µs | 1.35µs | 267ns |
-| `vitterd` | 25.4ns | 25.7ns | 25.7ns | 25.8ns | 25.8ns | 26.3ns | 26.5ns |
-| `hiddenshuffle` | 23.7ns | 22.7ns | 22.6ns | 22.6ns | 22.6ns | 23.2ns | 23.1ns |
-| `select` | 34.1ms | 3.09ms | 278µs | 40.9µs | 3.75µs | 368ns | 62.2ns |
-| `hsel` | 18.8ns | 16.4ns | 17.4ns | 19.0ns | 22.7ns | 66.2ns | 106ns |
-| `cardchoose` | 11.4ns | 10.1ns | 11.0ns | 12.1ns | 13.3ns | 16.4ns | 24.9ns |
-| floor | 9.99ns | 8.86ns | 9.24ns | 10.8ns | 11.4ns | 14.2ns | 16.1ns |
+| `quadraticreject` | 53.2ns | 135ns | 615ns | 8.71µs | 178µs | ? from 1.3×10<sup>6</sup> | not timed |
+| `rejectionsample` | 44.0ns | 58.3ns | 76.2ns | 100.0ns | 239ns | 1.04µs | 2.04µs |
+| `ranksb` | 22.7ns | 26.1ns | 28.6ns | 53.3ns | 58.5ns | 203ns | 326ns |
+| `floydf2` | 19.8ns | 19.6ns | 21.3ns | 23.2ns | 29.8ns | 103ns | 186ns |
+| `quadraticf2` | 12.6ns | 21.8ns | 78.2ns | 832ns | 13.0µs | ? from 1.3×10<sup>6</sup> | not timed |
+| `iterativechoose` | 84.6ms | 7.63ms | 688µs | 101µs | 9.07µs | 824ns | 81.1ns |
+| `reservoirsample` | 80.2ms | 7.24ms | 653µs | 95.3µs | 8.66µs | 826ns | 106ns |
+| `vitterd` | 25.2ns | 25.5ns | 25.6ns | 25.7ns | 25.6ns | 26.2ns | 26.2ns |
+| `hiddenshuffle` | 23.6ns | 22.2ns | 22.1ns | 22.2ns | 22.1ns | 22.5ns | 22.5ns |
+| `select` | 34.2ms | 3.09ms | 279µs | 41.0µs | 3.75µs | 366ns | 61.7ns |
+| `hsel` | 18.6ns | 16.0ns | 17.0ns | 18.8ns | 22.5ns | 67.2ns | 106ns |
+| `cardchoose` | 11.1ns | 10.1ns | 11.1ns | 12.2ns | 13.3ns | 17.2ns | 24.8ns |
+| floor | 9.87ns | 8.81ns | 9.15ns | 10.7ns | 11.5ns | 14.5ns | 15.9ns |

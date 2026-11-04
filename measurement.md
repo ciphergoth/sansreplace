@@ -45,8 +45,7 @@ algorithm's time, so the C++ uses its own: Xoshiro256++ with Lemire's method for
 bound, in [`cpp/randbelow.h`](cpp/randbelow.h). It is defined in the header so that it is inlined
 into each algorithm, and it takes two 32-bit numbers from each 64-bit output. The Rust uses the
 `rand` crate's `SmallRng`, which is the same generator, and its `random_range`, which takes a whole
-64-bit output for each 32-bit number; this is most of why the shuffle that the random-order
-variants end with costs more in Rust (see [the results](results.md)). Both generators, and the
+64-bit output for each 32-bit number. Both generators, and the
 Python's, start each process from the same fixed seed, so that running the same code again makes
 the same draws; the C++ and Rust generators start in the same state.
 

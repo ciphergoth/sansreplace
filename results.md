@@ -6,7 +6,9 @@ for values of _n_ and _k_ that are Fibonacci numbers, with _k_ at most 102,334,1
 Fibonacci number). [Full results](results/latest/)
 
 Each algorithm is timed in a process of its own, and its CSVs record the commit and setup it was
-timed with.
+timed with. [Making the timings trustworthy](measurement.md) describes what I did so that these
+times measure the algorithms and the languages' libraries, rather than accidents of memory layout
+or code generation.
 
 Since both _n_ and _k_ affect the performance, I compare algorithms using an animated graph. For
 each frame, I fix the value of _n_ and graph the performance of each algorithm for various values
@@ -35,20 +37,57 @@ For every pair of algorithms, the pairwise comparisons give how much slower one 
 at its worst, and where, both as a [ratio of times](results/latest/pairwise-ratio.md) and as a
 [difference in time/_k_](results/latest/pairwise-difference.md).
 
+## Differences between the languages
+
+The C++ and Rust implementations are the same algorithms, written the same way, and each uses
+only its own language's standard library, so these results show the performance you get from
+standard components. Some of those components differ a great deal:
+
+- **Hash tables.** The C++ uses libc++'s `std::unordered_set` and `std::unordered_map`, which are
+  node-based: each entry is allocated separately and reached through a linked list. Rust's
+  `HashSet` and `HashMap` are flat open-addressing tables based on SwissTable. The hash-based
+  algorithms, `rejectionsample`, `floydf2` and `hsel`, take about 0.3× as long in Rust as in C++.
+- **Sorting.** libc++'s `std::sort` is an introsort, and Rust's `sort_unstable` is ipnsort. Sorting
+  the same arrays of random numbers, in ns per number:
+
+  | Length | C++ `std::sort` | Rust `sort_unstable` |
+  |---|---|---|
+  | 144 | 4.41 | 3.39 |
+  | 10,946 | 7.06 | 6.12 |
+  | 121,393 | 18.1 | 9.82 |
+  | 1,346,269 | 20.2 | 11.5 |
+
+  `std::sort` takes 1.15–1.84× as long. (C++ has no separate unstable sort: `std::sort` already
+  is one.) This is most of why `cardchoose` takes about 0.5× as long in Rust as in C++.
+- **Random numbers.** Both use the Xoshiro256++ generator, and both turn its output into a number
+  below a bound with a multiplication. But the C++ uses its own code for this, which takes two
+  32-bit numbers from each 64-bit output, where the `rand` crate's `random_range` uses a whole
+  64-bit output for each (see [the random number
+  generator](measurement.md#the-random-number-generator)). The shuffle that turns the sorted output
+  of `ranksb`, `vitterd` and `hiddenshuffle` into random order is the same loop in both languages,
+  but the time it adds per number is 1.1–1.5× as much in Rust, at the median in each decade of _k_.
+  So `vitterd` and `hiddenshuffle` take about the same time in both languages for sorted output,
+  and 4–8% longer in Rust for random output, at the median. (The `rand` crate's own
+  `SliceRandom::shuffle` is slower still.)
+- **Searching an array.** The quadratic algorithms check each number they draw against the output
+  so far. The Rust uses its standard `slice::contains`. The C++ uses a loop of its own that the
+  compiler vectorises: libc++'s `std::ranges::contains` calls `wmemchr`, which is slower for the
+  short arrays that are the only place the quadratic algorithms are worth having (see
+  [searching an array in C++](measurement.md#searching-an-array-in-c)).
+- **Code generation.** Both compilers use LLVM, and mostly produce much the same machine code. The
+  one difference I found that matters is in random-order `reservoirsample` in Rust, which keeps its
+  loop bound in memory rather than in a register, and takes about 1.1× as long as in C++.
+
 ## C++
 
-The C++ implementations use only the standard library, here libc++: `std::unordered_set` and
-`std::unordered_map`, which are node-based, and `std::sort`. So these results show the
-performance you get from standard components.
-
 For sorted output, `hiddenshuffle` is the fastest algorithm wherever _n_ ≥ 16 _k_ and _k_ ≥ 1000.
-There, `cardchoose` takes up to 2.4× as long, and `ranksb` 1.14–2.7× as long. `ranksb` slows down as
+There, `cardchoose` takes up to 2.4× as long, and `ranksb` 1.2–2.6× as long. `ranksb` slows down as
 _k_ approaches _n_, where Nijenhuis and Wilf pair it with `iterativechoose` (which they refer to as
 RKS2). For random output, `select` is the fastest wherever 2 _k_ ≤ _n_ < 16 _k_ and _n_ is under 8
 million; for larger _n_, where each call maps its array afresh (see [SELECT](algorithms.md#select)),
-it takes up to 1.8× as long as the fastest there. With _k_ ≥ 1000, `hiddenshuffle` followed by a
+it takes up to 2.0× as long as the fastest there. With _k_ ≥ 1000, `hiddenshuffle` followed by a
 shuffle is the fastest where _n_ ≥ 256 _k_. `cardchoose` is faster than `rejectionsample`, `floydf2`
-and `hsel` at every point where _k_ ≤ _n_/2: they take 1.12–8.3× as long, and at least 1.15× as
+and `hsel` at every point where _k_ ≤ _n_/2: they take 1.10–8.9× as long, and at least 1.19× as
 long where _n_ ≥ 4 _k_.
 
 ![graph](results/latest/graphs/cpp-random.webp)
@@ -57,24 +96,14 @@ long where _n_ ≥ 4 _k_.
 
 ## Rust
 
-The Rust implementations use Rust's standard `HashMap`, `HashSet` and unstable sort. The hash
-tables are flat open-addressing tables, much faster than the node-based C++ ones; the hash-based
-algorithms take about 0.3× as long in Rust as in C++, and `cardchoose` about 0.5–0.6×, while
-`ranksb`, `vitterd` and `hiddenshuffle` take about the same time in both for sorted output, and
-about 10% longer in Rust for random output. The difference is in the shuffle that turns their sorted
-output into random order, which costs up to about twice as much per number in Rust. It is the same
-loop in both languages, but the Rust draws each index with the `rand` crate's `random_range`,
-while the C++ uses its own, which takes two indices from each 64-bit random number. At large _k_ the shuffle is close to half of `cardchoose`'s time in Rust, against a
-quarter in C++. (The `rand` crate's own `SliceRandom::shuffle` is slower still.)
-
 For sorted output, `cardchoose` and `hiddenshuffle` divide the range by _k_. Wherever _k_ < 1000 and
-_n_ ≥ 2 _k_, `cardchoose` is the fastest algorithm or within 22% of it, and `hiddenshuffle` takes up
+_n_ ≥ 2 _k_, `cardchoose` is the fastest algorithm or within 24% of it, and `hiddenshuffle` takes up
 to 3.7× as long as `cardchoose`. For larger _k_ they trade places: wherever _k_ ≥ 10<sup>5</sup> and
-_n_ ≥ 16 _k_, each is within 26% of the fastest algorithm, and `hiddenshuffle` is the fastest
+_n_ ≥ 16 _k_, each is within 27% of the fastest algorithm, and `hiddenshuffle` is the fastest
 wherever _k_ ≥ 10<sup>7</sup> and _n_ ≥ 16 _k_. For random output, as in C++, `select` is the
-fastest wherever 2 _k_ ≤ _n_ < 16 _k_ and _n_ is under 8 million, and `hsel` is within 16% of the
+fastest wherever 2 _k_ ≤ _n_ < 16 _k_ and _n_ is under 8 million, and `hsel` is within 10% of the
 fastest wherever _n_ ≥ 256 _k_ and 1000 ≤ _k_ < 10<sup>5</sup>. `cardchoose` is never more than
-1.57× slower than the fastest of `rejectionsample`, `floydf2`, `hsel` and itself where _k_ ≤ _n_/2.
+1.38× slower than the fastest of `rejectionsample`, `floydf2`, `hsel` and itself where _k_ ≤ _n_/2.
 
 ![graph](results/latest/graphs/rust-random.webp)
 
