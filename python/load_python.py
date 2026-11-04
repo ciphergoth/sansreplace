@@ -14,9 +14,11 @@
 
 import gc
 import importlib
+import random
 import time
 
 from algorithms import ALGORITHMS
+from impl_load import SEED
 
 class Timeable:
     def __init__(self, sorttype, alg, choose):
@@ -37,6 +39,7 @@ class Timeable:
         return finish - start
 
 def get_timeables(topdir, args):
+    random.seed(SEED)
     res = {}
     for alg in ["donothing"] + ALGORITHMS:
         md = importlib.import_module(f"algorithms.{alg}")

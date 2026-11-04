@@ -20,6 +20,7 @@ import subprocess
 
 import cffi
 
+from impl_load import SEED
 from load_cpp import list_functions
 
 
@@ -34,11 +35,14 @@ def setup_module(rustdir):
     ffi = cffi.FFI()
     ffi.cdef("""
         typedef struct Algorithm Algorithm;
+        void rand_init(uint64_t seed);
         const Algorithm* algorithm(const char* sorttype, const char* name);
         void call(const Algorithm* f, uint32_t n, uint32_t k, uint32_t* result);
         double timefunc_s(const Algorithm* f, uint32_t n, uint32_t k, uint64_t iters);
     """)
-    return ffi, ffi.dlopen(libfile)
+    lib = ffi.dlopen(libfile)
+    lib.rand_init(SEED)
+    return ffi, lib
 
 class Timeable:
     def __init__(self, sorttype, alg, ffi, lib):

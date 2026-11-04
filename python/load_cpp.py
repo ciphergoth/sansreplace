@@ -18,6 +18,7 @@ import subprocess
 import cffi
 
 from algorithms import ALGORITHMS
+from impl_load import SEED
 
 
 def setup_module(cppdir, build_dir, functions):
@@ -33,14 +34,14 @@ def setup_module(cppdir, build_dir, functions):
     [libfile] = [t["filename"][0] for t in targets if t["name"] == "sansreplace"]
     ffi = cffi.FFI()
     ffi.cdef("""
-        void rand_init();
+        void rand_init(uint64_t seed);
         double timefunc_s(void (*func)(uint32_t n, uint32_t k, uint32_t* result),
                           uint32_t n, uint32_t k, uint64_t iters);
     """)
     for f in functions:
         ffi.cdef(f"void {f}(uint32_t n, uint32_t k, uint32_t* result);")
     lib = ffi.dlopen(libfile)
-    lib.rand_init()
+    lib.rand_init(SEED)
     return ffi, lib
 
 def list_functions():

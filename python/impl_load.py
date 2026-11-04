@@ -15,6 +15,10 @@
 import importlib
 import pathlib
 
+# Every run starts each implementation's generator from the same seed, so that
+# runs of the same code make the same draws
+SEED = 324
+
 def add_arguments(p):
     p.add_argument("--language", default="cpp", choices=["cpp", "rust", "python"])
     p.add_argument("--build-dir", type=pathlib.Path)

@@ -46,7 +46,9 @@ bound, in [`cpp/randbelow.h`](cpp/randbelow.h). It is defined in the header so t
 into each algorithm, and it takes two 32-bit numbers from each 64-bit output. The Rust uses the
 `rand` crate's `SmallRng`, which is the same generator, and its `random_range`, which takes a whole
 64-bit output for each 32-bit number; this is most of why the shuffle that the random-order
-variants end with costs more in Rust (see [the results](results.md)).
+variants end with costs more in Rust (see [the results](results.md)). Both generators, and the
+Python's, start each process from the same fixed seed, so that running the same code again makes
+the same draws; the C++ and Rust generators start in the same state.
 
 Both use the multiplication trick to turn a random 32-bit number into one below a bound, but they
 correct its slight bias differently. Lemire's method rejects the few inputs that cause it and draws

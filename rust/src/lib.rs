@@ -5,7 +5,7 @@
 
 use std::{cell::RefCell, ffi::CStr, ffi::c_char, time::Instant};
 
-use rand::rngs::SmallRng;
+use rand::{SeedableRng, rngs::SmallRng};
 
 mod algorithms;
 
@@ -13,7 +13,16 @@ type Rng = SmallRng;
 type Algorithm = algorithms::Algorithm<Rng>;
 
 thread_local! {
-    static RNG: RefCell<Rng> = RefCell::new(rand::make_rng::<Rng>());
+    static RNG: RefCell<Option<Rng>> = const { RefCell::new(None) };
+}
+
+/// Seed the generator, which must be done before calling or timing anything.
+/// SmallRng is Xoshiro256++, and like rand_init in cpp/randbelow.c,
+/// seed_from_u64 expands the seed with SplitMix64, so both start from the same
+/// state.
+#[unsafe(no_mangle)]
+pub extern "C" fn rand_init(seed: u64) {
+    RNG.set(Some(Rng::seed_from_u64(seed)));
 }
 
 /// The algorithm with this name for this order, which is "random", "sorted"
@@ -52,7 +61,7 @@ pub unsafe extern "C" fn algorithm(sorttype: *const c_char, name: *const c_char)
 pub unsafe extern "C" fn call(f: *const Algorithm, n: u32, k: u32, result: *mut u32) {
     let f = unsafe { &*f };
     let result = unsafe { std::slice::from_raw_parts_mut(result, k as usize) };
-    RNG.with_borrow_mut(|rng| f(rng, n, result));
+    RNG.with_borrow_mut(|rng| f(rng.as_mut().unwrap(), n, result));
 }
 
 /// Total time for iters calls, like timefunc_s in cpp/timing.cpp
@@ -64,6 +73,7 @@ pub unsafe extern "C" fn call(f: *const Algorithm, n: u32, k: u32, result: *mut 
 pub unsafe extern "C" fn timefunc_s(f: *const Algorithm, n: u32, k: u32, iters: u64) -> f64 {
     let f = unsafe { &*f };
     RNG.with_borrow_mut(|rng| {
+        let rng = rng.as_mut().unwrap();
         // Start the output on a cache line, since malloc only promises 16
         // bytes, and the quadratic algorithms scan it on every draw: how many
         // of their loads and stores straddle two cache lines would otherwise

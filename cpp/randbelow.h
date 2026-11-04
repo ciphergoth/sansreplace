@@ -63,7 +63,7 @@ static inline uint32_t random32(void) {
     return (uint32_t)rand_buf;
 }
 
-extern void rand_init(void);
+extern void rand_init(uint64_t seed);
 
 // inspired by https://lemire.me/blog/2016/06/30/fast-random-shuffling/
 static inline uint32_t randbelow(uint32_t range) {

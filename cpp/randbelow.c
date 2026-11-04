@@ -28,9 +28,7 @@ static uint64_t splitmix64(uint64_t* x) {
     return z ^ (z >> 31);
 }
 
-void rand_init() {
-    // Deterministic seeding for now
-    uint64_t seed = 324;
+void rand_init(uint64_t seed) {
     for (int i = 0; i < 4; i++) {
         rand_state[i] = splitmix64(&seed);
     }
