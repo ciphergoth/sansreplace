@@ -252,7 +252,10 @@ it falls back on Vitter's Algorithm A, which draws each skip in time
 proportional to its length. Vitter introduced Algorithm D in
 \cite{vitterfaster}; our implementation follows the improved code in
 the appendix of \cite{vitterD}. Ahrens and Dieter \cite{ahrensd} give
-other sequential methods that take \(\bigO{k}\) time.
+other sequential methods that take \(\bigO{k}\) time, and Ting
+\cite{ting} one that draws each skip from a beta-binomial
+distribution; like Algorithm D, these draw their skips in floating
+point, and we take Algorithm D and Hidden Shuffle to represent them.
 
 \subsection{Hidden Shuffle}
 \inputminted{Python}{code/hiddenshuffle.py}
@@ -558,8 +561,12 @@ below it is also the last step of Cardchoose, where each sorted value
 has its index added. But GSEL must keep its chosen values in order to
 count as it goes, and so needs a tree of \(k\) nodes, while the urn
 never needs the earlier values in order, so Cardchoose can leave the
-counting to a single sort at the end, in the output array. We would be
-glad to hear of any earlier description of Cardchoose.
+counting to a single sort at the end, in the output array. We have
+not benchmarked GSEL: besides needing memory that Cardchoose does not,
+it follows pointers through the tree for every value drawn, where
+Cardchoose makes one sort over a flat array, and we see no way for it
+to be faster. We would be glad to hear of any earlier description of
+Cardchoose.
 
 Sorted output without a sort has a classic answer for real numbers:
 Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
