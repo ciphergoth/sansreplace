@@ -39,7 +39,7 @@ def plot(toplot, data, title, output):
         if output.endswith(".pgf"):
             matplotlib.use("pgf")
             rc = {
-                "pgf.texsystem": "lualatex",
+                "pgf.texsystem": "xelatex",
                 'font.family': 'serif',
                 'text.usetex': True,
                 'pgf.rcfonts': False,
