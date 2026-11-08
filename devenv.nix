@@ -30,7 +30,7 @@ in
   packages = with pkgs; [
     meson
     ninja
-    (python3.withPackages (ps: with ps; [ cffi matplotlib numpy requests ]))
+    (python3.withPackages (ps: with ps; [ cffi matplotlib numpy ]))
     biber
     (texliveMedium.withPackages (
       ps: with ps; [

@@ -15,16 +15,13 @@
 # limitations under the License.
 
 import argparse
-import os
 import pathlib
+import shutil
 import subprocess
 import sys
 
 scriptdir = pathlib.Path(__file__).parent
 pythondir = scriptdir.parent / "python"
-sys.path.append(str(scriptdir / "python"))
-
-import fetchhash
 
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False)
@@ -45,33 +42,13 @@ def generate():
 def main():
     args = parse_args()
     generate()
-    build = scriptdir / "build"
-    fetch = build / "fetch"
-    fetch.mkdir(parents = True, exist_ok = True)
-
-    latexrun = build / "latexrun"
-    if not latexrun.is_file():
-        fl = fetch / "latexrun"
-        fetchhash.fetch_file(fl,
-            "https://raw.githubusercontent.com/aclements/latexrun/38ff6ec2815654513c91f64bdf2a5760c85da26e/latexrun",
-            "2f144fc6257da7d47475165d2599ecb779d48ca25eb88c5bca4fbc9468a34782")
-        fl.chmod(0o755)
-        fl.rename(latexrun)
-
-    # VS Code's LaTeX Workshop sets max_print_line=10000, which stops TeX
-    # wrapping log lines at 79 columns; latexrun's log parser relies on
-    # that wrapping and hangs on long lines.
-    env = dict(os.environ)
-    env.pop("max_print_line", None)
+    out = scriptdir / "build" / "latex.out"
     # arXiv supports XeLaTeX, but not LuaLaTeX
-    subprocess.run([str(latexrun),
-            "-o", "cardchoose.pdf",
-            "-O", str(build / "latex.out"),
-            "--latex-cmd", "xelatex",
-            "--latex-args=-shell-escape",
-            "--bibtex-cmd", "biber",
-            "cardchoose.tex"],
-        cwd=scriptdir, check=True, env=env)
+    subprocess.run(["latexmk", "-xelatex", "-shell-escape",
+            "-interaction=nonstopmode", "-halt-on-error", "-file-line-error",
+            f"-outdir={out}", "cardchoose.tex"],
+        cwd=scriptdir, check=True)
+    shutil.copy(out / "cardchoose.pdf", scriptdir / "cardchoose.pdf")
 
 if __name__ == "__main__":
     main()
