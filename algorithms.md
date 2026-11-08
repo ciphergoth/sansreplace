@@ -241,7 +241,7 @@ HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | [Rust](rust/s
 
 This is a variation of the above which uses a hash table to simulate the array
 of values [0, _n_), storing only the entries that change. First proposed by Ernvall and Nevalainen
-in 1982, who call it HSELECT:
+in 1982:
 
 * Jarmo Ernvall and Olli Nevalainen
     * An algorithm for unbiased random sampling
@@ -249,9 +249,9 @@ in 1982, who call it HSELECT:
     * 45--47
     * https://academic.oup.com/comjnl/article/25/1/45/527401
 
-Teuhola and Nevalainen reduce its storage to 2_k_ locations with a version they call HSEL, which
-draws all _k_ random numbers first and then works out which value each one stands for, from the
-last back; I use the name HSEL for the method in general:
+Teuhola and Nevalainen give a version that needs 2_k_ storage locations rather than about 5_k_,
+which draws all _k_ random numbers first and then works out which value each one stands for, from
+the last back:
 
 * J. Teuhola and O. Nevalainen
     * Two efficient algorithms for random sampling without replacement

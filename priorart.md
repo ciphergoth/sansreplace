@@ -39,7 +39,8 @@ The earlier algorithm closest to Cardchoose is Gupta and Bhattacharjee's GSEL, w
 O(_k_ log _k_) time and can return sorted output. Like SELECT, it draws its _i_th value uniformly
 from the _n_ − _i_ + 1 values not yet chosen, as a rank _r_ among them; that value is _r_ + _u_,
 where _u_ is the number of values already chosen below it, and GSEL finds _u_ in a balanced
-binary tree of the chosen values that records the size of each subtree. Rouzankin and Voytishek
+binary tree of the chosen values that records the size of each subtree, as Ernvall and Nevalainen
+had suggested in passing to bound HSEL's worst case. Rouzankin and Voytishek
 do the same with a sorted array, in O(_k_²) time, and with an unbalanced binary search tree, in
 O(_k_ log _k_) expected time; they also split the range in half recursively, drawing how many
 values fall in each half from a hypergeometric distribution, which with stored tables of its
@@ -81,6 +82,8 @@ for distinct integers is Vitter's Algorithm D, whose continuous approximation is
   Dachsbacher, "Efficient parallel random sampling—vectorized, cache-efficient, and online", _ACM
   Transactions on Mathematical Software_ 44(3), 1–14, 2018.
   [doi:10.1145/3157734](https://doi.org/10.1145/3157734).
+* Jarmo Ernvall and Olli Nevalainen, "An algorithm for unbiased random sampling", _The Computer
+  Journal_ 25(1), 45–47, 1982. [doi:10.1093/comjnl/25.1.45](https://doi.org/10.1093/comjnl/25.1.45).
 * Luc Devroye, _Non-Uniform Random Variate Generation_, Springer-Verlag, 1986. Chapter XII,
   "Random sampling". [Online](https://luc.devroye.org/rnbookindex.html).
 * Daniel Ting, "Simple, optimal algorithms for random sampling without replacement", 2021.

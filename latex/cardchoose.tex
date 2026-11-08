@@ -181,7 +181,9 @@ efficient membership test \cite{goodman}. Teuhola and Nevalainen
 hash table, and Devroye
 \cite[Chapter XII \S 2]{devroye} compares the data structures that
 can hold it. This takes \(\bigO{k}\) expected time for \(k \leq n/2\), where
-each draw is rejected with probability at most a half. As \(k\)
+each draw is rejected with probability at most a half; Jakobsson
+\cite{jakobsson} shows that the expected number of draws is then less
+than \(2k \ln 2 \approx 1.39k\). As \(k\)
 approaches \(n\), rejections mount: the expected number of draws is
 \(n(H_n - H_{n-k})\), where \(H_m\) is the \(m\)th harmonic number,
 so at \(k = n\) it takes \(\bigO{n \log n}\) time.
@@ -284,12 +286,11 @@ an array of the elements of \(\NN_{<n}\). \cite{goodman}
 \inputminted{Python}{code/hsel.py}
 As above, except that instead of allocating and initializing an
 \(n\)-element array, we use a ``virtual'' array, with a hash table
-storing only the modified elements; Ernvall and Nevalainen
-\cite{hsel} call this HSELECT. Teuhola and Nevalainen \cite{teuhola}
-reduce its storage to \(2k\) locations with a version they call HSEL,
-which draws all \(k\) random numbers first and then works out which
-value each one stands for, from the last back; we use the name HSEL
-for the method in general. Our C++ and Rust implementations use a faster variant, which keeps the
+storing only the modified elements \cite{hsel}. Teuhola and
+Nevalainen \cite{teuhola} give a version that needs \(2k\) storage
+locations rather than about \(5k\), which draws all \(k\) random
+numbers first and then works out which value each one stands for,
+from the last back. Our C++ and Rust implementations use a faster variant, which keeps the
 first \(k\) entries of the virtual array in the output array itself,
 so only swaps that reach beyond them touch the hash table. This variant
 was described by rici \cite{rici}; we thank Mathias Weller for bringing
@@ -544,7 +545,8 @@ draws its \(i\)th value uniformly from the \(n - i + 1\) values not yet
 chosen, as a rank \(r\) among them; that value is \(r + u\), where \(u\)
 is the number of values already chosen below it, and GSEL finds \(u\)
 in a balanced binary tree of the chosen values that records the size
-of each subtree. Rouzankin and Voytishek \cite{RouzankinVoytishek} do
+of each subtree, as Ernvall and Nevalainen \cite{hsel} had suggested
+in passing to bound HSEL's worst case. Rouzankin and Voytishek \cite{RouzankinVoytishek} do
 the same with a sorted array, in \(\bigO{k^2}\) time, and with an
 unbalanced binary search tree, in \(\bigO{k \log k}\) expected time;
 they also split the range in half recursively, drawing how many values
