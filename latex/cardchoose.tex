@@ -638,6 +638,25 @@ We tested values of \(n\) and \(k\) that are Fibonacci numbers, with
 \(n\) up to 701,408,733 (the 44th Fibonacci number) and \(k\) up to
 102,334,155 (the 40th).
 
+A Python harness times each algorithm in a process of its own, calling
+the C++ and Rust implementations through a C interface. At each point,
+it times passes of more and more calls, until a pass takes up what is
+left of 0.2 seconds, and records the mean time per call over that last
+pass; a point where one call takes longer than that is timed with a
+single call. The loop over calls runs in C++ or Rust, and every call
+writes to the same output array, allocated outside the timing, aligned
+to a 64-byte cache line and zeroed. The overhead of a call, measured by
+timing a function that does nothing, is about 1.1\,ns, and is not
+subtracted. Every process seeds its random number generator with the
+same fixed value, and the C++ and Rust generators start in the same
+state, so running the same code again makes the same draws. Timing the
+same points on four separate boots of the machine, which may come back
+on a different host each time, every algorithm agreed to within about
+1\%. We describe what we found and changed to make these timings
+trustworthy, such as aligning arrays that were otherwise slower to fill
+depending on where earlier allocations left them, at
+\url{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}.
+
 The C++ implementations use the standard library's, here libc++'s,
 \mintinline{cpp}{std::unordered_set} and
 \mintinline{cpp}{std::unordered_map}, which are node-based, and
