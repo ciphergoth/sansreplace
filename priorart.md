@@ -33,7 +33,18 @@ urn presented as a generator for uniform multisets, or its composition with star
 a sampler for sampling without replacement. Needing no set, map or extra memory is not new in
 itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and so do Vitter's
 Algorithm D and, more recently, Shekelyan and Cormode's Hidden Shuffle, though they need
-floating-point arithmetic where Cardchoose and RANKSB use only exact integer draws. I would be glad to hear of any earlier description of Cardchoose.
+floating-point arithmetic where Cardchoose and RANKSB use only exact integer draws.
+
+The earlier algorithm closest to Cardchoose is Gupta and Bhattacharjee's GSEL, which also takes
+O(_k_ log _k_) time and can return sorted output. Like SELECT, it draws its _i_th value uniformly
+from the _n_ − _i_ + 1 values not yet chosen, as a rank _r_ among them; that value is _r_ + _u_,
+where _u_ is the number of values already chosen below it, and GSEL finds _u_ in a balanced
+binary tree of the chosen values that records the size of each subtree. Adding to each value the
+number of chosen values below it is also the last step of Cardchoose, where each sorted value has
+its index added. But GSEL must keep its chosen values in order to count as it goes, and so needs a
+tree of _k_ nodes, while the urn never needs the earlier values in order, so Cardchoose can leave
+the counting to a single sort at the end, in the output array. I would be glad to hear of any
+earlier description of Cardchoose.
 
 Sorted output without a sort has a classic answer for real numbers: Bentley and Saxe generate _k_
 sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the
@@ -54,6 +65,10 @@ for distinct integers is Vitter's Algorithm D, whose continuous approximation is
   dynamics", [arXiv:1906.03876](https://arxiv.org/abs/1906.03876), 2019.
 * David Blackwell and James B. MacQueen, "Ferguson distributions via Pólya urn schemes",
   _Annals of Statistics_ 1(2), 353–355, 1973.
+* P. Gupta and G. P. Bhattacharjee, "An efficient algorithm for random sampling without
+  replacement", _Foundations of Software Technology and Theoretical Computer Science_, Lecture
+  Notes in Computer Science 181, 435–442, Springer, 1984.
+  [doi:10.1007/3-540-13883-8_89](https://doi.org/10.1007/3-540-13883-8_89).
 * Luc Devroye, _Non-Uniform Random Variate Generation_, Springer-Verlag, 1986. Chapter XII,
   "Random sampling". [Online](https://luc.devroye.org/rnbookindex.html).
 * Daniel Ting, "Simple, optimal algorithms for random sampling without replacement", 2021.

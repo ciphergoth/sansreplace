@@ -176,9 +176,8 @@ set-based rejection sampling below.
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
 As above, but use a data structure representing sets with an
-efficient membership test \cite{goodman}. Ernvall and Nevalainen
-\cite{hsel}, Teuhola and Nevalainen \cite{teuhola} and Ahrens and
-Dieter \cite{ahrensd} keep the set in a hash table, and Devroye
+efficient membership test \cite{goodman}. Ahrens and Dieter
+\cite{ahrensd} keep the set in a hash table, and Devroye
 \cite[Chapter XII \S 2]{devroye} compares the data structures that
 can hold it. This takes \(\bigO{k}\) expected time for \(k \leq n/2\), where
 each draw is rejected with probability at most a half. As \(k\)
@@ -532,8 +531,22 @@ memory is not new in itself: Nijenhuis and Wilf's RANKSB
 array, and so do Vitter's Algorithm D and, more recently, Shekelyan and
 Cormode's Hidden Shuffle \cite{hiddenshuffle}, though they need
 floating-point arithmetic where Cardchoose and RANKSB use only exact
-integer draws. We would be glad to hear of any earlier description of
-Cardchoose.
+integer draws.
+
+The earlier algorithm closest to Cardchoose is Gupta and
+Bhattacharjee's GSEL \cite{gupta}, which also takes
+\(\bigO{k \log k}\) time and can return sorted output. Like SELECT, it
+draws its \(i\)th value uniformly from the \(n - i + 1\) values not yet
+chosen, as a rank \(r\) among them; that value is \(r + u\), where \(u\)
+is the number of values already chosen below it, and GSEL finds \(u\)
+in a balanced binary tree of the chosen values that records the size
+of each subtree. Adding to each value the number of chosen values
+below it is also the last step of Cardchoose, where each sorted value
+has its index added. But GSEL must keep its chosen values in order to
+count as it goes, and so needs a tree of \(k\) nodes, while the urn
+never needs the earlier values in order, so Cardchoose can leave the
+counting to a single sort at the end, in the output array. We would be
+glad to hear of any earlier description of Cardchoose.
 
 Sorted output without a sort has a classic answer for real numbers:
 Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
