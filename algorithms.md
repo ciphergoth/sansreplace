@@ -117,7 +117,9 @@ before the matching entry, which shifts every entry after it, or by shuffling th
 afterwards; it has used this version since
 [rand pull request 1277](https://github.com/rust-random/rand/pull/1277), in 2023. Unlike Ting's
 random-order Floyd's F2 above, it needs no extra draw on a collision, because the scan has already
-found where _r_ is; I have not found this described earlier. Like quadratic rejection sampling, the small constants mean this does very well for small _k_.
+found where _r_ is. That pull request is the first publication of this way of keeping the order
+random that I know of. Like quadratic rejection sampling, the small constants mean this does very
+well for small _k_.
 
 For random order, each step draws _t_ and replaces the existing _t_, if there is one, with _j_.
 At most one entry matches, so my implementations write every entry, keeping its value unless it

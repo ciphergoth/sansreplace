@@ -241,9 +241,10 @@ where \(r\) is, which Floyd's F2 with a set does not know. Rust's \mintinline{ru
 Floyd's F2 with a scan in the same way \cite{rust-random}, but kept
 the order random either by inserting \(m\) before the matching entry,
 which shifts every entry after it, or by shuffling the whole output
-afterwards, which costs \(k\) more draws; it has used our version since
-2023 \cite{randpr}. We have not found this way of keeping the order
-random described earlier. For sorted output,
+afterwards, which costs \(k\) more draws. It has used our version
+since 2023; the pull request that made that change \cite{randpr} is
+the first publication of this way of keeping the order random that we
+know of. For sorted output,
 our implementations append \(m\) instead, since before the sort only
 the set matters, and then sort.
 
