@@ -103,7 +103,8 @@ n-1\}$ such that every \(k\)-element subset is equally likely to be
 returned. Many programming languages include facilities for this in
 their standard libraries, for example Python's
 \mintinline{python}{random.sample()} or Rust's
-\mintinline{rust}{rand::seq::index::sample}.
+\mintinline{rust}{rand::seq::index::sample}; Ting \cite{ting} lists
+the algorithms that several of them use.
 
 Many algorithms solve this problem, with different strengths. Some are
 fast only for certain values of \(k, n\), for example where \(k\) is
@@ -174,9 +175,12 @@ set-based rejection sampling below.
 
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
-As above, but use a data structure representing sets with an efficient membership test.
-\cite{goodman}
-This takes \(\bigO{k}\) expected time for \(k \leq n/2\), where
+As above, but use a data structure representing sets with an
+efficient membership test \cite{goodman}. Ernvall and Nevalainen
+\cite{hsel}, Teuhola and Nevalainen \cite{teuhola} and Ahrens and
+Dieter \cite{ahrensd} keep the set in a hash table, and Devroye
+\cite[Chapter XII \S 2]{devroye} compares the data structures that
+can hold it. This takes \(\bigO{k}\) expected time for \(k \leq n/2\), where
 each draw is rejected with probability at most a half. As \(k\)
 approaches \(n\), rejections mount: the expected number of draws is
 \(n(H_n - H_{n-k})\), where \(H_m\) is the \(m\)th harmonic number,
@@ -229,8 +233,10 @@ it with that probability.
 Initialize a \(k\)-element array with the elements of \(\NN_{<k}\)
 in random order. Iterate over the elements of \(\NN_{<n} \setminus \NN_{<k}\),
 and replace a random element of the array with each element with the
-appropriate probability.
-\cite{taocp2}
+appropriate probability \cite{taocp2}. Vitter's Algorithm Z
+\cite{vitterZ} instead draws how many elements to skip, which takes
+\(\bigO{k(1 + \log(n/k))}\) expected time but, like Algorithm D below,
+needs floating point; we time only Algorithm R.
 
 \subsection{Vitter's Algorithm D}
 Like iterative choosing, produce the output in sorted order, but
@@ -241,9 +247,10 @@ continuous approximation, the smallest of \(k\) uniform reals drawn in
 one step as in \cite{bentleysaxe}, in \(\bigO{1}\) expected time per output, at
 the cost of a few floating-point exponentiations. Once \(n \leq 13k\)
 it falls back on Vitter's Algorithm A, which draws each skip in time
-proportional to its length. Our implementation follows the code in the
-paper's appendix.
-\cite{vitterD}
+proportional to its length. Vitter introduced Algorithm D in
+\cite{vitterfaster}; our implementation follows the improved code in
+the appendix of \cite{vitterD}. Ahrens and Dieter \cite{ahrensd} give
+other sequential methods that take \(\bigO{k}\) time.
 
 \subsection{Hidden Shuffle}
 \inputminted{Python}{code/hiddenshuffle.py}
@@ -510,7 +517,13 @@ sequence from a Dirichlet process, which is a different purpose. The
 combinatorial generation literature does generate random multisets, but
 through stars and bars in the other direction: Nijenhuis and Wilf's
 RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a random
-\((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences it. What
+\((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences it.
+Nor do surveys of sampling without replacement describe anything like
+it: Devroye's \cite[Chapter XII]{devroye} has no urn and no stars and
+bars, and Ting \cite{ting}, reworking the classical algorithms into
+simpler forms, gives a sparse Fisher--Yates sampler, essentially HSEL,
+and a sorted sampler that draws each gap from a beta-binomial
+distribution, which needs floating point. What
 we have not found elsewhere is the urn presented as a generator for
 uniform multisets, or its composition with stars and bars into a
 sampler for sampling without replacement. Needing no set, map or extra
@@ -686,9 +699,9 @@ performance of Cardchoose should mean that there is a value of \(k\)
 at which they perform better. However, the poor cache coherence of
 these algorithms means that their performance more closely resembles
 \(\bigO{k \log k}\) in practice. For very large \(k\), a parallel
-algorithm such as \cite{sandersetal} should generally be used; this
-algorithm calls a sequential algorithm at the leaves of the parallel
-tree it builds.
+algorithm \cite{rajan, sandersetal} should generally be used; that of
+Sanders et al.\ calls a sequential algorithm at the leaves of the
+parallel tree it builds.
 
 \section{Choosing algorithms}\label{choosing}
 

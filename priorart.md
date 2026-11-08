@@ -24,7 +24,11 @@ thing to running an urn as a sampler in earnest is in Bayesian statistics, where
 Blackwell–MacQueen urn draws an exchangeable sequence from a Dirichlet process, which is a
 different purpose. The combinatorial generation literature does generate random multisets, but
 through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM chooses a random
-(_k_-1)-subset of {1, …, _n_+_k_-1} and differences it. What I have not found elsewhere is the
+(_k_-1)-subset of {1, …, _n_+_k_-1} and differences it. Nor do surveys of sampling without
+replacement describe anything like it: Devroye's has no urn and no stars and bars, and Ting,
+reworking the classical algorithms into simpler forms, gives a sparse Fisher–Yates sampler,
+essentially HSEL, and a sorted sampler that draws each gap from a beta-binomial distribution,
+which needs floating point. What I have not found elsewhere is the
 urn presented as a generator for uniform multisets, or its composition with stars and bars into
 a sampler for sampling without replacement. Needing no set, map or extra memory is not new in
 itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and so do Vitter's
@@ -50,6 +54,10 @@ for distinct integers is Vitter's Algorithm D, whose continuous approximation is
   dynamics", [arXiv:1906.03876](https://arxiv.org/abs/1906.03876), 2019.
 * David Blackwell and James B. MacQueen, "Ferguson distributions via Pólya urn schemes",
   _Annals of Statistics_ 1(2), 353–355, 1973.
+* Luc Devroye, _Non-Uniform Random Variate Generation_, Springer-Verlag, 1986. Chapter XII,
+  "Random sampling". [Online](https://luc.devroye.org/rnbookindex.html).
+* Daniel Ting, "Simple, optimal algorithms for random sampling without replacement", 2021.
+  [arXiv:2104.05091](https://arxiv.org/abs/2104.05091).
 * Albert Nijenhuis and Herbert S. Wilf, _Combinatorial Algorithms for Computers and Calculators_,
   2nd edition, Academic Press, 1978. Chapter 4, "Random _k_-Subset of an _n_-Set (RANKSB)", and
   chapter 6, "Random Composition of n into k Parts (RANCOM)".
