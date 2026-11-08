@@ -176,8 +176,9 @@ set-based rejection sampling below.
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
 As above, but use a data structure representing sets with an
-efficient membership test \cite{goodman}. Ahrens and Dieter
-\cite{ahrensd} keep the set in a hash table, and Devroye
+efficient membership test \cite{goodman}. Teuhola and Nevalainen
+\cite{teuhola} and Ahrens and Dieter \cite{ahrensd} keep the set in a
+hash table, and Devroye
 \cite[Chapter XII \S 2]{devroye} compares the data structures that
 can hold it. This takes \(\bigO{k}\) expected time for \(k \leq n/2\), where
 each draw is rejected with probability at most a half. As \(k\)
@@ -283,9 +284,12 @@ an array of the elements of \(\NN_{<n}\). \cite{goodman}
 \inputminted{Python}{code/hsel.py}
 As above, except that instead of allocating and initializing an
 \(n\)-element array, we use a ``virtual'' array, with a hash table
-storing only the modified elements.
-\cite{hsel}
-Our C++ and Rust implementations use a faster variant, which keeps the
+storing only the modified elements; Ernvall and Nevalainen
+\cite{hsel} call this HSELECT. Teuhola and Nevalainen \cite{teuhola}
+reduce its storage to \(2k\) locations with a version they call HSEL,
+which draws all \(k\) random numbers first and then works out which
+value each one stands for, from the last back; we use the name HSEL
+for the method in general. Our C++ and Rust implementations use a faster variant, which keeps the
 first \(k\) entries of the virtual array in the output array itself,
 so only swaps that reach beyond them touch the hash table. This variant
 was described by rici \cite{rici}; we thank Mathias Weller for bringing

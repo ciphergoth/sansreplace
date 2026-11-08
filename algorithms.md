@@ -222,8 +222,8 @@ Initialize an array of the values [0, _n_). Pick out values at random to include
 in the output, and delete them by replacing them with a value from one end and
 shortening the array.
 
-This is known as SELECT in Ernvall and Nevalainen, though in a slight variation
-I pick off the array at the start, rather than the end.
+This is SELECT in Goodman and Hedetniemi's _Introduction to the Design and Analysis of
+Algorithms_, though in a slight variation I pick off the array at the start, rather than the end.
 
 Each call allocates the array afresh, so its cost depends on the allocator. The C++ and Rust
 implementations align the array to a 64-byte cache line: `malloc` only promises 16 bytes, and on
@@ -241,13 +241,23 @@ HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | [Rust](rust/s
 
 This is a variation of the above which uses a hash table to simulate the array
 of values [0, _n_), storing only the entries that change. First proposed by Ernvall and Nevalainen
-in 1982:
+in 1982, who call it HSELECT:
 
 * Jarmo Ernvall and Olli Nevalainen
     * An algorithm for unbiased random sampling
     * The Computer Journal Volume 25, Number 1, February, 1982
     * 45--47
     * https://academic.oup.com/comjnl/article/25/1/45/527401
+
+Teuhola and Nevalainen reduce its storage to 2_k_ locations with a version they call HSEL, which
+draws all _k_ random numbers first and then works out which value each one stands for, from the
+last back; I use the name HSEL for the method in general:
+
+* J. Teuhola and O. Nevalainen
+    * Two efficient algorithms for random sampling without replacement
+    * International Journal of Computer Mathematics 11(2), 1982
+    * 127--140
+    * https://doi.org/10.1080/00207168208803304
 
 It is also presented in Martin Harriman, [Sampling Without Replacement: Durstenfeld-Fisher-Yates
 Permutation for Very Large Permutation
