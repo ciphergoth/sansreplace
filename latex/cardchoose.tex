@@ -224,9 +224,10 @@ uniformly random subset of \(\NN_{<m + 1}\). This makes exactly \(k\)
 draws and takes \(\bigO{k}\) expected time with a hash set, which
 takes \(\bigO{k}\) memory, and the result has no order. For random
 order output, our C++ and Rust implementations do not shuffle
-afterwards. Instead, when the chosen value is already present, they
-move a randomly chosen earlier output to the end and put the new value
-in its place. This keeps the order uniformly random, and costs an
+afterwards. Instead, as in Ting's random-order version of Floyd's
+algorithm \cite{tingblog}, when the chosen value is already present,
+they move a randomly chosen earlier output to the end and put the new
+value in its place. This keeps the order uniformly random, and costs an
 extra random number only on collisions.
 
 \subsection{Quadratic F2}
@@ -235,12 +236,14 @@ Floyd's F2 with the output array as its set, scanned to check each
 draw, so that it needs no extra memory and takes \(\bigO{k^2}\) time.
 When the draw \(r\) is already present, it replaces that entry with
 \(m\) and appends \(r\), which keeps the output in uniformly random
-order without a shuffle. Rust's \mintinline{rust}{rand} crate used
+order without a shuffle or any extra draw: the scan has already found
+where \(r\) is, which Floyd's F2 with a set does not know. Rust's \mintinline{rust}{rand} crate used
 Floyd's F2 with a scan in the same way \cite{rust-random}, but kept
 the order random either by inserting \(m\) before the matching entry,
 which shifts every entry after it, or by shuffling the whole output
 afterwards, which costs \(k\) more draws; it has used our version since
-2023 \cite{randpr}. For sorted output,
+2023 \cite{randpr}. We have not found this way of keeping the order
+random described earlier. For sorted output,
 our implementations append \(m\) instead, since before the sort only
 the set matters, and then sort.
 
