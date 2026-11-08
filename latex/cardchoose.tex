@@ -235,8 +235,12 @@ Floyd's F2 with the output array as its set, scanned to check each
 draw, so that it needs no extra memory and takes \(\bigO{k^2}\) time.
 When the draw \(r\) is already present, it replaces that entry with
 \(m\) and appends \(r\), which keeps the output in uniformly random
-order without a shuffle. It is based on the implementation in Rust's
-\mintinline{rust}{rand} crate \cite{rust-random}. For sorted output,
+order without a shuffle. Rust's \mintinline{rust}{rand} crate used
+Floyd's F2 with a scan in the same way \cite{rust-random}, but kept
+the order random either by inserting \(m\) before the matching entry,
+which shifts every entry after it, or by shuffling the whole output
+afterwards, which costs \(k\) more draws; it has used our version since
+2023 \cite{randpr}. For sorted output,
 our implementations append \(m\) instead, since before the sort only
 the set matters, and then sort.
 

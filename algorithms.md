@@ -102,10 +102,15 @@ Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
 ----|----|----|----|----|----|----
 Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | [Rust](rust/src/algorithms/quadraticf2.rs) | Random | none | _k_^2
 
-A quadratic variant on Floyd's F2 which needs no external data structure. Inspired by the
-implementation in the [Rust rand crate](https://github.com/rust-random/rand/blob/19897e53c1908c5a193e2aacff59170e3e72b8de/src/seq/index.rs#L231),
-but with some optimizations. Like quadratic rejection sampling, the small constants mean
-this does very well for small _k_.
+A quadratic variant on Floyd's F2 which needs no external data structure: the output array is the
+set, scanned to check each draw. When the draw _r_ is already present, it replaces that entry with
+_m_ and appends _r_, which keeps the output in uniformly random order without a shuffle. The
+[Rust rand crate](https://github.com/rust-random/rand/blob/19897e53c1908c5a193e2aacff59170e3e72b8de/src/seq/index.rs#L231)
+used Floyd's F2 with a scan in the same way, but kept the order random either by inserting _m_
+before the matching entry, which shifts every entry after it, or by shuffling the whole output
+afterwards; it has used this version since
+[rand pull request 1277](https://github.com/rust-random/rand/pull/1277), in 2023. Like quadratic
+rejection sampling, the small constants mean this does very well for small _k_.
 
 For random order, each step draws _t_ and replaces the existing _t_, if there is one, with _j_.
 At most one entry matches, so my implementations write every entry, keeping its value unless it
