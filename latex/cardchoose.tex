@@ -29,6 +29,7 @@
 \usepackage[svgnames]{xcolor}
 \usepackage[breaklinks,colorlinks,urlcolor=DarkBlue,linkcolor=DarkRed,citecolor=DarkGreen]{hyperref}
 \renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\sectionautorefname}{Section}
 \usepackage[style=alphabetic,backend=biber]{biblatex}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -134,59 +135,66 @@ random draw. Both Python's \mintinline{python}{random.sample()} and
 Rust's \mintinline{rust}{rand::seq::index::sample} return in a fair
 random order.
 
-A routine which returns one of these can straightforwardly be
-converted into a routine that returns another, using a sort or a
-Fisher-Yates shuffle as appropriate. However each of these algorithms
-returns one of the above types ``naturally'', and so returning a
-different one will take an extra step, which means that which
-algorithm is most efficient can depend on which of the above three the
-caller wants to receive. In our benchmarks, we time both a ``random''
-and a ``sorted'' variant of each algorithm.
+An algorithm that returns one order can be made to return the other
+with a sort or a Fisher--Yates shuffle. But each algorithm returns one
+order naturally, and the other costs that extra step, so which
+algorithm is fastest can depend on which order the caller wants. In
+our benchmarks we time both a sorted and a random variant of every
+algorithm.
+
+For each algorithm we give a Python listing, how it works, the order
+it returns, its expected time, and any memory it needs beyond the
+output array. All but two draw only random integers below a bound;
+Vitter's Algorithm D and Hidden Shuffle also need floating-point
+arithmetic.
 
 \begin{center}
-    \begin{tabular}{l|l|l|l}
-    Algorithm & Order & Data structure & Time \\
+    \begin{tabular}{l|l|l|l|l}
+    Algorithm & Order & Extra memory & Time & Floats \\
     \hline
-    Quadratic rejection sampling & Random &  & \(k^2\) \\
-    Set-based rejection sampling & Random & Set & \(k\) \\
-    RANKSB & Sorted &  & \(k\) \\
-    Floyd's F2 &  & Set & \(k\) \\
-    Quadratic F2 & Random & & \(k^2\) \\
-    Iterative choosing & Sorted &  & \(n\) \\
-    Reservoir sampling & Random &  & \(n\) \\
-    Vitter's Algorithm D & Sorted &  & \(k\) \\
-    Hidden Shuffle & Sorted &  & \(k\) \\
-    SELECT & Random & \(n\)-element array & \(n\) \\
-    HSEL & Random & Dictionary & \(k\) \\
-    Cardchoose & Sorted &  & \(k \log k\)
+    Quadratic rejection sampling & Random &  & \(k^2\) & \\
+    Set-based rejection sampling & Random & Set & \(k\) & \\
+    RANKSB & Sorted &  & \(k\) & \\
+    Floyd's F2 & None & Set & \(k\) & \\
+    Quadratic F2 & Random & & \(k^2\) & \\
+    Iterative choosing & Sorted &  & \(n\) & \\
+    Reservoir sampling & Random &  & \(n\) & \\
+    Vitter's Algorithm D & Sorted &  & \(k\) & Yes \\
+    Hidden Shuffle & Sorted &  & \(k\) & Yes \\
+    SELECT & Random & \(n\)-element array & \(n\) & \\
+    HSEL & Random & Dictionary & \(k\) & \\
+    Cardchoose & Sorted &  & \(k \log k\) &
     \end{tabular}
 \end{center}
 
+The times are expected times for \(k \leq n/2\); the algorithms that
+reject draws slow down as \(k\) approaches \(n\).
+
 \subsection{Quadratic rejection sampling}
 \inputminted{Python}{code/quadraticreject.py}
-Start with an empty array of integers. Generate an integer \(0 \leq x
-< n\), and check if \(x\) is already present in the array by iterating
-through the array checking every element. If it is not present, append
-it to the array. Repeat this process until the array is of the desired
-length. Each membership test takes \(\bigO{k}\) time, so the whole
-takes \(\bigO{k^2}\) expected time for \(k \leq n/2\), and more
-as \(k\) approaches \(n\) and more draws are rejected, as for
-set-based rejection sampling below.
+Draw a value below \(n\), check whether it is already in the output by
+scanning the output so far, and append it if not; repeat until the
+output has \(k\) values. The output is in random order and no extra
+memory is needed. Each check takes \(\bigO{k}\) time, so the whole
+takes \(\bigO{k^2}\) expected time for \(k \leq n/2\), and more as
+\(k\) approaches \(n\) and more draws are rejected, as for set-based
+rejection sampling below.
 
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
-As above, but use a data structure representing sets with an
-efficient membership test \cite{goodman}. Teuhola and Nevalainen
-\cite{teuhola} and Ahrens and Dieter \cite{ahrensd} keep the set in a
-hash table, and Devroye
-\cite[Chapter XII \S 2]{devroye} compares the data structures that
-can hold it. This takes \(\bigO{k}\) expected time for \(k \leq n/2\), where
-each draw is rejected with probability at most a half; Jakobsson
-\cite{jakobsson} shows that the expected number of draws is then less
-than \(2k \ln 2 \approx 1.39k\). As \(k\)
-approaches \(n\), rejections mount: the expected number of draws is
-\(n(H_n - H_{n-k})\), where \(H_m\) is the \(m\)th harmonic number,
-so at \(k = n\) it takes \(\bigO{n \log n}\) time.
+As above, but check each draw against a set of the values chosen so
+far, with an efficient membership test \cite{goodman}. Teuhola and
+Nevalainen \cite{teuhola} and Ahrens and Dieter \cite{ahrensd} keep
+the set in a hash table, and Devroye \cite[Chapter XII \S 2]{devroye}
+compares the data structures that can hold it. The output is in random
+order, and the set takes \(\bigO{k}\) memory. With a hash table, this
+takes \(\bigO{k}\) expected time for \(k \leq n/2\), where each draw is
+rejected with probability at most a half; Jakobsson \cite{jakobsson}
+shows that the expected number of draws is then less than
+\(2k \ln 2 \approx 1.39k\). As \(k\) approaches \(n\), rejections
+mount: the expected number of draws is \(n(H_n - H_{n-k})\), where
+\(H_m\) is the \(m\)th harmonic number, so at \(k = n\) it takes
+\(\bigO{n \log n}\) time.
 
 \subsection{RANKSB}
 \inputminted{Python}{code/ranksb.py}
@@ -198,7 +206,7 @@ already accepted in its bin, which depends only on that bin's count.
 Then choose that many values within each bin; bins hold about one value
 each, so a quadratic method suffices. The output is sorted, the expected
 time is \(\bigO{k}\) for \(k \leq n/2\), and the program in
-\cite[Chapter 4]{nijenhuiswilf} needs no storage beyond the output
+\cite[Chapter 4]{nijenhuiswilf} needs no memory beyond the output
 array. Our C++ and Rust implementations follow that program, except
 that they fill each bin as soon as they know where its values go,
 rather than first marking out every bin's slots and then scanning for
@@ -206,36 +214,50 @@ the marks.
 
 \subsection{Floyd's F2}
 \inputminted{Python}{code/floydf2.py}
-A twist on set-based rejection that uses compensatingly biased samples
-to avoid multiple tests.
-\cite{floydf2}
-For random order output, our C++ and Rust implementations do not
-shuffle afterwards. Instead, when the chosen value is already present,
-they move a randomly chosen earlier output to the end and put the new
-value in its place. This keeps the order uniformly random, and costs
-an extra random number only on collisions.
+Build a set of the values chosen so far, one value per step, with no
+rejection \cite{floydf2}. Before the step for \(m\), running from
+\(n - k\) to \(n - 1\), the set is a uniformly random subset of
+\(\NN_{<m}\). Draw \(j\) uniformly from \(\NN_{<m + 1}\), and add
+\(j\) if it is not in the set, or \(m\) if it is; \(m\) is never in the
+set before its own step, so the set grows by one, and it is then a
+uniformly random subset of \(\NN_{<m + 1}\). This makes exactly \(k\)
+draws and takes \(\bigO{k}\) expected time with a hash set, which
+takes \(\bigO{k}\) memory, and the result has no order. For random
+order output, our C++ and Rust implementations do not shuffle
+afterwards. Instead, when the chosen value is already present, they
+move a randomly chosen earlier output to the end and put the new value
+in its place. This keeps the order uniformly random, and costs an
+extra random number only on collisions.
 
 \subsection{Quadratic F2}
 \inputminted{Python}{code/quadraticf2.py}
-Quadratic variant on Floyd's F2 which needs no external data
-structure. Inspired by the implementation in \cite{rust-random} but
-with some optimizations.
+Floyd's F2 with the output array as its set, scanned to check each
+draw, so that it needs no extra memory and takes \(\bigO{k^2}\) time.
+When the draw \(r\) is already present, it replaces that entry with
+\(m\) and appends \(r\), which keeps the output in uniformly random
+order without a shuffle. It is based on the implementation in Rust's
+\mintinline{rust}{rand} crate \cite{rust-random}. For sorted output,
+our implementations append \(m\) instead, since before the sort only
+the set matters, and then sort.
 
 \subsection{Iterative choosing (Algorithm S)}
 \inputminted{Python}{code/iterativechoose.py}
-Iterate in order through each candidate to add to the list,
-calculate for each the probability it should be part of the list given
-the number of items added so far and the number remaining, and add
-it with that probability.
-\cite{taocp2}
-\cite[Method 1, p.391]{fanetal}
+Go through the values of \(\NN_{<n}\) in order, and choose each with
+the probability that it is in the sample given how many values are
+still to choose and how many remain to consider
+\cite[Method 1, p.391]{fanetal}; this is Knuth's Algorithm S
+\cite{taocp2}. The output is sorted, no extra memory is needed, and it
+makes one draw for every value it considers, so it takes \(\bigO{n}\)
+time.
 
 \subsection{Reservoir sampling (Algorithm R)}
 \inputminted{Python}{code/reservoirsample.py}
-Initialize a \(k\)-element array with the elements of \(\NN_{<k}\)
-in random order. Iterate over the elements of \(\NN_{<n} \setminus \NN_{<k}\),
-and replace a random element of the array with each element with the
-appropriate probability \cite{taocp2}. Vitter's Algorithm Z
+Fill the output with the elements of \(\NN_{<k}\) in random order.
+Then for each \(i\) from \(k\) to \(n - 1\), draw \(r\) from
+\(\NN_{<i + 1}\), and if \(r < k\), replace the \(r\)th output with
+\(i\); this is Knuth's Algorithm R \cite{taocp2}. The output is in
+random order, no extra memory is needed, and it makes one draw for
+every value, so it takes \(\bigO{n}\) time. Vitter's Algorithm Z
 \cite{vitterZ} instead draws how many elements to skip, which takes
 \(\bigO{k(1 + \log(n/k))}\) expected time but, like Algorithm D below,
 needs floating point; we time only Algorithm R.
@@ -246,58 +268,66 @@ instead of deciding about each value in turn, draw the number of values
 to skip before the next chosen one directly. The skip has a known
 discrete distribution, which Algorithm D samples by rejection from a
 continuous approximation, the smallest of \(k\) uniform reals drawn in
-one step as in \cite{bentleysaxe}, in \(\bigO{1}\) expected time per output, at
-the cost of a few floating-point exponentiations. Once \(n \leq 13k\)
-it falls back on Vitter's Algorithm A, which draws each skip in time
-proportional to its length. Vitter introduced Algorithm D in
-\cite{vitterfaster}; our implementation follows the improved code in
-the appendix of \cite{vitterD}. Ahrens and Dieter \cite{ahrensd} give
-other sequential methods that take \(\bigO{k}\) time, and Ting
-\cite{ting} one that draws each skip from a beta-binomial
-distribution; like Algorithm D, these draw their skips in floating
-point, and we take Algorithm D and Hidden Shuffle to represent them.
+one step as in \cite{bentleysaxe}, in \(\bigO{1}\) expected time per
+output, at the cost of a few floating-point exponentiations, and with
+no extra memory. Once \(n \leq 13k\) it falls back on Vitter's
+Algorithm A, which draws each skip in time proportional to its length.
+Vitter introduced Algorithm D in \cite{vitterfaster}; our
+implementation follows the improved code in the appendix of
+\cite{vitterD}, which is too long to list here. Ahrens and Dieter
+\cite{ahrensd} give other sequential methods that take \(\bigO{k}\)
+time, and Ting \cite{ting} one that draws each skip from a
+beta-binomial distribution; like Algorithm D, these draw their skips in
+floating point, and we take Algorithm D and Hidden Shuffle to represent
+them.
 
 \subsection{Hidden Shuffle}
 \inputminted{Python}{code/hiddenshuffle.py}
-Consider a Fisher-Yates shuffle of \(\NN_{<n}\) that stops after
-\(k\) steps, so that the sample is whatever ends up in the first \(k\)
-positions; call these the low positions, and the rest the high
-positions. Each step reaches a high position independently, with known
-probability, and which high position it reaches is uniform and
-independent of everything else. So first count the steps that reach a
-high position, then draw that many high positions with replacement in
-sorted order as in \cite{bentleysaxe}. The first draw of a high position
-adds its value to the sample; a repeat finds a low value swapped there
-earlier, so the sample gains a low value instead, much as a collision in
-Floyd's F2 adds a different value. Given their number, the low values
-are a uniformly random subset of the low positions, chosen in order by
+Shekelyan and Cormode's Hidden Shuffle \cite{hiddenshuffle} considers
+a Fisher--Yates shuffle of \(\NN_{<n}\) that stops after \(k\) steps,
+so that the sample is whatever ends up in the first \(k\) positions;
+call these the low positions, and the rest the high positions. Each
+step reaches a high position independently, with known probability,
+and which high position it reaches is uniform and independent of
+everything else. So first count the steps that reach a high position,
+then draw that many high positions with replacement in sorted order as
+in \cite{bentleysaxe}. The first draw of a high position adds its value
+to the sample; a repeat finds a low value swapped there earlier, so the
+sample gains a low value instead, much as a collision in Floyd's F2
+adds a different value. Given their number, the low values are a
+uniformly random subset of the low positions, chosen in order by
 Vitter's Algorithm A. The output is sorted, the time is \(\bigO{k}\) in
 the worst case, and no extra memory is needed; like Algorithm D, it
 relies on floating-point arithmetic, with an exponentiation for each
-high draw. \cite{hiddenshuffle}
-The code printed in the paper can divide by zero, and its last step has
-an off-by-one error that biases the output; our implementations apply
-the corrections from the errata in \cite{sampleiterator}. We thank metasj
-for bringing this algorithm to our attention.
+high draw. The code printed in the paper can divide by zero, and its
+last step has an off-by-one error that biases the output; our
+implementations apply the corrections from the errata in
+\cite{sampleiterator}. We thank metasj for bringing this algorithm to
+our attention.
 
 \subsection{SELECT}
 \inputminted{Python}{code/select.py}
-Use a Fisher-Yates shuffle to randomize only the first \(k\) items of
-an array of the elements of \(\NN_{<n}\). \cite{goodman}
+Fill an array with the elements of \(\NN_{<n}\), and run the first
+\(k\) steps of a Fisher--Yates shuffle on it: at step \(i\), swap a
+random element from position \(i\) onwards into position \(i\)
+\cite{goodman}. The first \(k\) elements are then the sample, in
+random order. It makes only \(k\) draws, but the array takes
+\(\bigO{n}\) memory and \(\bigO{n}\) time to fill.
 
 \subsection{HSEL}
 \inputminted{Python}{code/hsel.py}
-As above, except that instead of allocating and initializing an
-\(n\)-element array, we use a ``virtual'' array, with a hash table
-storing only the modified elements \cite{hsel}. Teuhola and
+SELECT with a ``virtual'' array: a hash table stores only the elements
+that have changed, so it needs no \(n\)-element array
+\cite{hsel}. The output is in random order, and it takes \(\bigO{k}\)
+expected time and \(\bigO{k}\) memory for the hash table. Teuhola and
 Nevalainen \cite{teuhola} give a version that needs \(2k\) storage
 locations rather than about \(5k\), which draws all \(k\) random
 numbers first and then works out which value each one stands for,
-from the last back. Our C++ and Rust implementations use a faster variant, which keeps the
-first \(k\) entries of the virtual array in the output array itself,
-so only swaps that reach beyond them touch the hash table. This variant
-was described by rici \cite{rici}; we thank Mathias Weller for bringing
-it to our attention.
+from the last back. Our C++ and Rust implementations use a faster
+variant, which keeps the first \(k\) entries of the virtual array in
+the output array itself, so only swaps that reach beyond them touch
+the hash table. This variant was described by rici \cite{rici}; we
+thank Mathias Weller for bringing it to our attention.
 
 \subsection{Cardchoose}
 \inputminted{Python}{code/cardchoose.py}
