@@ -638,6 +638,8 @@ We tested values of \(n\) and \(k\) that are Fibonacci numbers, with
 \(n\) up to 701,408,733 (the 44th Fibonacci number) and \(k\) up to
 102,334,155 (the 40th).
 
+\subsection{Method}
+
 A Python harness times each algorithm in a process of its own, calling
 the C++ and Rust implementations through a C interface. At each point,
 it times passes of more and more calls, until a pass takes up what is
@@ -654,48 +656,78 @@ same points on four separate boots of the machine, which may come back
 on a different host each time, every algorithm agreed to within about
 1\%. We describe what we found and changed to make these timings
 trustworthy, such as aligning arrays that were otherwise slower to fill
-depending on where earlier allocations left them, at
-\url{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}.
+depending on where earlier allocations left them, in
+\href{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}{\texttt{measurement.md}} in the
+repository.
 
-The C++ implementations use the standard library's, here libc++'s,
+\subsection{The two languages}
+
+The C++ and Rust implementations are the same algorithms, written the
+same way, and apart from random number generation each uses only its
+own language's standard library, so the results show the performance
+available from standard components. Some of those components differ a
+great deal.
+
+\paragraph{Hash tables.} The C++ uses libc++'s
 \mintinline{cpp}{std::unordered_set} and
-\mintinline{cpp}{std::unordered_map}, which are node-based, and
-\mintinline{cpp}{std::sort}, so they show the performance available
-from the standard library. The Rust implementations use the Rust
-standard library's \mintinline{rust}{HashSet} and
-\mintinline{rust}{HashMap}, which are flat open-addressing hash tables
-based on SwissTable, and its unstable sort, ipnsort. These are much
-faster: the hash-based algorithms take about 0.3 times as long in Rust
-as in C++. Sorting the same arrays of random numbers, from 144 to
-1,346,269 long, libc++'s \mintinline{cpp}{std::sort}, an introsort,
-takes 1.15 to 1.84 times as long as Rust's
-\mintinline{rust}{sort_unstable}, and Cardchoose takes about 0.5 times
-as long in Rust as in C++. RANKSB, Vitter's Algorithm D and Hidden
-Shuffle need neither, and take about the same time in both languages
-for sorted output. For random output, Algorithm D and Hidden Shuffle
-take 4--8\% longer in Rust at the median: the shuffle that turns their
-sorted output into random order is the same loop in both languages,
-but adds 1.1 to 1.5 times as much time per number in Rust. Both
-languages use the Xoshiro256++ generator, but the C++ uses its own
-code to draw a number below a bound, which takes two 32-bit numbers
-from each 64-bit output, while the \mintinline{rust}{rand} crate's
-\mintinline{rust}{random_range} uses a whole output for each; its own
-\mintinline{rust}{SliceRandom::shuffle} is slower than our loop. The
-quadratic algorithms search the output so far on every draw; the Rust
-uses \mintinline{rust}{slice::contains}, and the C++ a loop of its own
-that the compiler vectorises, since libc++'s
+\mintinline{cpp}{std::unordered_map}, which are node-based: each entry
+is allocated separately and reached through a linked list. Rust's
+\mintinline{rust}{HashSet} and \mintinline{rust}{HashMap} are flat
+open-addressing tables based on SwissTable. The hash-based algorithms
+take about 0.3 times as long in Rust as in C++.
+
+\paragraph{Sorting.} libc++'s \mintinline{cpp}{std::sort} is an
+introsort, and Rust's \mintinline{rust}{sort_unstable} is ipnsort.
+Sorting the same arrays of random numbers, \mintinline{cpp}{std::sort}
+takes 1.15 to 1.84 times as long (\autoref{sorttimes}), and Cardchoose
+takes about 0.5 times as long in Rust as in C++. RANKSB, Algorithm D
+and Hidden Shuffle need neither a hash table nor a sort, and take about
+the same time in both languages for sorted output.
+
+\begin{table}
+    \centering
+    \begin{tabular}{r|r|r}
+    Length & C++ \mintinline{cpp}{std::sort} & Rust \mintinline{rust}{sort_unstable} \\
+    \hline
+    144 & 4.41 & 3.39 \\
+    10,946 & 7.06 & 6.12 \\
+    121,393 & 18.1 & 9.82 \\
+    1,346,269 & 20.2 & 11.5
+    \end{tabular}
+    \caption{Time to sort an array of random numbers, in ns per
+    number}\label{sorttimes}
+\end{table}
+
+\paragraph{Random numbers.} Both use the Xoshiro256++ generator, and
+both turn its output into a number below a bound with a
+multiplication. But the C++ uses its own code for this, which takes two
+32-bit numbers from each 64-bit output, while the
+\mintinline{rust}{rand} crate's \mintinline{rust}{random_range} uses a
+whole output for each. The shuffle that turns the sorted output of
+RANKSB, Algorithm D and Hidden Shuffle into random order is the same
+loop in both languages, but adds 1.1 to 1.5 times as much time per
+number in Rust, at the median in each decade of \(k\); so for random
+output, Algorithm D and Hidden Shuffle take 4--8\% longer in Rust at
+the median. The \mintinline{rust}{rand} crate's own
+\mintinline{rust}{SliceRandom::shuffle} is slower than our loop.
+
+\paragraph{Searching an array.} The quadratic algorithms search the
+output so far on every draw. The Rust uses
+\mintinline{rust}{slice::contains}, and the C++ a loop of its own that
+the compiler vectorises, since libc++'s
 \mintinline{cpp}{std::ranges::contains} calls \mintinline{c}{wmemchr},
 which is slower for the short arrays where these algorithms are worth
 using.
 
+\subsection{Results}
+
 In \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} we graph
 time/\(k\) in ns against \(k\) for two different values of \(n\) for
 random order output, and a single value of \(n\) for sorted output, in
-each language. Animated graphs showing many values of \(n\) can be
-seen at
-\url{https://github.com/ciphergoth/sansreplace/blob/master/results.md},
-and complete benchmark data at
-\url{https://github.com/ciphergoth/sansreplace/blob/master/results/latest}
+each language. Animated graphs showing many values of \(n\) are in
+\href{https://github.com/ciphergoth/sansreplace/blob/master/results.md}{\texttt{results.md}} in the
+repository, and the complete benchmark data in
+\href{https://github.com/ciphergoth/sansreplace/blob/master/results/latest}{\texttt{results/latest}}.
 
 \begin{figure}
     \input{generated/cpp-random-1346269.pgf}
@@ -784,11 +816,10 @@ million; for larger \(n\), its array is large enough that glibc's
 pages in again makes it up to 2.1 times slower than the fastest. The hash-based
 algorithms slow down at large \(k\), once the hash table no longer fits
 in cache, and as \(k\) approaches \(n\). In theory, their
-\(\bigO{k}\) performance compared to the \(\bigO{k \log k}\)
-performance of Cardchoose should mean that there is a value of \(k\)
-at which they perform better. However, the poor cache coherence of
-these algorithms means that their performance more closely resembles
-\(\bigO{k \log k}\) in practice. For very large \(k\), a parallel
+\(\bigO{k}\) time should eventually beat Cardchoose's
+\(\bigO{k \log k}\), but not at any \(k\) we tested: in Rust, wherever
+\(k \geq 10^7\) and \(n \geq 2k\), Cardchoose takes 0.23 to 0.39 times
+as long as each of them. For very large \(k\), a parallel
 algorithm \cite{rajan, sandersetal} should generally be used; that of
 Sanders et al.\ calls a sequential algorithm at the leaves of the
 parallel tree it builds.
