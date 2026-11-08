@@ -544,7 +544,14 @@ draws its \(i\)th value uniformly from the \(n - i + 1\) values not yet
 chosen, as a rank \(r\) among them; that value is \(r + u\), where \(u\)
 is the number of values already chosen below it, and GSEL finds \(u\)
 in a balanced binary tree of the chosen values that records the size
-of each subtree. Adding to each value the number of chosen values
+of each subtree. Rouzankin and Voytishek \cite{RouzankinVoytishek} do
+the same with a sorted array, in \(\bigO{k^2}\) time, and with an
+unbalanced binary search tree, in \(\bigO{k \log k}\) expected time;
+they also split the range in half recursively, drawing how many values
+fall in each half from a hypergeometric distribution, which with
+stored tables of its probabilities takes \(\bigO{k}\) expected time,
+and is the division Sanders et al.\ \cite{sandersetal} use to sample
+in parallel. Adding to each value the number of chosen values
 below it is also the last step of Cardchoose, where each sorted value
 has its index added. But GSEL must keep its chosen values in order to
 count as it goes, and so needs a tree of \(k\) nodes, while the urn
