@@ -21,6 +21,7 @@ of the four cases.
 * [Guide to algorithms tested](algorithms.md)
 * [Benchmark results](results.md)
 * [Explorer](https://ciphergoth.github.io/sansreplace/): pick _n_ and _k_ and compare every algorithm there
+* [Paper](https://ciphergoth.github.io/sansreplace/cardchoose.pdf): "Algorithms for sampling without replacement"
 * [Choosing algorithms](choosing.md)
 * Pairwise comparisons: [ratio of times](results/latest/pairwise-ratio.md),
   [difference in time/_k_](results/latest/pairwise-difference.md)

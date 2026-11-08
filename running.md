@@ -151,3 +151,7 @@ This generates the paper's figures and tables from the CSVs in `results/latest` 
 `latex/generated`, which is not checked in, then writes `latex/cardchoose.pdf`. The first run
 downloads `latexrun` into `latex/build`. The build prints some warnings from `latexrun` and from
 the LaTeX packages that can be ignored.
+
+On every push to `master` that changes the paper, the results or the build, the Pages workflow
+builds the paper the same way and publishes it alongside the explorer, at
+<https://ciphergoth.github.io/sansreplace/cardchoose.pdf>.

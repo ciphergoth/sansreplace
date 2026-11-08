@@ -1,4 +1,4 @@
-name: Publish the explorer to GitHub Pages
+name: Publish the explorer and the paper to GitHub Pages
 
 on:
   push:
@@ -7,6 +7,9 @@ on:
       - "web/**"
       - "results/latest/**"
       - "python/**"
+      - "latex/**"
+      - "devenv.nix"
+      - "devenv.lock"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -24,12 +27,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      # Build in the same devenv as locally, so the paper gets the same TeX Live
+      # and the same patched minted
+      - uses: cachix/install-nix-action@v31
+      - uses: cachix/cachix-action@v17
         with:
-          python-version: "3.13"
-      - run: pip install matplotlib
+          name: devenv
+      - run: nix profile install nixpkgs#devenv
       - run: cp -r web _site
-      - run: python/export_web --out _site/generated/data.json
+      - run: devenv shell -- python/export_web --out _site/generated/data.json
+      - run: devenv shell -- latex/do_build
+      - run: cp latex/cardchoose.pdf _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
