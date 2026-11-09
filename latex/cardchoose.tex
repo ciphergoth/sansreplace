@@ -138,8 +138,10 @@ Floyd's F2 in random order that needs no extra random draws.
 
 \section{Cardchoose}\label{cardchoose}
 
-Here is Cardchoose in Python. It returns \(k\) distinct integers below
-\(n\) in sorted order, with every set of \(k\) equally likely:
+Cardchoose first chooses a multiset uniformly at random, then sorts it
+and converts it to a set. A Python implementation follows. It returns
+\(k\) distinct integers below \(n\) in sorted order, with every set of
+\(k\) equally likely.
 
 \inputminted{Python}{code/cardchoose.py}
 
