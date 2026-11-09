@@ -199,13 +199,15 @@ by its \emph{cell number}, the number of bars to its left:
 A cell number can be anything from \(0\) (before all the bars) to
 \(n - k\) (after all of them), so there are \(t = n - k + 1\) cells,
 and stars can share a cell. The cell numbers of the stars therefore
-form a multiset in \(\multichoose{\NN_{<t}}{k}\). This is a bijection between
-\(\binom{\NN_{<n}}{k}\) and \(\multichoose{\NN_{<t}}{k}\). Going one
+form a multiset in \(\multichoose{\NN_{<t}}{k}\). This is the
+well-known stars and bars bijection between \(\binom{\NN_{<n}}{k}\)
+and \(\multichoose{\NN_{<t}}{k}\). Going one
 way, read off each star's cell number. Going back, the multiset says
-how many stars go in each cell, and that rebuilds the row. The two directions undo each other, so
-each subset corresponds to exactly one multiset and each multiset to
-exactly one subset; in particular \(\multichoose{t}{k} =
-\binom{t + k - 1}{k}\).
+how many stars go in each cell, and that rebuilds the row. The two
+directions undo each other, so each subset corresponds to exactly one
+multiset and each multiset to exactly one subset. The bijection is
+usually used for counting, to show that \(\multichoose{t}{k} =
+\binom{t + k - 1}{k}\); here we use it to turn a random multiset into a random subset.
 
 In code, the way back is: sort the multiset, then add each star's
 index to its cell number, because a star's position is its bars to the left
@@ -228,100 +230,67 @@ to choose an element of \(\multichoose{\NN_{<t}}{k}\) fairly.
 \subsection{Choosing a multiset fairly}\label{fairmultiset}
 
 Putting each of \(k\) stars in a cell chosen independently from
-\(\NN_{<t}\) does not give a uniform multiset. With \(t = 2\), \(k = 2\), the multiset \([0, 1]\)
-comes up half the time, because it can arrive as \(0, 1\) or as \(1,
-0\), while \([0, 0]\) and \([1, 1]\) get a quarter each. Independent
-draws favour variety; we need to favour repeats, by exactly the right
-amount.
+\(\NN_{<t}\) does not give a uniform multiset. With \(t = 2\), \(k =
+2\), the multiset \([0, 1]\) comes up half the time, because it can
+arrive as \(0, 1\) or as \(1, 0\), while \([0, 0]\) and \([1, 1]\) get
+a quarter each. Independent draws favour variety; we need to favour
+repeats, by exactly the right amount.
 
-Instead, build the row one star at a time, starting from the \(t -
-1\) bars alone, and put each new star in a uniformly random slot of
-the row so far: a place between two neighbouring symbols, or at either
-end. With \(i\) stars already placed, the row holds \(t - 1 + i\)
-things, so it has \(t + i\) slots. Name each slot by what is just to
-its left:
-\begin{itemize}
-    \item The slot at the start of the row, and the slot just after
-    each bar. There are \(t\) of these, and a star placed in the one after
-    the \(b\)-th bar, or at the start for \(b = 0\), goes in cell \(b\).
-    These are the \emph{fresh} slots.
-    \item The slot just after each star. There are \(i\) of these, and
-    a star placed in one goes in the same cell as its left neighbour.
-    These are the \emph{copy} slots.
-\end{itemize}
-For example, with \(t = 4\), so three bars, and two stars already
-placed, \(d = [1, 3]\), there are six slots, each marked \(\circ\) here
-with the \(r\) that picks it above and the cell it gives below:
+A classical probability model favours repeats in just this way: the
+P\'olya urn \cite[Chapter V \S 2, pp.~119--120]{feller}. Feller's urn
+holds balls of two colours; we use its generalisation to \(t\) colours
+\cite[\S 2.4]{levinperes}, which starts with \(t\) balls, one of each
+colour in \(\NN_{<t}\). Each step draws a ball
+uniformly at random, records its colour, and puts it back along with a
+new ball of the same colour. A colour drawn \(c\) times so far has \(c
++ 1\) balls in the urn, so it is \(c + 1\) times as likely to be drawn
+next as a colour not yet drawn. Cardchoose runs this urn as an
+algorithm.
 
-\begin{displaymath}
-    \begin{array}{ l c c c c c c c c c c c }
-        r & 0 & & 1 & & 4 & & 2 & & 3 & & 5 \\
-        \text{row} & \circ & \big| & \circ & \star_0 & \circ & \big| & \circ & \big| & \circ & \star_1 & \circ \\
-        \text{cell} & 0 & & 1 & & 1 & & 2 & & 3 & & 3 \\
-    \end{array}
-\end{displaymath}
+The loop in the listing runs exactly this urn, numbering the balls in
+the order they enter it: balls \(0, \ldots, t - 1\) are the originals,
+ball \(b < t\) having colour \(b\), and ball \(t + i\) is the one added
+at step \(i\). At step \(i\) the urn holds \(t + i\) balls, so
+\mintinline{python}{randrange(t + i)} draws one. If \(r < t\), it is
+an original, of colour \(r\). Otherwise it is the ball added at step
+\(r - t\), whose colour is the one drawn at that step,
+\mintinline{python}{d[r - t]}. So each step takes one random number,
+one comparison and one write, with no search, and the urn needs no
+storage beyond \mintinline{python}{d} itself.
 
-That is the loop. \mintinline{python}{randrange(t + i)} picks a slot.
-If \(r < t\), it is a fresh slot, and the new star goes in cell \(r\).
-Otherwise \(r - t\) picks one of the stars already placed, and the new
-star goes in its cell, \mintinline{python}{d[r - t]}. The list
-\mintinline{python}{d} holds cell numbers in the order they were
-drawn, so
-the copy is a single index lookup: one random number, one comparison
-and one write per star, with no search.
-
-A cell that already holds \(c\) stars owns \(c + 1\) slots: one fresh
-slot, and one after each of those stars. So a cell holding one star is
-now twice as likely to get the next one as an empty cell, a cell
-holding two three times as likely, and so on. The slots are the balls
-of a P\'olya urn (\autoref{priorart}): the \(t\) fresh slots are \(t\)
-balls, one of each colour, and each star adds a copy slot to its cell,
-as each draw adds a ball of the colour drawn. That is how repeats get
-favoured; the next subsection shows it is by exactly the right amount.
+The same process can be pictured on the row of
+\autoref{starsandbars}: starting from the \(t - 1\) bars alone, insert
+each new star in a uniformly random place in the row so far, between
+two neighbouring symbols or at either end; a cell holding \(c\) stars
+has \(c + 1\) such places, one for each ball of its colour
+\cite{video}.
 
 \subsection{Proof}\label{proof}
 
-Tag each star with the number of the draw that placed it. Different
-values of \(r\) put the new star in different slots, so a tagged row
-records its whole history: remove the highest-tagged star, and its
-left neighbour says which slot it went in, so whether it was fresh (a
-bar, or nothing) or a copy (a star, and which one). Repeat to recover
-every draw. So distinct sequences of draws produce distinct tagged
-rows.
-
-\autoref{sixruns} lists every possible run for \(t = 2\), \(k = 2\),
-one bar and two stars. Every run has the same probability, \(\frac{1}{2}
-\times \frac{1}{3}\), and the six results are the six tagged rows:
-three ways to place two stars around a bar, times two ways to tag
-them.
-
-\begin{table}
-    \begin{tabular}{ l l l l }
-        first draw & row & second draw & row \\
-        \hline
-        \(r = 0\), fresh, cell 0 & \(\star_1 \,\big|\) & \(r = 0\), fresh, cell 0 & \(\star_2 \star_1 \,\big|\) \\
-        & & \(r = 1\), fresh, cell 1 & \(\star_1 \,\big|\, \star_2\) \\
-        & & \(r = 2\), copy \(\star_1\) & \(\star_1 \star_2 \,\big|\) \\
-        \(r = 1\), fresh, cell 1 & \(\big|\, \star_1\) & \(r = 0\), fresh, cell 0 & \(\star_2 \,\big|\, \star_1\) \\
-        & & \(r = 1\), fresh, cell 1 & \(\big|\, \star_2 \star_1\) \\
-        & & \(r = 2\), copy \(\star_1\) & \(\big|\, \star_1 \star_2\) \\
-    \end{tabular}
-    \caption{Every run for \(t = 2\), \(k = 2\)}\label{sixruns}
-\end{table}
-
-In general there are \(t (t + 1) \cdots (t + k - 1) = \frac{(t + k -
-1)!}{(t - 1)!}\) sequences of draws, each with probability
-\(\frac{(t - 1)!}{(t + k - 1)!}\), and the same number of tagged
-rows: \(\binom{t + k - 1}{k}\) ways to place the stars among the
-bars, times \(k!\) ways to tag them. Since distinct sequences give
-distinct tagged rows, every tagged row is produced by exactly one
-sequence, and so every tagged row is equally likely. Each untagged
-row has exactly \(k!\) taggings, so every untagged row is equally
-likely, which is to say every multiset in
-\(\multichoose{\NN_{<t}}{k}\), which is to say, by
-\autoref{starsandbars}, every subset in \(\binom{\NN_{<n}}{k}\). In
-\autoref{sixruns}, each of the three untagged rows is the result of
-two runs, so each has probability \(\frac{1}{3}\).
+Consider a run of the urn that draws the colours \(x_0, \ldots,
+x_{k-1}\), and let \(c_j\) be the number of times colour \(j\)
+appears. At step \(i\) the urn holds \(t + i\) balls, and one more
+ball of colour \(x_i\) than the number of earlier steps that drew
+\(x_i\). Over the whole run, the numerators for colour \(j\) are
+therefore \(1, 2, \ldots, c_j\), and the probability of this sequence
+is
+\begin{displaymath}
+    \frac{\prod_j c_j!}{t (t + 1) \cdots (t + k - 1)}
+    = \frac{(t - 1)! \prod_j c_j!}{(t + k - 1)!},
+\end{displaymath}
+which depends only on the counts, not on their order, as Feller
+observes for two colours \cite[p.~120]{feller}. The multiset
+with these counts is drawn by \(k! / \prod_j c_j!\) distinct
+sequences, so its probability is
+\begin{displaymath}
+    \frac{k!}{\prod_j c_j!} \cdot \frac{(t - 1)! \prod_j c_j!}{(t + k - 1)!}
+    = \frac{k! \, (t - 1)!}{(t + k - 1)!}
+    = 1 \Big/ \binom{t + k - 1}{k},
+\end{displaymath}
+the same for every multiset in \(\multichoose{\NN_{<t}}{k}\). This is a
+standard lemma about the urn \cite[Lemma 2.7]{levinperes}. By
+\autoref{starsandbars}, converting the multiset then gives every
+subset in \(\binom{\NN_{<n}}{k}\) with the same probability.
 
 \subsection{Implementation}
 
@@ -357,13 +326,10 @@ Fermi--Dirac ones. So the one-line summary of Cardchoose is: generate
 a Bose--Einstein configuration with a Pólya urn, then map it to
 Fermi--Dirac by stars and bars.
 
-The mathematics of both halves is classical. The multiset loop is a
-Pólya urn \cite[Chapter V \S 2]{feller}: start with \(t\) balls, one of each
-colour; draw a ball uniformly at random, and put it back along with a
-new ball of the same colour. The urn is a textbook object of study, and
-that with one ball of each colour its counts are uniform, which is to
-say Bose--Einstein, is a standard lemma about it
-\cite[Lemma 2.7]{levinperes}; Niven and Grendar \cite{nivengrendar} map
+The mathematics of both halves is classical. The P\'olya urn is a
+textbook object of study, and that with one ball of each colour its
+counts are uniform, which is to say Bose--Einstein, is a standard
+lemma about it \cite[Lemma 2.7]{levinperes}; Niven and Grendar \cite{nivengrendar} map
 all three statistics onto the urn, with Maxwell--Boltzmann as
 replacement without a copy, Bose--Einstein as replacement with a copy,
 and Fermi--Dirac as no replacement. But the urn is presented as a model,
