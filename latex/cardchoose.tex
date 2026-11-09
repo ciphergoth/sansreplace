@@ -127,7 +127,7 @@ hash-based data structure such as a set or dictionary for each value
 generated, which adds memory and a significant constant factor to the
 runtime. Some need extra memory proportional to \(n\), or
 floating-point arithmetic. To see where Cardchoose stands among them,
-in \autoref{otheralgs} we describe it and eleven others, and in
+in \autoref{otheralgs} we describe eleven of them alongside it, and in
 \autoref{benchmarks} we compare C++ and Rust implementations of each.
 No single algorithm is close to the fastest for all \(n, k\), so in
 \autoref{choosing} we find the small sets of algorithms that between
@@ -136,9 +136,294 @@ show that Cardchoose alone is never far behind them. Along the way, in
 \autoref{quadraticf2}, we give a way to keep a quadratic version of
 Floyd's F2 in random order that needs no extra random draws.
 
-\section{Algorithms}\label{otheralgs}
-Let \(\NN_{<n}\) denote the \(n\)-element set \(\{0, 1, \ldots,
-n-1\}\). Though the literature includes algorithms that return an
+\section{Cardchoose}\label{cardchoose}
+
+Cardchoose in Python, returning a sorted list of \(k\) distinct
+integers below \(n\), every such list equally likely:
+
+\inputminted{Python}{code/cardchoose.py}
+
+The rest of this section explains why it works, proves it fair, and
+places it relative to earlier work.
+
+\subsection{Notation}
+
+Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural
+numbers less than \(n\) where \(\NN = \{0, 1, 2, \ldots\}\). Let
+\(\binom{S}{k} \defeq \{s \subseteq S: |s| = k\}\), the set of all
+\(k\)-element subsets of \(S\); note that \(\left|\binom{S}{k}\right|
+= \binom{|S|}{k}\).
+
+A \emph{multiset} is an extension of a set in which elements can
+appear more than once; we use brackets to delimit the elements of a
+multiset, so $[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but
+distinct from $[0, 0, 1]$. Define \(\multichoose{U}{k}\) to be the set
+of multisets of cardinality \(k\) whose elements are drawn from
+\(U\), and \(\multichoose{n}{k} \defeq
+\left|\multichoose{\NN_{<n}}{k}\right|\) the number of distinct
+\(k\)-cardinality multisets over an \(n\)-element universe.
+
+\subsection{Subsets as stars and bars}\label{starsandbars}
+
+Write the numbers \(0, \ldots, n-1\) in a row, marking each chosen
+number as a star and each unchosen one as a bar. For \(n = 7\), \(k =
+3\) and the subset \(\{1, 2, 5\}\):
+
+\begin{displaymath}
+    \begin{array}{ c c c c c c c }
+        0 & 1 & 2 & 3 & 4 & 5 & 6 \\
+        \big| & \star & \star & \big| & \big| & \star & \big| \\
+    \end{array}
+\end{displaymath}
+
+A row of \(k\) stars and \(n - k\) bars is exactly a \(k\)-element
+subset of \(\NN_{<n}\): the stars' positions are the chosen numbers.
+Following Feller \cite[Chapter II \S 5]{feller}, think of the spaces
+between bars, including the space at each end, as \emph{cells}, and
+number them from \(0\). Instead of its position, we describe each star
+by its \emph{cell number}, the number of bars to its left:
+
+\begin{displaymath}
+    \begin{array}{ c c c c c c c }
+        \big| & \star & \star & \big| & \big| & \star & \big| \\
+          & 1 & 1 & & & 3 & \\
+    \end{array}
+\end{displaymath}
+
+A cell number can be anything from \(0\) (before all the bars) to
+\(n - k\) (after all of them), so there are \(t = n - k + 1\) cells,
+and stars can share a cell. The cell numbers of the stars therefore
+form a multiset in \(\multichoose{\NN_{<t}}{k}\). This is a bijection between
+\(\binom{\NN_{<n}}{k}\) and \(\multichoose{\NN_{<t}}{k}\). Going one
+way, read off each star's cell number. Going back, the multiset says
+how many stars go in each cell, and that rebuilds the row. The two directions undo each other, so
+each subset corresponds to exactly one multiset and each multiset to
+exactly one subset; in particular \(\multichoose{t}{k} =
+\binom{t + k - 1}{k}\).
+
+In code, the way back is: sort the multiset, then add each star's
+index to its cell number, because a star's position is its bars to the left
+plus its stars to the left:
+
+\begin{displaymath}
+    \begin{array}{ l c c c }
+        \text{sorted cell numbers} & 1 & 1 & 3 \\
+        \text{+ index} & 0 & 1 & 2 \\
+        \text{positions} & 1 & 2 & 5 \\
+    \end{array}
+\end{displaymath}
+
+That is the last three lines of the algorithm. Because the
+correspondence is a bijection, choosing a multiset uniformly at
+random and converting it gives a subset chosen uniformly at random:
+each subset is reached from exactly one multiset. So what remains is
+to choose an element of \(\multichoose{\NN_{<t}}{k}\) fairly.
+
+\subsection{Choosing a multiset fairly}\label{fairmultiset}
+
+Putting each of \(k\) stars in a cell chosen independently from
+\(\NN_{<t}\) does not give a uniform multiset. With \(t = 2\), \(k = 2\), the multiset \([0, 1]\)
+comes up half the time, because it can arrive as \(0, 1\) or as \(1,
+0\), while \([0, 0]\) and \([1, 1]\) get a quarter each. Independent
+draws favour variety; we need to favour repeats, by exactly the right
+amount.
+
+Instead, build the row one star at a time, starting from the \(t -
+1\) bars alone, and put each new star in a uniformly random slot of
+the row so far: a place between two neighbouring symbols, or at either
+end. With \(i\) stars already placed, the row holds \(t - 1 + i\)
+things, so it has \(t + i\) slots. Name each slot by what is just to
+its left:
+\begin{itemize}
+    \item The slot at the start of the row, and the slot just after
+    each bar. There are \(t\) of these, and a star placed in the one after
+    the \(b\)-th bar, or at the start for \(b = 0\), goes in cell \(b\).
+    These are the \emph{fresh} slots.
+    \item The slot just after each star. There are \(i\) of these, and
+    a star placed in one goes in the same cell as its left neighbour.
+    These are the \emph{copy} slots.
+\end{itemize}
+For example, with \(t = 4\), so three bars, and two stars already
+placed, \(d = [1, 3]\), there are six slots, each marked \(\circ\) here
+with the \(r\) that picks it above and the cell it gives below:
+
+\begin{displaymath}
+    \begin{array}{ l c c c c c c c c c c c }
+        r & 0 & & 1 & & 4 & & 2 & & 3 & & 5 \\
+        \text{row} & \circ & \big| & \circ & \star_0 & \circ & \big| & \circ & \big| & \circ & \star_1 & \circ \\
+        \text{cell} & 0 & & 1 & & 1 & & 2 & & 3 & & 3 \\
+    \end{array}
+\end{displaymath}
+
+That is the loop. \mintinline{python}{randrange(t + i)} picks a slot.
+If \(r < t\), it is a fresh slot, and the new star goes in cell \(r\).
+Otherwise \(r - t\) picks one of the stars already placed, and the new
+star goes in its cell, \mintinline{python}{d[r - t]}. The list
+\mintinline{python}{d} holds cell numbers in the order they were
+drawn, so
+the copy is a single index lookup: one random number, one comparison
+and one write per star, with no search.
+
+A cell that already holds \(c\) stars owns \(c + 1\) slots: one fresh
+slot, and one after each of those stars. So a cell holding one star is
+now twice as likely to get the next one as an empty cell, a cell
+holding two three times as likely, and so on. The slots are the balls
+of a P\'olya urn (\autoref{priorart}): the \(t\) fresh slots are \(t\)
+balls, one of each colour, and each star adds a copy slot to its cell,
+as each draw adds a ball of the colour drawn. That is how repeats get
+favoured; the next subsection shows it is by exactly the right amount.
+
+\subsection{Proof}\label{proof}
+
+Tag each star with the number of the draw that placed it. Different
+values of \(r\) put the new star in different slots, so a tagged row
+records its whole history: remove the highest-tagged star, and its
+left neighbour says which slot it went in, so whether it was fresh (a
+bar, or nothing) or a copy (a star, and which one). Repeat to recover
+every draw. So distinct sequences of draws produce distinct tagged
+rows.
+
+\autoref{sixruns} lists every possible run for \(t = 2\), \(k = 2\),
+one bar and two stars. Every run has the same probability, \(\frac{1}{2}
+\times \frac{1}{3}\), and the six results are the six tagged rows:
+three ways to place two stars around a bar, times two ways to tag
+them.
+
+\begin{table}
+    \begin{tabular}{ l l l l }
+        first draw & row & second draw & row \\
+        \hline
+        \(r = 0\), fresh, cell 0 & \(\star_1 \,\big|\) & \(r = 0\), fresh, cell 0 & \(\star_2 \star_1 \,\big|\) \\
+        & & \(r = 1\), fresh, cell 1 & \(\star_1 \,\big|\, \star_2\) \\
+        & & \(r = 2\), copy \(\star_1\) & \(\star_1 \star_2 \,\big|\) \\
+        \(r = 1\), fresh, cell 1 & \(\big|\, \star_1\) & \(r = 0\), fresh, cell 0 & \(\star_2 \,\big|\, \star_1\) \\
+        & & \(r = 1\), fresh, cell 1 & \(\big|\, \star_2 \star_1\) \\
+        & & \(r = 2\), copy \(\star_1\) & \(\big|\, \star_1 \star_2\) \\
+    \end{tabular}
+    \caption{Every run for \(t = 2\), \(k = 2\)}\label{sixruns}
+\end{table}
+
+In general there are \(t (t + 1) \cdots (t + k - 1) = \frac{(t + k -
+1)!}{(t - 1)!}\) sequences of draws, each with probability
+\(\frac{(t - 1)!}{(t + k - 1)!}\), and the same number of tagged
+rows: \(\binom{t + k - 1}{k}\) ways to place the stars among the
+bars, times \(k!\) ways to tag them. Since distinct sequences give
+distinct tagged rows, every tagged row is produced by exactly one
+sequence, and so every tagged row is equally likely. Each untagged
+row has exactly \(k!\) taggings, so every untagged row is equally
+likely, which is to say every multiset in
+\(\multichoose{\NN_{<t}}{k}\), which is to say, by
+\autoref{starsandbars}, every subset in \(\binom{\NN_{<n}}{k}\). In
+\autoref{sixruns}, each of the three untagged rows is the result of
+two runs, so each has probability \(\frac{1}{3}\).
+
+\subsection{Implementation}
+
+The multiset choosing procedure in Python, taking integers \(n, k\)
+and returning a list of \(k\) integers in \(\NN_{<n}\), with repeats
+allowed, uniformly among all such multisets:
+
+\inputminted{Python}{code/choose_multiset.py}
+
+Applying it with universe \(\NN_{<n - k + 1}\) and converting the
+result as in \autoref{starsandbars} returns a sorted list of \(k\)
+distinct integers in \(\NN_{<n}\), uniformly among all such subsets:
+
+\inputminted{Python}{code/choose_binom.py}
+
+The listing at the start of this section is these two procedures
+merged into one.
+
+\subsection{Prior art}\label{priorart}
+
+This subsection mentions several of the other algorithms, which
+\autoref{otheralgs} describes.
+
+Physicists have names for the three distributions in this story
+\cite[Chapter II \S 5]{feller}. Distinguishable particles placed independently in
+cells, the biased way of picking a multiset in \autoref{fairmultiset},
+is Maxwell--Boltzmann statistics. Indistinguishable particles with every
+occupancy pattern equally likely, a uniform multiset, is Bose--Einstein.
+At most one particle per cell with every pattern equally likely, a
+uniform subset, is Fermi--Dirac. Stars and bars is the standard way to
+count the Bose--Einstein configurations, by matching them with
+Fermi--Dirac ones. So the one-line summary of Cardchoose is: generate
+a Bose--Einstein configuration with a Pólya urn, then map it to
+Fermi--Dirac by stars and bars.
+
+The mathematics of both halves is classical. The multiset loop is a
+Pólya urn \cite[Chapter V \S 2]{feller}: start with \(t\) balls, one of each
+colour; draw a ball uniformly at random, and put it back along with a
+new ball of the same colour. The urn is a textbook object of study, and
+that with one ball of each colour its counts are uniform, which is to
+say Bose--Einstein, is a standard lemma about it
+\cite[Lemma 2.7]{levinperes}; Niven and Grendar \cite{nivengrendar} map
+all three statistics onto the urn, with Maxwell--Boltzmann as
+replacement without a copy, Bose--Einstein as replacement with a copy,
+and Fermi--Dirac as no replacement. But the urn is presented as a model,
+not as a way to generate anything, beyond passing remarks that it could
+be used so \cite{cancriniposta}. The nearest thing to running an urn as
+a sampler in earnest is in Bayesian statistics, where the
+Blackwell--MacQueen urn \cite{blackwellmacqueen} draws an exchangeable
+sequence from a Dirichlet process, which is a different purpose. The
+combinatorial generation literature does generate random multisets, but
+through stars and bars in the other direction: Nijenhuis and Wilf's
+RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a random
+\((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences it.
+Nor do surveys of sampling without replacement describe anything like
+it: Devroye's \cite[Chapter XII]{devroye} has no urn and no stars and
+bars, and Ting \cite{ting}, reworking the classical algorithms into
+simpler forms, gives a sparse Fisher--Yates sampler, essentially HSEL,
+and a sorted sampler that draws each skip from a beta-binomial
+distribution, which needs floating point. What is new in Cardchoose
+is the urn used as a generator for uniform multisets, and its
+composition with stars and bars into a sampler for sampling without
+replacement. Needing no set, map or extra
+memory is not new in itself: Nijenhuis and Wilf's RANKSB
+\cite[Chapter 4]{nijenhuiswilf} also uses nothing but the output
+array, and so do Vitter's Algorithm D and, more recently, Shekelyan and
+Cormode's Hidden Shuffle \cite{hiddenshuffle}, though they need
+floating-point arithmetic where Cardchoose and RANKSB use only exact
+integer draws.
+
+The earlier algorithm closest to Cardchoose is Gupta and
+Bhattacharjee's GSEL \cite{gupta}, which also takes
+\(\bigO{k \log k}\) time and can return sorted output. Like SELECT, it
+draws its \(i\)th value uniformly from the \(n - i + 1\) values not yet
+chosen, as a rank \(r\) among them; that value is \(r + u\), where \(u\)
+is the number of values already chosen below it, and GSEL finds \(u\)
+in a balanced binary tree of the chosen values that records the size
+of each subtree, as Ernvall and Nevalainen \cite{hsel} had suggested
+in passing to bound HSEL's worst case. Rouzankin and Voytishek \cite{RouzankinVoytishek} do
+the same with a sorted array, in \(\bigO{k^2}\) time, and with an
+unbalanced binary search tree, in \(\bigO{k \log k}\) expected time;
+they also split the range in half recursively, drawing how many values
+fall in each half from a hypergeometric distribution, which with
+stored tables of its probabilities takes \(\bigO{k}\) expected time,
+and is the division Sanders et al.\ \cite{sandersetal} use to sample
+in parallel. Adding to each value the number of chosen values
+below it is also the last step of Cardchoose, where each sorted value
+has its index added. But GSEL must keep its chosen values in order to
+count as it goes, and so needs a tree of \(k\) nodes, while the urn
+never needs the earlier values in order, so Cardchoose can leave the
+counting to a single sort at the end, in the output array. We have
+not benchmarked GSEL: besides needing memory that Cardchoose does not,
+it follows pointers through the tree for every value drawn, where
+Cardchoose makes one sort over a flat array, and we see no way for it
+to be faster.
+
+Sorted output without a sort has a classic answer for real numbers:
+Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
+reals in \(\bigO{k}\) time, drawing the largest as \(U^{1/k}\) and
+repeating for the rest below it, and credit Friedman \cite{friedman}
+with an essentially equivalent earlier program. This cannot stand in
+for the urn: sorted independent draws, even rounded to integers, follow
+the Maxwell--Boltzmann distribution over multisets, not the
+Bose--Einstein one. Its closest analogue for distinct integers is
+Vitter's Algorithm D, whose continuous approximation is the same step.
+
+\section{Benchmarked algorithms}\label{otheralgs}
+We compare Cardchoose with eleven other algorithms. Though the literature includes algorithms that return an
 iterator, we here focus on algorithms that return an array of \(k\)
 elements. Some applications require that the returned elements be in
 sorted order, while others need the order of the elements to be a fair
@@ -156,7 +441,8 @@ algorithm.
 For each algorithm we give how it works, the order it returns, its
 expected time, and any memory it needs beyond the output array, and a
 Python listing for all but RANKSB, Algorithm D and Hidden Shuffle,
-whose code is too long to list; the repository has Python
+whose code is too long to list, and Cardchoose, whose listing is in
+\autoref{cardchoose}; the repository has Python
 implementations of all twelve, in
 \href{https://github.com/ciphergoth/sansreplace/tree/master/python/algorithms}{\texttt{python/algorithms}}. All but two draw only random integers below a bound;
 Vitter's Algorithm D and Hidden Shuffle also need floating-point
@@ -350,287 +636,10 @@ the hash table. This variant was described by rici \cite{rici}; we
 thank Mathias Weller for bringing it to our attention.
 
 \subsection{Cardchoose}
-\inputminted{Python}{code/cardchoose.py}
-Choose a multiset of \(k\) values below \(n - k + 1\) fairly, using
-a P\'olya urn, then sort it and add each value's index to it to turn it
-into a set. \autoref{cardchoose} explains
-why this works. The output is sorted, and the only storage needed is
-the output array.
-
-\section{Cardchoose}\label{cardchoose}
-
-\subsection{Notation}
-
-Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural
-numbers less than \(n\) where \(\NN = \{0, 1, 2, \ldots\}\). Let
-\(\binom{S}{k} \defeq \{s \subseteq S: |s| = k\}\), the set of all
-\(k\)-element subsets of \(S\); note that \(\left|\binom{S}{k}\right|
-= \binom{|S|}{k}\).
-
-A \emph{multiset} is an extension of a set in which elements can
-appear more than once; we use brackets to delimit the elements of a
-multiset, so $[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but
-distinct from $[0, 0, 1]$. Define \(\multichoose{U}{k}\) to be the set
-of multisets of cardinality \(k\) whose elements are drawn from
-\(U\), and \(\multichoose{n}{k} \defeq
-\left|\multichoose{\NN_{<n}}{k}\right|\) the number of distinct
-\(k\)-cardinality multisets over an \(n\)-element universe.
-
-\subsection{Subsets as stars and bars}\label{starsandbars}
-
-Write the numbers \(0, \ldots, n-1\) in a row, marking each chosen
-number as a star and each unchosen one as a bar. For \(n = 7\), \(k =
-3\) and the subset \(\{1, 2, 5\}\):
-
-\begin{displaymath}
-    \begin{array}{ c c c c c c c }
-        0 & 1 & 2 & 3 & 4 & 5 & 6 \\
-        \big| & \star & \star & \big| & \big| & \star & \big| \\
-    \end{array}
-\end{displaymath}
-
-A row of \(k\) stars and \(n - k\) bars is exactly a \(k\)-element
-subset of \(\NN_{<n}\): the stars' positions are the chosen numbers.
-Following Feller \cite[Chapter II \S 5]{feller}, think of the spaces
-between bars, including the space at each end, as \emph{cells}, and
-number them from \(0\). Instead of its position, we describe each star
-by its \emph{cell number}, the number of bars to its left:
-
-\begin{displaymath}
-    \begin{array}{ c c c c c c c }
-        \big| & \star & \star & \big| & \big| & \star & \big| \\
-          & 1 & 1 & & & 3 & \\
-    \end{array}
-\end{displaymath}
-
-A cell number can be anything from \(0\) (before all the bars) to
-\(n - k\) (after all of them), so there are \(t = n - k + 1\) cells,
-and stars can share a cell. The cell numbers of the stars therefore
-form a multiset in \(\multichoose{\NN_{<t}}{k}\). This is a bijection between
-\(\binom{\NN_{<n}}{k}\) and \(\multichoose{\NN_{<t}}{k}\). Going one
-way, read off each star's cell number. Going back, the multiset says
-how many stars go in each cell, and that rebuilds the row. The two directions undo each other, so
-each subset corresponds to exactly one multiset and each multiset to
-exactly one subset; in particular \(\multichoose{t}{k} =
-\binom{t + k - 1}{k}\).
-
-In code, the way back is: sort the multiset, then add each star's
-index to its cell number, because a star's position is its bars to the left
-plus its stars to the left:
-
-\begin{displaymath}
-    \begin{array}{ l c c c }
-        \text{sorted cell numbers} & 1 & 1 & 3 \\
-        \text{+ index} & 0 & 1 & 2 \\
-        \text{positions} & 1 & 2 & 5 \\
-    \end{array}
-\end{displaymath}
-
-That is the last three lines of the algorithm. Because the
-correspondence is a bijection, choosing a multiset uniformly at
-random and converting it gives a subset chosen uniformly at random:
-each subset is reached from exactly one multiset. So what remains is
-to choose an element of \(\multichoose{\NN_{<t}}{k}\) fairly.
-
-\subsection{Choosing a multiset fairly}\label{fairmultiset}
-
-Putting each of \(k\) stars in a cell chosen independently from
-\(\NN_{<t}\) does not give a uniform multiset. With \(t = 2\), \(k = 2\), the multiset \([0, 1]\)
-comes up half the time, because it can arrive as \(0, 1\) or as \(1,
-0\), while \([0, 0]\) and \([1, 1]\) get a quarter each. Independent
-draws favour variety; we need to favour repeats, by exactly the right
-amount.
-
-Instead, build the row one star at a time, starting from the \(t -
-1\) bars alone, and put each new star in a uniformly random slot of
-the row so far: a place between two neighbouring symbols, or at either
-end. With \(i\) stars already placed, the row holds \(t - 1 + i\)
-things, so it has \(t + i\) slots. Name each slot by what is just to
-its left:
-\begin{itemize}
-    \item The slot at the start of the row, and the slot just after
-    each bar. There are \(t\) of these, and a star placed in the one after
-    the \(b\)-th bar, or at the start for \(b = 0\), goes in cell \(b\).
-    These are the \emph{fresh} slots.
-    \item The slot just after each star. There are \(i\) of these, and
-    a star placed in one goes in the same cell as its left neighbour.
-    These are the \emph{copy} slots.
-\end{itemize}
-For example, with \(t = 4\), so three bars, and two stars already
-placed, \(d = [1, 3]\), there are six slots, each marked \(\circ\) here
-with the \(r\) that picks it above and the cell it gives below:
-
-\begin{displaymath}
-    \begin{array}{ l c c c c c c c c c c c }
-        r & 0 & & 1 & & 4 & & 2 & & 3 & & 5 \\
-        \text{row} & \circ & \big| & \circ & \star_0 & \circ & \big| & \circ & \big| & \circ & \star_1 & \circ \\
-        \text{cell} & 0 & & 1 & & 1 & & 2 & & 3 & & 3 \\
-    \end{array}
-\end{displaymath}
-
-That is the loop. \mintinline{python}{randrange(t + i)} picks a slot.
-If \(r < t\), it is a fresh slot, and the new star goes in cell \(r\).
-Otherwise \(r - t\) picks one of the stars already placed, and the new
-star goes in its cell, \mintinline{python}{d[r - t]}. The list
-\mintinline{python}{d} holds cell numbers in the order they were
-drawn, so
-the copy is a single index lookup: one random number, one comparison
-and one write per star, with no search.
-
-A cell that already holds \(c\) stars owns \(c + 1\) slots: one fresh
-slot, and one after each of those stars. So a cell holding one star is
-now twice as likely to get the next one as an empty cell, a cell
-holding two three times as likely, and so on. The slots are the balls
-of a P\'olya urn (\autoref{priorart}): the \(t\) fresh slots are \(t\)
-balls, one of each colour, and each star adds a copy slot to its cell,
-as each draw adds a ball of the colour drawn. That is how repeats get
-favoured; the next subsection shows it is by exactly the right amount.
-
-\subsection{Proof}\label{proof}
-
-Tag each star with the number of the draw that placed it. Different
-values of \(r\) put the new star in different slots, so a tagged row
-records its whole history: remove the highest-tagged star, and its
-left neighbour says which slot it went in, so whether it was fresh (a
-bar, or nothing) or a copy (a star, and which one). Repeat to recover
-every draw. So distinct sequences of draws produce distinct tagged
-rows.
-
-\autoref{sixruns} lists every possible run for \(t = 2\), \(k = 2\),
-one bar and two stars. Every run has the same probability, \(\frac{1}{2}
-\times \frac{1}{3}\), and the six results are the six tagged rows:
-three ways to place two stars around a bar, times two ways to tag
-them.
-
-\begin{table}
-    \begin{tabular}{ l l l l }
-        first draw & row & second draw & row \\
-        \hline
-        \(r = 0\), fresh, cell 0 & \(\star_1 \,\big|\) & \(r = 0\), fresh, cell 0 & \(\star_2 \star_1 \,\big|\) \\
-        & & \(r = 1\), fresh, cell 1 & \(\star_1 \,\big|\, \star_2\) \\
-        & & \(r = 2\), copy \(\star_1\) & \(\star_1 \star_2 \,\big|\) \\
-        \(r = 1\), fresh, cell 1 & \(\big|\, \star_1\) & \(r = 0\), fresh, cell 0 & \(\star_2 \,\big|\, \star_1\) \\
-        & & \(r = 1\), fresh, cell 1 & \(\big|\, \star_2 \star_1\) \\
-        & & \(r = 2\), copy \(\star_1\) & \(\big|\, \star_1 \star_2\) \\
-    \end{tabular}
-    \caption{Every run for \(t = 2\), \(k = 2\)}\label{sixruns}
-\end{table}
-
-In general there are \(t (t + 1) \cdots (t + k - 1) = \frac{(t + k -
-1)!}{(t - 1)!}\) sequences of draws, each with probability
-\(\frac{(t - 1)!}{(t + k - 1)!}\), and the same number of tagged
-rows: \(\binom{t + k - 1}{k}\) ways to place the stars among the
-bars, times \(k!\) ways to tag them. Since distinct sequences give
-distinct tagged rows, every tagged row is produced by exactly one
-sequence, and so every tagged row is equally likely. Each untagged
-row has exactly \(k!\) taggings, so every untagged row is equally
-likely, which is to say every multiset in
-\(\multichoose{\NN_{<t}}{k}\), which is to say, by
-\autoref{starsandbars}, every subset in \(\binom{\NN_{<n}}{k}\). In
-\autoref{sixruns}, each of the three untagged rows is the result of
-two runs, so each has probability \(\frac{1}{3}\).
-
-\subsection{Implementation}
-
-The multiset choosing procedure in Python, taking integers \(n, k\)
-and returning a list of \(k\) integers in \(\NN_{<n}\), with repeats
-allowed, uniformly among all such multisets:
-
-\inputminted{Python}{code/choose_multiset.py}
-
-Applying it with universe \(\NN_{<n - k + 1}\) and converting the
-result as in \autoref{starsandbars} returns a sorted list of \(k\)
-distinct integers in \(\NN_{<n}\), uniformly among all such subsets:
-
-\inputminted{Python}{code/choose_binom.py}
-
-The listing in \autoref{otheralgs} is these two procedures merged into
-one.
-
-\subsection{Prior art}\label{priorart}
-
-Physicists have names for the three distributions in this story
-\cite[Chapter II \S 5]{feller}. Distinguishable particles placed independently in
-cells, the biased way of picking a multiset in \autoref{fairmultiset},
-is Maxwell--Boltzmann statistics. Indistinguishable particles with every
-occupancy pattern equally likely, a uniform multiset, is Bose--Einstein.
-At most one particle per cell with every pattern equally likely, a
-uniform subset, is Fermi--Dirac. Stars and bars is the standard way to
-count the Bose--Einstein configurations, by matching them with
-Fermi--Dirac ones. So the one-line summary of Cardchoose is: generate
-a Bose--Einstein configuration with a Pólya urn, then map it to
-Fermi--Dirac by stars and bars.
-
-The mathematics of both halves is classical. The multiset loop is a
-Pólya urn \cite[Chapter V \S 2]{feller}: start with \(t\) balls, one of each
-colour; draw a ball uniformly at random, and put it back along with a
-new ball of the same colour. The urn is a textbook object of study, and
-that with one ball of each colour its counts are uniform, which is to
-say Bose--Einstein, is a standard lemma about it
-\cite[Lemma 2.7]{levinperes}; Niven and Grendar \cite{nivengrendar} map
-all three statistics onto the urn, with Maxwell--Boltzmann as
-replacement without a copy, Bose--Einstein as replacement with a copy,
-and Fermi--Dirac as no replacement. But the urn is presented as a model,
-not as a way to generate anything, beyond passing remarks that it could
-be used so \cite{cancriniposta}. The nearest thing to running an urn as
-a sampler in earnest is in Bayesian statistics, where the
-Blackwell--MacQueen urn \cite{blackwellmacqueen} draws an exchangeable
-sequence from a Dirichlet process, which is a different purpose. The
-combinatorial generation literature does generate random multisets, but
-through stars and bars in the other direction: Nijenhuis and Wilf's
-RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a random
-\((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences it.
-Nor do surveys of sampling without replacement describe anything like
-it: Devroye's \cite[Chapter XII]{devroye} has no urn and no stars and
-bars, and Ting \cite{ting}, reworking the classical algorithms into
-simpler forms, gives a sparse Fisher--Yates sampler, essentially HSEL,
-and a sorted sampler that draws each skip from a beta-binomial
-distribution, which needs floating point. What is new in Cardchoose
-is the urn used as a generator for uniform multisets, and its
-composition with stars and bars into a sampler for sampling without
-replacement. Needing no set, map or extra
-memory is not new in itself: Nijenhuis and Wilf's RANKSB
-\cite[Chapter 4]{nijenhuiswilf} also uses nothing but the output
-array, and so do Vitter's Algorithm D and, more recently, Shekelyan and
-Cormode's Hidden Shuffle \cite{hiddenshuffle}, though they need
-floating-point arithmetic where Cardchoose and RANKSB use only exact
-integer draws.
-
-The earlier algorithm closest to Cardchoose is Gupta and
-Bhattacharjee's GSEL \cite{gupta}, which also takes
-\(\bigO{k \log k}\) time and can return sorted output. Like SELECT, it
-draws its \(i\)th value uniformly from the \(n - i + 1\) values not yet
-chosen, as a rank \(r\) among them; that value is \(r + u\), where \(u\)
-is the number of values already chosen below it, and GSEL finds \(u\)
-in a balanced binary tree of the chosen values that records the size
-of each subtree, as Ernvall and Nevalainen \cite{hsel} had suggested
-in passing to bound HSEL's worst case. Rouzankin and Voytishek \cite{RouzankinVoytishek} do
-the same with a sorted array, in \(\bigO{k^2}\) time, and with an
-unbalanced binary search tree, in \(\bigO{k \log k}\) expected time;
-they also split the range in half recursively, drawing how many values
-fall in each half from a hypergeometric distribution, which with
-stored tables of its probabilities takes \(\bigO{k}\) expected time,
-and is the division Sanders et al.\ \cite{sandersetal} use to sample
-in parallel. Adding to each value the number of chosen values
-below it is also the last step of Cardchoose, where each sorted value
-has its index added. But GSEL must keep its chosen values in order to
-count as it goes, and so needs a tree of \(k\) nodes, while the urn
-never needs the earlier values in order, so Cardchoose can leave the
-counting to a single sort at the end, in the output array. We have
-not benchmarked GSEL: besides needing memory that Cardchoose does not,
-it follows pointers through the tree for every value drawn, where
-Cardchoose makes one sort over a flat array, and we see no way for it
-to be faster.
-
-Sorted output without a sort has a classic answer for real numbers:
-Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
-reals in \(\bigO{k}\) time, drawing the largest as \(U^{1/k}\) and
-repeating for the rest below it, and credit Friedman \cite{friedman}
-with an essentially equivalent earlier program. This cannot stand in
-for the urn: sorted independent draws, even rounded to integers, follow
-the Maxwell--Boltzmann distribution over multisets, not the
-Bose--Einstein one. Its closest analogue for distinct integers is
-Vitter's Algorithm D, whose continuous approximation is the same step.
+Described in \autoref{cardchoose}: choose a multiset of \(k\) cell
+numbers below \(n - k + 1\) with a P\'olya urn, then sort it and add
+each one's index to turn it into a set. The output is sorted, and the
+only memory needed is the output array.
 
 \section{Benchmarks}\label{benchmarks}
 
