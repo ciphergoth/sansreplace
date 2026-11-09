@@ -654,13 +654,21 @@ using.
 
 \subsection{Results}
 
-In \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} we graph
-time/\(k\) in ns against \(k\) for two different values of \(n\) for
-random order output, and a single value of \(n\) for sorted output, in
-each language. Animated graphs showing many values of \(n\) are in
-\href{https://github.com/ciphergoth/sansreplace/blob/master/results.md}{\texttt{results.md}} in the
-repository, and the complete benchmark data in
+Performance depends on both \(n\) and \(k\), so static graphs can
+show only slices of it, and we encourage readers to explore the
+results interactively. The
+\href{https://ciphergoth.github.io/sansreplace/}{explorer} on the
+project's website plots every algorithm for any \(n\) and \(k\)
+tested, and the animated graphs in
+\href{https://github.com/ciphergoth/sansreplace/blob/master/results.md}{\texttt{results.md}}
+in the repository sweep through many values of \(n\). The complete
+benchmark data is in
 \href{https://github.com/ciphergoth/sansreplace/blob/master/results/latest}{\texttt{results/latest}}.
+
+Here, \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} graph
+time/\(k\) in ns against \(k\) for two values of \(n\) for random
+order output, and one value of \(n\) for sorted output, in each
+language.
 
 \begin{figure}
     \input{generated/cpp-random-1346269.pgf}
