@@ -460,11 +460,11 @@ arithmetic.
     Quadratic F2 & \(k^2\) & Random &  & \\
     Iterative choosing & \(n\) & Sorted &  & \\
     Reservoir sampling & \(n\) & Random &  & \\
+    SELECT & \(n\) & Random & \(n\)-element array & \\
+    HSEL & \(k\) & Random & Dictionary & \\
     RANKSB & \(k\) & Sorted &  & \\
     Vitter's Algorithm D & \(k\) & Sorted &  & Yes \\
     Hidden Shuffle & \(k\) & Sorted &  & Yes \\
-    SELECT & \(n\) & Random & \(n\)-element array & \\
-    HSEL & \(k\) & Random & Dictionary & \\
     Cardchoose & \(k \log k\) & Sorted &  &
     \end{tabular}
 \end{center}
@@ -556,6 +556,30 @@ every value, so it takes \(\bigO{n}\) time. Vitter's Algorithm Z
 \(\bigO{k(1 + \log(n/k))}\) expected time but, like Algorithm D below,
 needs floating point; we time only Algorithm R.
 
+\subsection{SELECT}
+\inputminted{Python}{code/select.py}
+Fill an array with the elements of \(\NN_{<n}\), and run the first
+\(k\) steps of a Fisher--Yates shuffle on it: at step \(i\), swap a
+random element from position \(i\) onwards into position \(i\)
+\cite{goodman}. The first \(k\) elements are then the sample, in
+random order. It makes only \(k\) draws, but the array takes
+\(\bigO{n}\) memory and \(\bigO{n}\) time to fill.
+
+\subsection{HSEL}
+\inputminted{Python}{code/hsel.py}
+SELECT with a ``virtual'' array: a hash table stores only the elements
+that have changed, so it needs no \(n\)-element array
+\cite{hsel}. The output is in random order, and it takes \(\bigO{k}\)
+expected time and \(\bigO{k}\) memory for the hash table. Teuhola and
+Nevalainen \cite{teuhola} give a version that needs \(2k\) storage
+locations rather than about \(5k\), which draws all \(k\) random
+numbers first and then works out which value each one stands for,
+from the last back. Our C++ and Rust implementations use a faster
+variant, which keeps the first \(k\) entries of the virtual array in
+the output array itself, so only swaps that reach beyond them touch
+the hash table. This variant was described by rici \cite{rici}; we
+thank Mathias Weller for bringing it to our attention.
+
 \subsection{RANKSB}
 Divide \(\NN_{<n}\) into \(k\) bins of nearly equal size. First
 decide how many of the chosen values fall in each bin, by simulating
@@ -612,30 +636,6 @@ last step has an off-by-one error that biases the output; our
 implementations apply the corrections from the errata in
 \cite{sampleiterator}. We thank metasj for bringing this algorithm to
 our attention.
-
-\subsection{SELECT}
-\inputminted{Python}{code/select.py}
-Fill an array with the elements of \(\NN_{<n}\), and run the first
-\(k\) steps of a Fisher--Yates shuffle on it: at step \(i\), swap a
-random element from position \(i\) onwards into position \(i\)
-\cite{goodman}. The first \(k\) elements are then the sample, in
-random order. It makes only \(k\) draws, but the array takes
-\(\bigO{n}\) memory and \(\bigO{n}\) time to fill.
-
-\subsection{HSEL}
-\inputminted{Python}{code/hsel.py}
-SELECT with a ``virtual'' array: a hash table stores only the elements
-that have changed, so it needs no \(n\)-element array
-\cite{hsel}. The output is in random order, and it takes \(\bigO{k}\)
-expected time and \(\bigO{k}\) memory for the hash table. Teuhola and
-Nevalainen \cite{teuhola} give a version that needs \(2k\) storage
-locations rather than about \(5k\), which draws all \(k\) random
-numbers first and then works out which value each one stands for,
-from the last back. Our C++ and Rust implementations use a faster
-variant, which keeps the first \(k\) entries of the virtual array in
-the output array itself, so only swaps that reach beyond them touch
-the hash table. This variant was described by rici \cite{rici}; we
-thank Mathias Weller for bringing it to our attention.
 
 \subsection{Cardchoose}
 Described in \autoref{cardchoose}: choose a multiset of \(k\) cell
