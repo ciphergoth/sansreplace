@@ -42,16 +42,16 @@ where
     // Same order as python/algorithms/__init__.py
     algorithms![
         quadraticreject,
-        rejectionsample,
-        ranksb,
-        floydf2,
         quadraticf2,
         iterativechoose,
         reservoirsample,
+        select,
+        rejectionsample,
+        floydf2,
+        hsel,
+        ranksb,
         vitterd,
         hiddenshuffle,
-        select,
-        hsel,
         cardchoose
     ]
 }
