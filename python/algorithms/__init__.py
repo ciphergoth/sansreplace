@@ -10,6 +10,7 @@ ALGORITHMS = [
     "iterativechoose",
     "reservoirsample",
     "select",
+    "bitsetf2",
     "rejectionsample",
     "floydf2",
     "hsel",
