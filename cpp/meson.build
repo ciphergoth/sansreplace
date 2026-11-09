@@ -30,6 +30,7 @@ if host_machine.cpu_family() == 'x86_64'
 endif
 libsrc = [
     'donothing.cpp',
+    'components.cpp',
     'randbelow.c',
     'timing.cpp',
     'quadraticreject.cpp',

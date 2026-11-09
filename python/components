@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""What sorting, shuffling and inserting into a hash set cost in each
+language, from the timings of the components in cpp/components.cpp: each
+one's time less fill's, per number. Prints a Markdown table, or with --latex
+writes a LaTeX one."""
+
+import argparse
+import pathlib
+
+import read_results
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+LANGUAGES = [("cpp", "C++"), ("rust", "Rust")]
+COSTS = [("fillsort", "Sort"), ("fillshuffle", "Shuffle"), ("hashinsert", "Hash set insert")]
+
+def per_number(results):
+    "{lang: {k: {component: ns per number}}}, and the n they were timed at"
+    times = {}
+    ns = set()
+    for lang, _ in LANGUAGES:
+        for item in read_results.read(results / f"{lang}-component"):
+            times.setdefault(lang, {}).setdefault(item.k, {})[item.alg] = 1E9 * item.time / item.k
+            ns.add(item.n)
+    [n] = ns
+    return times, n
+
+def costs(times):
+    "[(k, [cost for each (component, language)])], each cost less fill's"
+    ks = sorted(set.intersection(*(set(t) for t in times.values())))
+    return [(k, [times[lang][k][comp] - times[lang][k]["fill"]
+        for comp, _ in COSTS for lang, _ in LANGUAGES]) for k in ks]
+
+def markdown(rows, n):
+    head = ["Length"] + [f"{title}, {lname}" for _, title in COSTS for _, lname in LANGUAGES]
+    print(f"ns per number, at n = {n:,}\n")
+    print("| " + " | ".join(head) + " |")
+    print("|" + "---:|" * len(head))
+    for k, cs in rows:
+        print(f"| {k:,} | " + " | ".join(f"{c:.3g}" for c in cs) + " |")
+
+def latex(rows, out):
+    cols = "r|" + "|".join("rr" for _ in COSTS)
+    lines = [
+        f"\\begin{{tabular}}{{{cols}}}",
+        " & " + " & ".join(f"\\multicolumn{{2}}{{c{'|' if i < len(COSTS) - 1 else ''}}}{{{title}}}"
+            for i, (_, title) in enumerate(COSTS)) + " \\\\",
+        "Length & " + " & ".join(lname for _ in COSTS for _, lname in LANGUAGES) + " \\\\",
+        "\\hline",
+    ]
+    lines += [f"{k:,} & " + " & ".join(f"{c:.3g}" for c in cs) + " \\\\" for k, cs in rows]
+    lines.append("\\end{tabular}")
+    out.write_text("\n".join(lines) + "\n")
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--results", type=pathlib.Path, default=topdir / "results/components")
+    p.add_argument("--latex", type=pathlib.Path, help="Write the table as LaTeX to this file")
+    args = p.parse_args()
+    times, n = per_number(args.results)
+    rows = costs(times)
+    if args.latex is not None:
+        latex(rows, args.latex)
+    else:
+        markdown(rows, n)
+
+if __name__ == "__main__":
+    main()

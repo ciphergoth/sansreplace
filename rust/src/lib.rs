@@ -8,6 +8,7 @@ use std::{cell::RefCell, ffi::CStr, ffi::c_char, time::Instant};
 use rand::{SeedableRng, rngs::SmallRng};
 
 mod algorithms;
+mod components;
 
 type Rng = SmallRng;
 type Algorithm = algorithms::Algorithm<Rng>;
@@ -25,9 +26,9 @@ pub extern "C" fn rand_init(seed: u64) {
     RNG.set(Some(Rng::seed_from_u64(seed)));
 }
 
-/// The algorithm with this name for this order, which is "random", "sorted"
-/// or, for the one that does nothing, "donothing". It lives as long as the
-/// library.
+/// The algorithm with this name for this order, which is "random", "sorted",
+/// "component" for the parts of the algorithms in components.rs, or, for the
+/// one that does nothing, "donothing". It lives as long as the library.
 ///
 /// # Safety
 ///
@@ -43,6 +44,7 @@ pub unsafe extern "C" fn algorithm(sorttype: *const c_char, name: *const c_char)
         )],
         "random" => algorithms::algorithms(algorithms::SortType::Random),
         "sorted" => algorithms::algorithms(algorithms::SortType::Sorted),
+        "component" => components::components(),
         _ => panic!("unknown order {sorttype}"),
     };
     let i = table

@@ -18,3 +18,8 @@ ALGORITHMS = [
     "hiddenshuffle",
     "cardchoose",
 ]
+
+# Parts of the algorithms, timed on their own to compare the C++ and Rust
+# standard libraries: see cpp/components.cpp. python/bench times them as the
+# order "component", and python/components reports them.
+COMPONENTS = ["fill", "fillsort", "fillshuffle", "hashinsert"]

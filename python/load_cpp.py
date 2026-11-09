@@ -17,7 +17,7 @@ import subprocess
 
 import cffi
 
-from algorithms import ALGORITHMS
+from algorithms import ALGORITHMS, COMPONENTS
 from impl_load import SEED
 
 
@@ -49,6 +49,8 @@ def list_functions():
     for sorttype in ["sorted", "random"]:
         for t in ALGORITHMS:
             yield (sorttype, t, f"{sorttype}_{t}")
+    for c in COMPONENTS:
+        yield ("component", c, f"component_{c}")
 
 class Timeable:
     def __init__(self, sorttype, alg, ffi, lib, funcname):

@@ -33,32 +33,41 @@ import gitstate
 import machine
 import nkvalues
 import vmstat
-from algorithms import ALGORITHMS
+from algorithms import ALGORITHMS, COMPONENTS
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
-# What * means in --run; python, the Python implementations, can be named too
+# What * means in --run; python, the Python implementations, and component,
+# the parts of the algorithms in cpp/components.cpp, can be named too
 LANGUAGES = ["cpp", "rust"]
 ORDERS = ["random", "sorted"]
+
+def names_for(order):
+    return COMPONENTS if order == "component" else ALGORITHMS
 
 def run_spec(spec):
     "Parse LANG/ORDER/ALGORITHM, where any part may be * to mean all of them"
     parts = spec.split("/")
     if len(parts) != 3:
         raise argparse.ArgumentTypeError(f"{spec!r} is not LANG/ORDER/ALGORITHM")
-    for part, names in zip(parts, [LANGUAGES + ["python"], ORDERS, ALGORITHMS]):
+    lang, order, alg = parts
+    for part, names in [(lang, LANGUAGES + ["python"]), (order, ORDERS + ["component"]),
+            (alg, names_for(order))]:
         if part != "*" and part not in names:
             raise argparse.ArgumentTypeError(
                 f"{part!r} in {spec!r} is not * or one of {', '.join(names)}")
+    if lang == "python" and order == "component":
+        raise argparse.ArgumentTypeError(f"{spec!r}: the components are only in C++ and Rust")
     return parts
 
 def todo(specs):
     "The (language, order, algorithm) triples the specs name, in the order to time them"
     langs = LANGUAGES + ["python"]
-    return [(lang, order, alg) for order in ORDERS for lang in langs for alg in ALGORITHMS
+    return [(lang, order, alg) for order in ORDERS + ["component"] for lang in langs
+        for alg in names_for(order)
         if any(all(part == name or (part == "*" and name in names)
             for part, name, names in zip(spec, [lang, order, alg],
-                [LANGUAGES, ORDERS, ALGORITHMS]))
+                [LANGUAGES, ORDERS, names_for(order)]))
             for spec in specs)]
 
 def fix_freq():
