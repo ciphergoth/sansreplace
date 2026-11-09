@@ -391,8 +391,10 @@ number as a star and each unchosen one as a bar. For \(n = 7\), \(k =
 
 A row of \(k\) stars and \(n - k\) bars is exactly a \(k\)-element
 subset of \(\NN_{<n}\): the stars' positions are the chosen numbers.
-Following \cite[Chapter II \S 5]{feller}, instead of its position we describe each
-star by its \emph{value}, the number of bars to its left:
+Following Feller \cite[Chapter II \S 5]{feller}, think of the spaces
+between bars, including the space at each end, as \emph{cells}, and
+number them from \(0\). Instead of its position, we describe each star
+by its \emph{cell number}, the number of bars to its left:
 
 \begin{displaymath}
     \begin{array}{ c c c c c c c }
@@ -401,26 +403,24 @@ star by its \emph{value}, the number of bars to its left:
     \end{array}
 \end{displaymath}
 
-A value can be anything from \(0\) (before all the bars) to \(n - k\)
-(after all of them), so there are \(t = n - k + 1\) possible values,
-and stars can share a value when they sit in the same gap between
-bars. The values of the stars therefore form a multiset in
-\(\multichoose{\NN_{<t}}{k}\). This is a bijection between
+A cell number can be anything from \(0\) (before all the bars) to
+\(n - k\) (after all of them), so there are \(t = n - k + 1\) cells,
+and stars can share a cell. The cell numbers of the stars therefore
+form a multiset in \(\multichoose{\NN_{<t}}{k}\). This is a bijection between
 \(\binom{\NN_{<n}}{k}\) and \(\multichoose{\NN_{<t}}{k}\). Going one
-way, read off each star's value. Going back, the multiset says how
-many stars have each value, that is, how many stars go in each gap,
-and that rebuilds the row. The two directions undo each other, so
+way, read off each star's cell number. Going back, the multiset says
+how many stars go in each cell, and that rebuilds the row. The two directions undo each other, so
 each subset corresponds to exactly one multiset and each multiset to
 exactly one subset; in particular \(\multichoose{t}{k} =
 \binom{t + k - 1}{k}\).
 
 In code, the way back is: sort the multiset, then add each star's
-index to its value, because a star's position is its bars to the left
+index to its cell number, because a star's position is its bars to the left
 plus its stars to the left:
 
 \begin{displaymath}
     \begin{array}{ l c c c }
-        \text{sorted values} & 1 & 1 & 3 \\
+        \text{sorted cell numbers} & 1 & 1 & 3 \\
         \text{+ index} & 0 & 1 & 2 \\
         \text{positions} & 1 & 2 & 5 \\
     \end{array}
@@ -434,8 +434,8 @@ to choose an element of \(\multichoose{\NN_{<t}}{k}\) fairly.
 
 \subsection{Choosing a multiset fairly}\label{fairmultiset}
 
-Drawing \(k\) values independently from \(\NN_{<t}\) does not give a
-uniform multiset. With \(t = 2\), \(k = 2\), the multiset \([0, 1]\)
+Putting each of \(k\) stars in a cell chosen independently from
+\(\NN_{<t}\) does not give a uniform multiset. With \(t = 2\), \(k = 2\), the multiset \([0, 1]\)
 comes up half the time, because it can arrive as \(0, 1\) or as \(1,
 0\), while \([0, 0]\) and \([1, 1]\) get a quarter each. Independent
 draws favour variety; we need to favour repeats, by exactly the right
@@ -450,36 +450,37 @@ its left:
 \begin{itemize}
     \item The slot at the start of the row, and the slot just after
     each bar. There are \(t\) of these, and a star placed in the one after
-    the \(b\)-th bar, or at the start for \(b = 0\), gets the value
-    \(b\). This is a \emph{fresh} value.
+    the \(b\)-th bar, or at the start for \(b = 0\), goes in cell \(b\).
+    These are the \emph{fresh} slots.
     \item The slot just after each star. There are \(i\) of these, and
-    a star placed in one sits in the same gap between bars as its left
-    neighbour, so it gets the same value. This is a \emph{copy}.
+    a star placed in one goes in the same cell as its left neighbour.
+    These are the \emph{copy} slots.
 \end{itemize}
 For example, with \(t = 4\), so three bars, and two stars already
 placed, \(d = [1, 3]\), there are six slots, each marked \(\circ\) here
-with the \(r\) that picks it above and the value it gives below:
+with the \(r\) that picks it above and the cell it gives below:
 
 \begin{displaymath}
     \begin{array}{ l c c c c c c c c c c c }
         r & 0 & & 1 & & 4 & & 2 & & 3 & & 5 \\
         \text{row} & \circ & \big| & \circ & \star_0 & \circ & \big| & \circ & \big| & \circ & \star_1 & \circ \\
-        \text{value} & 0 & & 1 & & 1 & & 2 & & 3 & & 3 \\
+        \text{cell} & 0 & & 1 & & 1 & & 2 & & 3 & & 3 \\
     \end{array}
 \end{displaymath}
 
 That is the loop. \mintinline{python}{randrange(t + i)} picks a slot.
-If \(r < t\), the new star takes the fresh value \(r\). Otherwise
-\(r - t\) picks one of the stars already placed, and the new star
-copies its value, \mintinline{python}{d[r - t]}. The list
-\mintinline{python}{d} holds values in the order they were drawn, so
+If \(r < t\), it is a fresh slot, and the new star goes in cell \(r\).
+Otherwise \(r - t\) picks one of the stars already placed, and the new
+star goes in its cell, \mintinline{python}{d[r - t]}. The list
+\mintinline{python}{d} holds cell numbers in the order they were
+drawn, so
 the copy is a single index lookup: one random number, one comparison
 and one write per star, with no search.
 
-A value that \(c\) stars already have owns \(c + 1\) slots: one fresh
-slot, and one after each of those stars. So a value drawn once is now
-twice as likely as one never drawn, a value drawn twice three times as
-likely, and so on. That is how repeats get favoured; the next subsection
+A cell that already holds \(c\) stars owns \(c + 1\) slots: one fresh
+slot, and one after each of those stars. So a cell holding one star is
+now twice as likely to get the next one as an empty cell, a cell
+holding two three times as likely, and so on. That is how repeats get favoured; the next subsection
 shows it is by exactly the right amount.
 
 \subsection{Proof}\label{proof}
@@ -502,11 +503,11 @@ them.
     \begin{tabular}{ l l l l }
         first draw & row & second draw & row \\
         \hline
-        \(r = 0\), fresh value 0 & \(\star_1 \,\big|\) & \(r = 0\), fresh value 0 & \(\star_2 \star_1 \,\big|\) \\
-        & & \(r = 1\), fresh value 1 & \(\star_1 \,\big|\, \star_2\) \\
+        \(r = 0\), fresh, cell 0 & \(\star_1 \,\big|\) & \(r = 0\), fresh, cell 0 & \(\star_2 \star_1 \,\big|\) \\
+        & & \(r = 1\), fresh, cell 1 & \(\star_1 \,\big|\, \star_2\) \\
         & & \(r = 2\), copy \(\star_1\) & \(\star_1 \star_2 \,\big|\) \\
-        \(r = 1\), fresh value 1 & \(\big|\, \star_1\) & \(r = 0\), fresh value 0 & \(\star_2 \,\big|\, \star_1\) \\
-        & & \(r = 1\), fresh value 1 & \(\big|\, \star_2 \star_1\) \\
+        \(r = 1\), fresh, cell 1 & \(\big|\, \star_1\) & \(r = 0\), fresh, cell 0 & \(\star_2 \,\big|\, \star_1\) \\
+        & & \(r = 1\), fresh, cell 1 & \(\big|\, \star_2 \star_1\) \\
         & & \(r = 2\), copy \(\star_1\) & \(\big|\, \star_1 \star_2\) \\
     \end{tabular}
     \caption{Every run for \(t = 2\), \(k = 2\)}\label{sixruns}

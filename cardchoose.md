@@ -40,43 +40,45 @@ chosen numbers.
 
 ## A row of stars and bars is a multiset
 
-Instead of its position, describe each star by its **value**, the number of bars to its left:
+Think of the spaces between bars, including the space at each end, as **cells**, numbered from 0,
+as Feller does for occupancy problems (see [prior art](priorart.md)). Instead of its position,
+describe each star by its **cell number**, the number of bars to its left:
 
 ```
 row:     | ★ ★ | | ★ |
-value:     1 1     3
+cell:      1 1     3
 ```
 
-A value can be anything from 0 (before all the bars) to
-_n_-_k_ (after all of them), so there are _t_ = _n_-_k_+1 possible values, and stars can share a
-value when they sit in the same gap between bars.
+A cell number can be anything from 0 (before all the bars) to _n_-_k_ (after all of them), so
+there are _t_ = _n_-_k_+1 cells, and stars can share a cell.
 
-The values of the stars form a multiset: a bag of _k_ values, with repeats allowed. This is a
-bijection between _k_-element subsets of {0, …, _n_-1} and _k_-element multisets drawn from the
-_t_ values {0, …, _n_-_k_}. Going one way, read off each star's value. Going back, the multiset says how many stars have each value, that is, how
-many stars go in each gap, and that rebuilds the row. The two directions undo each other, so each
-subset corresponds to exactly one multiset and each multiset to exactly one subset.
+The cell numbers of the stars form a multiset: a bag of _k_ numbers, with repeats allowed. This is
+a bijection between _k_-element subsets of {0, …, _n_-1} and _k_-element multisets drawn from the
+_t_ cell numbers {0, …, _n_-_k_}. Going one way, read off each star's cell number. Going back, the
+multiset says how many stars go in each cell, and that rebuilds the row. The two directions undo
+each other, so each subset corresponds to exactly one multiset and each multiset to exactly one
+subset.
 
-In code, the way back is: sort the multiset, then add each star's index to its value, because a
-star's position is its bars to the left plus its stars to the left:
+In code, the way back is: sort the multiset, then add each star's index to its cell number,
+because a star's position is its bars to the left plus its stars to the left:
 
 ```
-sorted values:  1 1 3
+sorted cells:   1 1 3
 + index:        0 1 2
 positions:      1 2 5
 ```
 
 That is the last three lines of the code. Because the correspondence is a bijection, choosing a
 multiset uniformly at random and converting it gives a subset chosen uniformly at random: each
-subset is reached from exactly one multiset. So what remains is to pick a multiset of _k_ values
-from _t_ **uniformly at random**.
+subset is reached from exactly one multiset. So what remains is to pick a multiset of _k_ cell
+numbers from _t_ **uniformly at random**.
 
 ## The obvious way to pick a multiset is biased
 
-Drawing _k_ values independently from 0 to _t_-1 does not give a uniform multiset. With _t_ = 2,
-_k_ = 2, the bag {0, 1} comes up half the time, because it can arrive as 0,1 or as 1,0, while
-{0, 0} and {1, 1} get a quarter each. Independent draws favour variety; a fair draw must favour
-repeats, by exactly the right amount.
+Putting each of _k_ stars in a cell chosen independently from 0 to _t_-1 does not give a uniform
+multiset. With _t_ = 2, _k_ = 2, the bag {0, 1} comes up half the time, because it can arrive as
+0,1 or as 1,0, while {0, 0} and {1, 1} get a quarter each. Independent draws favour variety; a
+fair draw must favour repeats, by exactly the right amount.
 
 ## Each new star goes in a random slot
 
@@ -86,29 +88,30 @@ end. With _i_ stars already placed, the row holds _t_-1+_i_ things, so it has _t
 each slot by what is just to its left:
 
 * The slot at the start of the row, and the slot just after each bar. There are _t_ of these, and a
-  star placed in the one after bar _b_, or at the start for _b_ = 0, gets the value _b_. This is a
-  **fresh** value.
-* The slot just after each star. There are _i_ of these, and a star placed in one sits in the same
-  gap between bars as its left neighbour, so it gets the same value. This is a **copy**.
+  star placed in the one after bar _b_, or at the start for _b_ = 0, goes in cell _b_. These are
+  the **fresh** slots.
+* The slot just after each star. There are _i_ of these, and a star placed in one goes in the same
+  cell as its left neighbour. These are the **copy** slots.
 
 For example, with _t_ = 4, so three bars, and two stars already placed, `d = [1, 3]`, there are
-six slots, each marked `∘` here with the `r` that picks it above and the value it gives below:
+six slots, each marked `∘` here with the `r` that picks it above and the cell it gives below:
 
 ```
 r:       0     1     4     2     3     5
 row:     ∘  |  ∘  ★₀ ∘  |  ∘  |  ∘  ★₁ ∘
-value:   0     1     1     2     3     3
+cell:    0     1     1     2     3     3
 ```
 
-That is the loop. `randrange(t + i)` picks a slot. If `r < t`, the new star takes the fresh value
-`r`. Otherwise `r - t` picks one of the stars already placed, and the new star copies its value,
-`d[r - t]`. The list `d` holds values in the order they were drawn, so the copy is a single index
-lookup: one random number, one comparison and one write per star, with no search.
+That is the loop. `randrange(t + i)` picks a slot. If `r < t`, it is a fresh slot, and the new
+star goes in cell `r`. Otherwise `r - t` picks one of the stars already placed, and the new star
+goes in its cell, `d[r - t]`. The list `d` holds cell numbers in the order they were drawn, so the
+copy is a single index lookup: one random number, one comparison and one write per star, with no
+search.
 
-A value that _c_ stars already have owns _c_+1 slots: one fresh slot, and one after each of those
-stars. So a value drawn once is now twice as likely as one never drawn, a value drawn twice three
-times as likely, and so on. That is how repeats get favoured. The next section shows it is by
-exactly the right amount.
+A cell that already holds _c_ stars owns _c_+1 slots: one fresh slot, and one after each of
+those stars. So a cell holding one star is now twice as likely to get the next one as an empty
+cell, a cell holding two three times as likely, and so on. That is how repeats get favoured. The
+next section shows it is by exactly the right amount.
 
 ## Why that's exactly fair
 
@@ -122,13 +125,13 @@ Here is every possible run for _t_ = 2, _k_ = 2, one bar and two stars:
 ```mermaid
 graph TD
     S["#124;"]
-    S -- "r = 0, fresh value 0" --> A["★₁ #124;"]
-    S -- "r = 1, fresh value 1" --> B["#124; ★₁"]
-    A -- "r = 0, fresh value 0" --> A0["★₂ ★₁ #124;"]
-    A -- "r = 1, fresh value 1" --> A1["★₁ #124; ★₂"]
+    S -- "r = 0, fresh, cell 0" --> A["★₁ #124;"]
+    S -- "r = 1, fresh, cell 1" --> B["#124; ★₁"]
+    A -- "r = 0, fresh, cell 0" --> A0["★₂ ★₁ #124;"]
+    A -- "r = 1, fresh, cell 1" --> A1["★₁ #124; ★₂"]
     A -- "r = 2, copy ★₁" --> A2["★₁ ★₂ #124;"]
-    B -- "r = 0, fresh value 0" --> B0["★₂ #124; ★₁"]
-    B -- "r = 1, fresh value 1" --> B1["#124; ★₂ ★₁"]
+    B -- "r = 0, fresh, cell 0" --> B0["★₂ #124; ★₁"]
+    B -- "r = 1, fresh, cell 1" --> B1["#124; ★₂ ★₁"]
     B -- "r = 2, copy ★₁" --> B2["#124; ★₁ ★₂"]
 ```
 
@@ -146,8 +149,8 @@ _n_ = 7, _k_ = 3, so _t_ = 5 and there are four bars to start with: `| | | |`.
 
 draw | `randrange` | `r` | meaning | `d` | row
 ----|----|----|----|----|----
-0 | 5 | 1 | fresh value 1 | `[1]` | `\| ★ \| \| \|`
-1 | 6 | 3 | fresh value 3 | `[1, 3]` | `\| ★ \| \| ★ \|`
+0 | 5 | 1 | fresh, cell 1 | `[1]` | `\| ★ \| \| \|`
+1 | 6 | 3 | fresh, cell 3 | `[1, 3]` | `\| ★ \| \| ★ \|`
 2 | 7 | 5 | 5 ≥ _t_, copy `d[0]` = 1 | `[1, 3, 1]` | `\| ★ ★ \| \| ★ \|`
 
 Sort: `[1, 1, 3]`. Add indices: `[1, 2, 5]`. Reading the final row left to right, the stars sit at
