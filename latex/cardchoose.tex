@@ -88,24 +88,17 @@
 \begin{abstract}
     We present Cardchoose, a new algorithm for choosing \(k\) distinct
     natural numbers below \(n\) such that every set of \(k\) is equally
-    likely. It draws a multiset of \(k\)
-    values below \(n - k + 1\) with a P\'olya urn, which makes every
-    multiset equally likely, then sorts it and adds each value's index,
-    which by the stars and bars bijection turns it into a set. It is a
+    likely. It draws a multiset of \(k\) values below \(n - k + 1\)
+    with a P\'olya urn, then sorts it and converts it to a set by the
+    stars and bars bijection. It is a
     few lines of integer arithmetic and a call to a standard sort, needs
     no memory beyond the output array, and takes \(\bigO{k \log k}\)
     time. We benchmark C++ and Rust implementations of it and eleven
     other algorithms over a wide range of \(n\) and \(k\), for both
-    sorted and random order output. No algorithm is close to the fastest
-    everywhere, but scored by the worst time per number output in each
-    decade of \(k\), Cardchoose is the best single algorithm in three of
-    the four cases and the best that needs no floating point in all
-    four, and it is never more than 9 to 22\,ns per number slower than
-    the best set of three algorithms, choosing between them based on
-    \(n\) and \(k\). Of the three algorithms whose time per number
-    output is never far above the fastest's, it is the simplest; with a
-    fast sort, as in Rust, it is the best algorithm for sorted output at
-    every \(k\) below \(10^7\).
+    sorted and random order output. No algorithm is fastest for every
+    \(n\), \(k\), language and output order, but Cardchoose is fastest
+    or close to it in many cases, and is by far the simplest algorithm
+    to perform acceptably across the whole range tested.
 \end{abstract}
 
 \section{Introduction}
@@ -132,15 +125,20 @@ Some are fast only for certain values of \(k, n\), for example where
 hash-based data structure such as a set or dictionary for each value
 generated, which adds memory and a significant constant factor to the
 runtime. Some need extra memory proportional to \(n\), or
-floating-point arithmetic. To see where Cardchoose stands among them,
-in \autoref{otheralgs} we describe eleven of them alongside it, and in
-\autoref{benchmarks} we compare C++ and Rust implementations of each.
-No single algorithm is close to the fastest for all \(n, k\), so in
-\autoref{choosing} we find the small sets of algorithms that between
-them come closest, which are what a library might choose between, and
-show that Cardchoose alone is never far behind them. Along the way, in
-\autoref{quadraticf2}, we give a way to keep a quadratic version of
-Floyd's F2 in random order that needs no extra random draws.
+floating-point arithmetic. We describe eleven such algorithms in
+\autoref{otheralgs}, and in \autoref{benchmarks} we compare the
+performance of C++ and Rust implementations of each. Along the way, in
+\autoref{quadraticf2}, we propose what appears to be a novel
+optimisation of the quadratic variant of Floyd's F2 for generating a
+fair random order.
+
+No single algorithm is close to the fastest for all \(n, k\), and
+libraries such as Python's and Rust's implement several algorithms and
+choose between them based on \(n\) and \(k\). In \autoref{choosing},
+we find the small sets of algorithms that between them minimise the
+worst time per number output. Three algorithms need no extra memory
+and always perform reasonably, and of these Cardchoose is the fastest
+in many cases, and by far the simplest.
 
 \section{Cardchoose}\label{cardchoose}
 
