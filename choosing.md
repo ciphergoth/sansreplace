@@ -98,14 +98,14 @@ and `iterativechoose` belongs to the best sets for sorted output below.
 
 | Dominated by bands in every case | By, in every case |
 |---|---|
-| `quadraticreject` | `ranksb`, `quadraticf2`, `vitterd`, `hiddenshuffle`, `cardchoose` |
-| `rejectionsample` | `ranksb`, `floydf2`, `vitterd`, `hiddenshuffle`, `hsel`, `cardchoose` |
-| `ranksb` | `cardchoose` |
-| `floydf2` | `cardchoose` |
-| `iterativechoose` | `vitterd`, `hiddenshuffle`, `select`, `cardchoose` |
-| `reservoirsample` | `vitterd`, `hiddenshuffle`, `select`, `cardchoose` |
-| `vitterd` | `hiddenshuffle` |
+| `quadraticreject` | `quadraticf2`, `ranksb`, `vitterd`, `hiddenshuffle`, `cardchoose` |
+| `iterativechoose` | `select`, `vitterd`, `hiddenshuffle`, `cardchoose` |
+| `reservoirsample` | `select`, `vitterd`, `hiddenshuffle`, `cardchoose` |
 | `select` | `vitterd`, `hiddenshuffle`, `cardchoose` |
+| `rejectionsample` | `floydf2`, `hsel`, `ranksb`, `vitterd`, `hiddenshuffle`, `cardchoose` |
+| `floydf2` | `cardchoose` |
+| `ranksb` | `cardchoose` |
+| `vitterd` | `hiddenshuffle` |
 
 An algorithm is dominated at every point if another was at least as fast at every point timed. No
 algorithm is dominated at every point in every case, but in each case `cardchoose` dominates some
@@ -117,7 +117,7 @@ of the others this way: in Rust with sorted output, six of the other eleven. Gen
 | C++, random order | `rejectionsample` by `cardchoose`<br>`floydf2` by `cardchoose` |
 | C++, sorted order | `quadraticreject` by `cardchoose`<br>`rejectionsample` by `ranksb`, `vitterd`, `hiddenshuffle`, `cardchoose`<br>`floydf2` by `vitterd`, `hiddenshuffle`, `cardchoose`<br>`hsel` by `vitterd`, `cardchoose` |
 | Rust, random order | `ranksb` by `cardchoose` |
-| Rust, sorted order | `quadraticreject` by `cardchoose`<br>`rejectionsample` by `cardchoose`<br>`ranksb` by `cardchoose`<br>`floydf2` by `cardchoose`<br>`quadraticf2` by `cardchoose`<br>`hsel` by `cardchoose` |
+| Rust, sorted order | `quadraticreject` by `cardchoose`<br>`quadraticf2` by `cardchoose`<br>`rejectionsample` by `cardchoose`<br>`floydf2` by `cardchoose`<br>`hsel` by `cardchoose`<br>`ranksb` by `cardchoose` |
 
 ## The best sets of algorithms
 
@@ -136,8 +136,8 @@ choose by a rule, such as thresholds on _k_ and _n_/_k_, and the region claims i
 
 | | Best one | Best two | Best three | `cardchoose` alone |
 |---|---|---|---|---|
-| C++, random order | `cardchoose` 3.53×, +21.7ns | `quadraticf2` + `cardchoose` 1.98×, +21.7ns | `quadraticreject` + `hiddenshuffle` + `select` 1.00×<br>_integer only:_ `quadraticreject` + `ranksb` + `select` 1.76×, +11.6ns | `cardchoose` 3.53×, +21.7ns |
-| C++, sorted order | `hiddenshuffle` 1.68×, +9.00ns<br>_integer only:_ `cardchoose` 2.29×, +19.0ns | `iterativechoose` + `hiddenshuffle` 1.10×, +1.26ns<br>_integer only:_ `iterativechoose` + `cardchoose` 1.89×, +13.0ns | `iterativechoose` + `hiddenshuffle` + `select` 1.00×<br>_integer only:_ no better than 2 | `cardchoose` 2.29×, +19.0ns |
+| C++, random order | `cardchoose` 3.53×, +21.7ns | `quadraticf2` + `cardchoose` 1.98×, +21.7ns | `quadraticreject` + `select` + `hiddenshuffle` 1.00×<br>_integer only:_ `quadraticreject` + `select` + `ranksb` 1.76×, +11.6ns | `cardchoose` 3.53×, +21.7ns |
+| C++, sorted order | `hiddenshuffle` 1.68×, +9.00ns<br>_integer only:_ `cardchoose` 2.29×, +19.0ns | `iterativechoose` + `hiddenshuffle` 1.10×, +1.26ns<br>_integer only:_ `iterativechoose` + `cardchoose` 1.89×, +13.0ns | `iterativechoose` + `select` + `hiddenshuffle` 1.00×<br>_integer only:_ no better than 2 | `cardchoose` 2.29×, +19.0ns |
 | Rust, random order | `cardchoose` 2.58×, +9.98ns | `quadraticf2` + `cardchoose` 1.39×, +9.98ns | `quadraticreject` + `select` + `cardchoose` 1.27× | `cardchoose` 2.58×, +9.98ns |
 | Rust, sorted order | `cardchoose` 1.56×, +8.94ns | `iterativechoose` + `cardchoose` 1.16×, +2.49ns | `iterativechoose` + `hiddenshuffle` + `cardchoose` 1.03×<br>_integer only:_ no better than 2 | `cardchoose` 1.56×, +8.94ns |
 

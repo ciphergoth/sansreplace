@@ -10,15 +10,15 @@ Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
 ----|----|----|----|----|----|----
 Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | [C++](cpp/quadraticreject.cpp) | [Rust](rust/src/algorithms/quadraticreject.rs) | Random | none | _k_^2
 Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | [Rust](rust/src/algorithms/rejectionsample.rs) | Random | Set | _k_
-RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | [Rust](rust/src/algorithms/ranksb.rs) | Sorted | none | _k_
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | [Rust](rust/src/algorithms/floydf2.rs) | none | Set | _k_
 Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | [Rust](rust/src/algorithms/quadraticf2.rs) | Random | none | _k_^2
 Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | [Rust](rust/src/algorithms/iterativechoose.rs) | Sorted | none | _n_
 Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | [Rust](rust/src/algorithms/reservoirsample.rs) | Random | none | _n_
-Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | [Rust](rust/src/algorithms/vitterd.rs) | Sorted | none | _k_
-Hidden Shuffle | [Python](python/algorithms/hiddenshuffle.py) | [C++](cpp/hiddenshuffle.cpp) | [Rust](rust/src/algorithms/hiddenshuffle.rs) | Sorted | none | _k_
 SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | [Rust](rust/src/algorithms/select.rs) | Random | n-sized list | _n_
 HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | [Rust](rust/src/algorithms/hsel.rs) | Random | Dictionary | _k_
+RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | [Rust](rust/src/algorithms/ranksb.rs) | Sorted | none | _k_
+Vitter's Algorithm D | [Python](python/algorithms/vitterd.py) | [C++](cpp/vitterd.cpp) | [Rust](rust/src/algorithms/vitterd.rs) | Sorted | none | _k_
+Hidden Shuffle | [Python](python/algorithms/hiddenshuffle.py) | [C++](cpp/hiddenshuffle.cpp) | [Rust](rust/src/algorithms/hiddenshuffle.rs) | Sorted | none | _k_
 [Cardchoose](cardchoose.md) | [Python](python/algorithms/cardchoose.py) | [C++](cpp/cardchoose.cpp) | [Rust](rust/src/algorithms/cardchoose.rs) | Sorted | none | _k_ log _k_
 
 ## Quadratic rejection sampling
@@ -56,32 +56,6 @@ is high. It takes O(_k_) expected time for _k_ ≤ _n_/2, where each draw is rej
 probability at most a half. As _k_ approaches _n_, rejections mount: the expected number of draws
 is _n_(_H_<sub>_n_</sub> − _H_<sub>_n_−_k_</sub>), where _H_ is the harmonic number, so at
 _k_ = _n_ it takes O(_n_ log _n_) time.
-
-## RANKSB
-
-Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
-----|----|----|----|----|----|----
-RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | [Rust](rust/src/algorithms/ranksb.rs) | Sorted | none | _k_
-
-Divide [0, _n_) into _k_ bins of nearly equal size. First decide how many of the chosen values
-fall in each bin, by simulating set-based rejection sampling while keeping only a count for each
-bin: a draw is rejected with the probability that it would duplicate a value already accepted in
-its bin, and that depends only on how many values the bin has accepted. Then choose that many
-values within each bin; bins hold about one value each, so a quadratic method is fine. The
-output comes out sorted, it takes O(_k_) expected time for _k_ ≤ _n_/2, and the book's program
-needs no storage beyond the output array. As _k_ approaches _n_ it slows down, and for
-_k_ ≥ _n_/2 the book pairs it with iterative choosing (which Nijenhuis and Wilf refer to as
-RKS2); I benchmark RANKSB on its own.
-
-My C++ and Rust implementations follow the program in the book, except that they fill each bin
-as soon as they know where its values go, rather than first marking out every bin's slots and
-then scanning for the marks; the Python one keeps the counts in a separate array, which is easier
-to follow.
-
-* Albert Nijenhuis and Herbert S. Wilf
-    * Combinatorial Algorithms for Computers and Calculators, 2nd edition
-    * Academic Press, 1978
-    * Chapter 4, "Random _k_-Subset of an _n_-Set (RANKSB)"
 
 ## Floyd's F2
 
@@ -165,6 +139,89 @@ Fast for producing random output where _k_ is a large fraction of _n_.
     * Page 138
     * "Algorithm R"
 
+## SELECT
+
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | [Rust](rust/src/algorithms/select.rs) | Random | n-sized list | _n_
+
+Initialize an array of the values [0, _n_). Pick out values at random to include
+in the output, and delete them by replacing them with a value from one end and
+shortening the array.
+
+This is SELECT in Goodman and Hedetniemi's _Introduction to the Design and Analysis of
+Algorithms_, though in a slight variation I pick off the array at the start, rather than the end.
+
+Each call allocates the array afresh, so its cost depends on the allocator. The C++ and Rust
+implementations align the array to a 64-byte cache line: `malloc` only promises 16 bytes, and on
+x86-64, filling the array took 1.5 times as long in Rust when it started 16 bytes past a 32-byte
+boundary, which depended on where earlier allocations happened to leave it. On Linux, glibc's
+`malloc` serves blocks over 32 MB with a fresh `mmap` and unmaps them on `free`, so from _n_ ≈ 8
+million every call faults in every page of the array again; this makes filling it about ten times
+slower than on macOS, where nothing like this shows until the largest _n_ timed.
+
+## HSEL
+
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | [Rust](rust/src/algorithms/hsel.rs) | Random | Dictionary | _k_
+
+This is a variation of the above which uses a hash table to simulate the array
+of values [0, _n_), storing only the entries that change. First proposed by Ernvall and Nevalainen
+in 1982:
+
+* Jarmo Ernvall and Olli Nevalainen
+    * An algorithm for unbiased random sampling
+    * The Computer Journal Volume 25, Number 1, February, 1982
+    * 45--47
+    * https://academic.oup.com/comjnl/article/25/1/45/527401
+
+Teuhola and Nevalainen give a version that needs 2_k_ storage locations rather than about 5_k_,
+which draws all _k_ random numbers first and then works out which value each one stands for, from
+the last back:
+
+* J. Teuhola and O. Nevalainen
+    * Two efficient algorithms for random sampling without replacement
+    * International Journal of Computer Mathematics 11(2), 1982
+    * 127--140
+    * https://doi.org/10.1080/00207168208803304
+
+It is also presented in Martin Harriman, [Sampling Without Replacement: Durstenfeld-Fisher-Yates
+Permutation for Very Large Permutation
+Sizes](https://www.tdcommons.org/cgi/viewcontent.cgi?article=1485&context=dpubs_series).
+
+My C++ and Rust implementations use a faster variant, which keeps the first _k_ entries of the
+simulated array in the output array itself, so only swaps that reach beyond _k_ touch the hash
+table. This variant was described by rici in a [Stack Overflow
+answer](https://stackoverflow.com/a/30559195) in 2015. Thanks to Mathias Weller for bringing it to
+my attention.
+
+## RANKSB
+
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+RANKSB | [Python](python/algorithms/ranksb.py) | [C++](cpp/ranksb.cpp) | [Rust](rust/src/algorithms/ranksb.rs) | Sorted | none | _k_
+
+Divide [0, _n_) into _k_ bins of nearly equal size. First decide how many of the chosen values
+fall in each bin, by simulating set-based rejection sampling while keeping only a count for each
+bin: a draw is rejected with the probability that it would duplicate a value already accepted in
+its bin, and that depends only on how many values the bin has accepted. Then choose that many
+values within each bin; bins hold about one value each, so a quadratic method is fine. The
+output comes out sorted, it takes O(_k_) expected time for _k_ ≤ _n_/2, and the book's program
+needs no storage beyond the output array. As _k_ approaches _n_ it slows down, and for
+_k_ ≥ _n_/2 the book pairs it with iterative choosing (which Nijenhuis and Wilf refer to as
+RKS2); I benchmark RANKSB on its own.
+
+My C++ and Rust implementations follow the program in the book, except that they fill each bin
+as soon as they know where its values go, rather than first marking out every bin's slots and
+then scanning for the marks; the Python one keeps the counts in a separate array, which is easier
+to follow.
+
+* Albert Nijenhuis and Herbert S. Wilf
+    * Combinatorial Algorithms for Computers and Calculators, 2nd edition
+    * Academic Press, 1978
+    * Chapter 4, "Random _k_-Subset of an _n_-Set (RANKSB)"
+
 ## Vitter's Algorithm D
 
 Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
@@ -225,63 +282,6 @@ authors' repository. Thanks to metasj for bringing this algorithm to my attentio
       (AISTATS 2021), PMLR volume 130
     * https://proceedings.mlr.press/v130/shekelyan21a.html
     * Errata and the authors' implementations: https://github.com/shekelyan/sampleiterator
-
-## SELECT
-
-Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
-----|----|----|----|----|----|----
-SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | [Rust](rust/src/algorithms/select.rs) | Random | n-sized list | _n_
-
-Initialize an array of the values [0, _n_). Pick out values at random to include
-in the output, and delete them by replacing them with a value from one end and
-shortening the array.
-
-This is SELECT in Goodman and Hedetniemi's _Introduction to the Design and Analysis of
-Algorithms_, though in a slight variation I pick off the array at the start, rather than the end.
-
-Each call allocates the array afresh, so its cost depends on the allocator. The C++ and Rust
-implementations align the array to a 64-byte cache line: `malloc` only promises 16 bytes, and on
-x86-64, filling the array took 1.5 times as long in Rust when it started 16 bytes past a 32-byte
-boundary, which depended on where earlier allocations happened to leave it. On Linux, glibc's
-`malloc` serves blocks over 32 MB with a fresh `mmap` and unmaps them on `free`, so from _n_ ≈ 8
-million every call faults in every page of the array again; this makes filling it about ten times
-slower than on macOS, where nothing like this shows until the largest _n_ timed.
-
-## HSEL
-
-Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
-----|----|----|----|----|----|----
-HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | [Rust](rust/src/algorithms/hsel.rs) | Random | Dictionary | _k_
-
-This is a variation of the above which uses a hash table to simulate the array
-of values [0, _n_), storing only the entries that change. First proposed by Ernvall and Nevalainen
-in 1982:
-
-* Jarmo Ernvall and Olli Nevalainen
-    * An algorithm for unbiased random sampling
-    * The Computer Journal Volume 25, Number 1, February, 1982
-    * 45--47
-    * https://academic.oup.com/comjnl/article/25/1/45/527401
-
-Teuhola and Nevalainen give a version that needs 2_k_ storage locations rather than about 5_k_,
-which draws all _k_ random numbers first and then works out which value each one stands for, from
-the last back:
-
-* J. Teuhola and O. Nevalainen
-    * Two efficient algorithms for random sampling without replacement
-    * International Journal of Computer Mathematics 11(2), 1982
-    * 127--140
-    * https://doi.org/10.1080/00207168208803304
-
-It is also presented in Martin Harriman, [Sampling Without Replacement: Durstenfeld-Fisher-Yates
-Permutation for Very Large Permutation
-Sizes](https://www.tdcommons.org/cgi/viewcontent.cgi?article=1485&context=dpubs_series).
-
-My C++ and Rust implementations use a faster variant, which keeps the first _k_ entries of the
-simulated array in the output array itself, so only swaps that reach beyond _k_ touch the hash
-table. This variant was described by rici in a [Stack Overflow
-answer](https://stackoverflow.com/a/30559195) in 2015. Thanks to Mathias Weller for bringing it to
-my attention.
 
 ## Cardchoose
 

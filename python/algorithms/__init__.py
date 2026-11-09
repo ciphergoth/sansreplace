@@ -1,17 +1,20 @@
-# The algorithms in presentation order: rejection methods, then sequential
-# scans, then shuffles, then cardchoose. Docs, the paper, the Rust registry
-# and the graph legends all use this order.
+# The algorithms in presentation order: quadratic, then O(n), then hash-based,
+# then O(k) with no hash table, then cardchoose. Generated tables, graph
+# legends (plot_anim.FAMILIES) and the web explorer use this order. The paper
+# and algorithms.md instead keep three explanatory pairs together: quadratic
+# rejection then set-based rejection, Floyd's F2 then quadratic F2, and SELECT
+# then HSEL.
 ALGORITHMS = [
     "quadraticreject",
-    "rejectionsample",
-    "ranksb",
-    "floydf2",
     "quadraticf2",
     "iterativechoose",
     "reservoirsample",
+    "select",
+    "rejectionsample",
+    "floydf2",
+    "hsel",
+    "ranksb",
     "vitterd",
     "hiddenshuffle",
-    "select",
-    "hsel",
     "cardchoose",
 ]

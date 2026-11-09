@@ -8,17 +8,6 @@ from matplotlib.animation import FuncAnimation
 # in a family apart. Dotted lines are hard to see, so they are drawn thicker.
 # The legend gives each family a column.
 FAMILIES = [
-    ({"linestyle": "-"}, {             # no extra memory, O(k) or O(k log k)
-        "ranksb": "tab:blue",
-        "vitterd": "tab:orange",
-        "hiddenshuffle": "tab:green",
-        "cardchoose": "tab:red",
-    }),
-    ({"linestyle": "--"}, {            # hash-based
-        "rejectionsample": "tab:purple",
-        "floydf2": "tab:brown",
-        "hsel": "tab:pink",
-    }),
     ({"linestyle": ":", "linewidth": 2.2}, {  # quadratic
         "quadraticreject": "tab:gray",
         "quadraticf2": "tab:olive",
@@ -27,6 +16,17 @@ FAMILIES = [
         "iterativechoose": "tab:cyan",
         "reservoirsample": "black",
         "select": "darkgoldenrod",
+    }),
+    ({"linestyle": "--"}, {            # hash-based
+        "rejectionsample": "tab:purple",
+        "floydf2": "tab:brown",
+        "hsel": "tab:pink",
+    }),
+    ({"linestyle": "-"}, {             # no extra memory, O(k) or O(k log k)
+        "ranksb": "tab:blue",
+        "vitterd": "tab:orange",
+        "hiddenshuffle": "tab:green",
+        "cardchoose": "tab:red",
     }),
 ]
 STYLES = {alg: {**style, "color": colour}
