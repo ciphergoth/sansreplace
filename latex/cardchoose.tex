@@ -113,8 +113,8 @@ the algorithms that several of them use.
 
 We present Cardchoose, a new algorithm for this problem, which we
 first proposed in October 2018. It chooses a multiset
-with a P\'olya urn and turns it into a set with a sort, so that it is a
-few lines of integer arithmetic and a call to a standard sort. It needs
+with a P\'olya urn and turns it into a set with a sort, in a few lines
+of integer arithmetic. It needs
 no memory beyond the array in which the result is written, and takes
 \(\bigO{k \log k}\) time. \autoref{cardchoose} explains it and proves
 it fair, and \autoref{priorart} places it relative to earlier work.
@@ -149,16 +149,12 @@ and converts it to a set. A Python implementation follows. It returns
 
 \inputminted{Python}{code/cardchoose.py}
 
-The rest of this section explains why it works, proves it fair, and
-places it relative to earlier work.
-
 \subsection{Notation}
 
 Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural
 numbers less than \(n\) where \(\NN = \{0, 1, 2, \ldots\}\). Let
 \(\binom{S}{k} \defeq \{s \subseteq S: |s| = k\}\), the set of all
-\(k\)-element subsets of \(S\); note that \(\left|\binom{S}{k}\right|
-= \binom{|S|}{k}\).
+\(k\)-element subsets of \(S\).
 
 A \emph{multiset} is an extension of a set in which elements can
 appear more than once; we use brackets to delimit the elements of a
@@ -166,8 +162,8 @@ multiset, so $[0, 1, 1]$ is the same multiset as $[1, 0, 1]$ but
 distinct from $[0, 0, 1]$. Define \(\multichoose{U}{k}\) to be the set
 of multisets of cardinality \(k\) whose elements are drawn from
 \(U\), and \(\multichoose{n}{k} \defeq
-\left|\multichoose{\NN_{<n}}{k}\right|\) the number of distinct
-\(k\)-cardinality multisets over an \(n\)-element universe.
+\left|\multichoose{\NN_{<n}}{k}\right|\) the number of such multisets
+over \(\NN_{<n}\).
 
 \subsection{Subsets as stars and bars}\label{starsandbars}
 
@@ -217,11 +213,9 @@ plus its stars to the left:
     \end{array}
 \end{displaymath}
 
-That is the last three lines of the algorithm. Because the
-correspondence is a bijection, choosing a multiset uniformly at
-random and converting it gives a subset chosen uniformly at random:
-each subset is reached from exactly one multiset. So what remains is
-to choose an element of \(\multichoose{\NN_{<t}}{k}\) fairly.
+That is the last three lines of the algorithm. So what remains is to
+choose a multiset in \(\multichoose{\NN_{<t}}{k}\) uniformly at
+random.
 
 \subsection{Choosing a multiset fairly}\label{fairmultiset}
 
@@ -240,8 +234,7 @@ colour in \(\NN_{<t}\). Each step draws a ball
 uniformly at random, records its colour, and puts it back along with a
 new ball of the same colour. A colour drawn \(c\) times so far has \(c
 + 1\) balls in the urn, so it is \(c + 1\) times as likely to be drawn
-next as a colour not yet drawn. Cardchoose runs this urn as an
-algorithm.
+next as a colour not yet drawn.
 
 The loop in the listing runs exactly this urn, numbering the balls in
 the order they enter it: balls \(0, \ldots, t - 1\) are the originals,
@@ -252,7 +245,10 @@ an original, of colour \(r\). Otherwise it is the ball added at step
 \(r - t\), whose colour is the one drawn at that step,
 \mintinline{python}{d[r - t]}. So each step takes one random number,
 one comparison and one write, with no search, and the urn needs no
-storage beyond \mintinline{python}{d} itself.
+storage beyond \mintinline{python}{d} itself. On its own, the loop is a
+generator of uniformly random multisets in
+\(\multichoose{\NN_{<t}}{k}\); the rest of the listing converts the
+multiset to a subset.
 
 The same process can be pictured on the row of
 \autoref{starsandbars}: starting from the \(t - 1\) bars alone, insert
@@ -288,27 +284,7 @@ standard lemma about the urn \cite[Lemma 2.7]{levinperes}. By
 \autoref{starsandbars}, converting the multiset then gives every
 subset in \(\binom{\NN_{<n}}{k}\) with the same probability.
 
-\subsection{Implementation}
-
-The multiset choosing procedure in Python, taking integers \(n, k\)
-and returning a list of \(k\) integers in \(\NN_{<n}\), with repeats
-allowed, uniformly among all such multisets:
-
-\inputminted{Python}{code/choose_multiset.py}
-
-Applying it with universe \(\NN_{<n - k + 1}\) and converting the
-result as in \autoref{starsandbars} returns a sorted list of \(k\)
-distinct integers in \(\NN_{<n}\), uniformly among all such subsets:
-
-\inputminted{Python}{code/choose_binom.py}
-
-The listing at the start of this section is these two procedures
-merged into one.
-
 \subsection{Prior art}\label{priorart}
-
-This subsection mentions several of the other algorithms, which
-\autoref{otheralgs} describes.
 
 Physicists have names for the three distributions in this story
 \cite[Chapter II \S 5]{feller}. Distinguishable particles placed independently in
@@ -323,9 +299,7 @@ a Bose--Einstein configuration with a Pólya urn, then map it to
 Fermi--Dirac by stars and bars.
 
 The mathematics of both halves is classical. The P\'olya urn is a
-textbook object of study, and that with one ball of each colour its
-counts are uniform, which is to say Bose--Einstein, is a standard
-lemma about it \cite[Lemma 2.7]{levinperes}; Niven and Grendar \cite{nivengrendar} map
+textbook object of study, and Niven and Grendar \cite{nivengrendar} map
 all three statistics onto the urn, with Maxwell--Boltzmann as
 replacement without a copy, Bose--Einstein as replacement with a copy,
 and Fermi--Dirac as no replacement. But the urn is presented as a model,
@@ -764,11 +738,6 @@ of these is very slow elsewhere. The other algorithms run in
 \(\bigO{k}\) or \(\bigO{k \log k}\) time, and differ by smaller
 factors.
 
-\autoref{choosing} compares the algorithms by their worst time per
-number output in each decade of \(k\). The rest of this section
-describes regions of \(n\) and \(k\), by the range of one algorithm's
-time over another's.
-
 For sorted output in C++, Hidden Shuffle is the fastest algorithm
 wherever \(n \geq 16k\) and \(k \geq 1000\); there, Cardchoose takes
 up to 2.4 times as long. In Rust, Cardchoose and Hidden Shuffle divide
@@ -873,11 +842,8 @@ Three algorithms are never far from the fastest per number output at
 any \(k\): Cardchoose, Hidden Shuffle and Algorithm D are never worse
 than 44\,ns per number in any case, while every other algorithm is
 worse than 100\,ns per number somewhere it was tested. Cardchoose is
-the simplest of the three: it is a few lines of integer arithmetic,
-while the other two need floating point and are considerably more
-involved. Algorithm D switches to Algorithm A once \(n \leq 13k\),
-and Hidden Shuffle runs three stages in turn, the last of them
-Algorithm A.
+the simplest of the three; the other two need floating point and are
+considerably more involved.
 
 With sorted output, Cardchoose is the best algorithm at every \(k\)
 below \(10^7\) in Rust, and Hidden Shuffle above that; in C++,
@@ -898,14 +864,9 @@ the eighth, Algorithm D. Because a band's score is
 the worst over every \(n\), that does not make them useless: iterative
 choosing, reservoir sampling and SELECT are among the fastest where
 \(n/k\) is small, and iterative choosing belongs to the best sets for
-sorted output below. No algorithm is at least as fast as another at
-every point timed in every case, but in each case Cardchoose is at
-least as fast as some of the others at every point: in Rust with
-sorted output, as fast as six of the other eleven.
+sorted output below.
 
-Since no algorithm is the best at every \(k\), an implementation might
-implement several, and choose which one to use based on the values of
-\(n\) and \(k\). \autoref{cover} shows, for each language and
+\autoref{cover} shows, for each language and
 order, the best set of one, two or three algorithms, if each point uses
 the fastest algorithm in the set. A set's score in a band is its worst
 time per number output there, as for a single algorithm, and the table
@@ -939,8 +900,7 @@ If an implementation has only one algorithm, Cardchoose is a good
 choice. It is the best single algorithm in three of the four cases; in
 the fourth, C++ with sorted output, only the two floating-point
 algorithms beat it, because libc++'s \mintinline{cpp}{std::sort} is
-slower than Rust's sort. It is the best integer-only algorithm in every
-case. Implemented alone, it is never more than 9 to 22\,ns per number
+slower than Rust's sort. Implemented alone, it is never more than 9 to 22\,ns per number
 slower than the best three algorithms together, in any case and at any
 \(k\). Its largest ratios to the floor are where calls are cheap: with
 random output, it is 3.53 times the floor in C++ and 2.58 times in Rust
