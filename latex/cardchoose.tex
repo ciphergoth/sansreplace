@@ -104,9 +104,9 @@
 
 \section{Introduction}
 
-We consider the problem of choosing a subset of $\{0, 1, \ldots,
-n-1\}$ such that every \(k\)-element subset is equally likely to be
-returned. Many programming languages include facilities for this in
+Sampling without replacement means choosing \(k\) distinct numbers
+from \(\{0, 1, \ldots, n-1\}\) such that every \(k\)-element subset is
+equally likely to be returned. Many programming languages include facilities for this in
 their standard libraries, for example Python's
 \mintinline{python}{random.sample()} or Rust's
 \mintinline{rust}{rand::seq::index::sample}; Ting \cite{ting} lists
