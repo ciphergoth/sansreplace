@@ -110,8 +110,10 @@ search.
 
 A cell that already holds _c_ stars owns _c_+1 slots: one fresh slot, and one after each of
 those stars. So a cell holding one star is now twice as likely to get the next one as an empty
-cell, a cell holding two three times as likely, and so on. That is how repeats get favoured. The
-next section shows it is by exactly the right amount.
+cell, a cell holding two three times as likely, and so on. The slots are the balls of a Pólya urn
+(see [prior art](priorart.md)): the _t_ fresh slots are _t_ balls, one of each colour, and each
+star adds a copy slot to its cell, as each draw adds a ball of the colour drawn. That is how
+repeats get favoured. The next section shows it is by exactly the right amount.
 
 ## Why that's exactly fair
 
