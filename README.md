@@ -30,7 +30,7 @@ of the four cases.
 
 ## Cardchoose
 
-This repository also presents a (I believe) novel algorithm for this purpose, Cardchoose. It is to
+This repository also presents a new algorithm for this purpose, Cardchoose. It is to
 my knowledge the only algorithm which is both simple and performs within an acceptable distance (in
 time per output) of all other solutions across the entire parameter space tested. It needs no
 memory beyond the output vector and runs in O(_k_ log _k_) time.

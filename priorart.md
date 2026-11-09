@@ -28,9 +28,9 @@ through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM choos
 replacement describe anything like it: Devroye's has no urn and no stars and bars, and Ting,
 reworking the classical algorithms into simpler forms, gives a sparse Fisher–Yates sampler,
 essentially HSEL, and a sorted sampler that draws each gap from a beta-binomial distribution,
-which needs floating point. What I have not found elsewhere is the
-urn presented as a generator for uniform multisets, or its composition with stars and bars into
-a sampler for sampling without replacement. Needing no set, map or extra memory is not new in
+which needs floating point. What is new in Cardchoose is the urn used as a generator for
+uniform multisets, and its composition with stars and bars into a sampler for sampling without
+replacement. Needing no set, map or extra memory is not new in
 itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and so do Vitter's
 Algorithm D and, more recently, Shekelyan and Cormode's Hidden Shuffle, though they need
 floating-point arithmetic where Cardchoose and RANKSB use only exact integer draws.
@@ -49,8 +49,7 @@ parallel. Adding to each value the
 number of chosen values below it is also the last step of Cardchoose, where each sorted value has
 its index added. But GSEL must keep its chosen values in order to count as it goes, and so needs a
 tree of _k_ nodes, while the urn never needs the earlier values in order, so Cardchoose can leave
-the counting to a single sort at the end, in the output array. I would be glad to hear of any
-earlier description of Cardchoose.
+the counting to a single sort at the end, in the output array.
 
 Sorted output without a sort has a classic answer for real numbers: Bentley and Saxe generate _k_
 sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the

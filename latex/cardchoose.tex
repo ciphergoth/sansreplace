@@ -80,9 +80,9 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    We present Cardchoose, an algorithm for choosing \(k\) distinct
+    We present Cardchoose, a new algorithm for choosing \(k\) distinct
     natural numbers below \(n\) such that every set of \(k\) is equally
-    likely, which we believe to be new. It draws a multiset of \(k\)
+    likely. It draws a multiset of \(k\)
     values below \(n - k + 1\) with a P\'olya urn, which makes every
     multiset equally likely, then sorts it and adds each value's index,
     which by the stars and bars bijection turns it into a set. It is a
@@ -112,8 +112,8 @@ their standard libraries, for example Python's
 \mintinline{rust}{rand::seq::index::sample}; Ting \cite{ting} lists
 the algorithms that several of them use.
 
-We present Cardchoose, an algorithm for this problem which we believe
-to be new; we first proposed it in October 2018. It chooses a multiset
+We present Cardchoose, a new algorithm for this problem, which we
+first proposed in October 2018. It chooses a multiset
 with a P\'olya urn and turns it into a set with a sort, so that it is a
 few lines of integer arithmetic and a call to a standard sort. It needs
 no memory beyond the array in which the result is written, and takes
@@ -579,10 +579,10 @@ it: Devroye's \cite[Chapter XII]{devroye} has no urn and no stars and
 bars, and Ting \cite{ting}, reworking the classical algorithms into
 simpler forms, gives a sparse Fisher--Yates sampler, essentially HSEL,
 and a sorted sampler that draws each gap from a beta-binomial
-distribution, which needs floating point. What
-we have not found elsewhere is the urn presented as a generator for
-uniform multisets, or its composition with stars and bars into a
-sampler for sampling without replacement. Needing no set, map or extra
+distribution, which needs floating point. What is new in Cardchoose
+is the urn used as a generator for uniform multisets, and its
+composition with stars and bars into a sampler for sampling without
+replacement. Needing no set, map or extra
 memory is not new in itself: Nijenhuis and Wilf's RANKSB
 \cite[Chapter 4]{nijenhuiswilf} also uses nothing but the output
 array, and so do Vitter's Algorithm D and, more recently, Shekelyan and
@@ -614,8 +614,7 @@ counting to a single sort at the end, in the output array. We have
 not benchmarked GSEL: besides needing memory that Cardchoose does not,
 it follows pointers through the tree for every value drawn, where
 Cardchoose makes one sort over a flat array, and we see no way for it
-to be faster. We would be glad to hear of any earlier description of
-Cardchoose.
+to be faster.
 
 Sorted output without a sort has a classic answer for real numbers:
 Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
