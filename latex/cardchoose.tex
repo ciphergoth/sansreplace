@@ -149,6 +149,10 @@ and converts it to a set. A Python implementation follows. It returns
 
 \inputminted{Python}{code/cardchoose.py}
 
+Each pass of the first loop takes one random number, one comparison
+and one write, with no search, and nothing is stored outside the output
+array.
+
 \subsection{Notation}
 
 Let \(\NN_{<n} \defeq \{i \in \NN: i < n\}\), the set of natural
@@ -244,19 +248,14 @@ at step \(i\). At step \(i\) the urn holds \(t + i\) balls, so
 \mintinline{python}{randrange(t + i)} draws one. If \(r < t\), it is
 an original, of colour \(r\). Otherwise it is the ball added at step
 \(r - t\), whose colour is the one drawn at that step,
-\mintinline{python}{d[r - t]}. So each step takes one random number,
-one comparison and one write, with no search, and the urn needs no
-storage beyond \mintinline{python}{d} itself. On its own, the loop is a
-generator of uniformly random multisets in
-\(\multichoose{\NN_{<t}}{k}\); the rest of the listing converts the
-multiset to a subset.
+\mintinline{python}{d[r - t]}.
 
-The same process can be pictured on the row of
+Another way to picture this is as a process on the row of
 \autoref{starsandbars}: starting from the \(t - 1\) bars alone, insert
-each new star in a uniformly random place in the row so far, between
-two neighbouring symbols or at either end; a cell holding \(c\) stars
-has \(c + 1\) such places, one for each ball of its colour
-\cite{video}.
+each new star in a uniformly random slot in the row so far, between
+two neighbouring symbols or at either end. A cell holding \(c\) stars
+has \(c + 1\) such slots, corresponding to the \(c + 1\) balls of its
+colour in the urn \cite{video}.
 
 \subsection{Why the urn is fair}\label{proof}
 
