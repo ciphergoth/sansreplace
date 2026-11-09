@@ -20,6 +20,7 @@ one's time less fill's, per number. Prints a Markdown table, or with --latex
 writes a LaTeX one."""
 
 import argparse
+import math
 import pathlib
 
 import read_results
@@ -46,13 +47,17 @@ def costs(times):
     return [(k, [times[lang][k][comp] - times[lang][k]["fill"]
         for comp, _ in COSTS for lang, _ in LANGUAGES]) for k in ks]
 
+def sig3(x):
+    "x to three significant figures, keeping trailing zeros, as 1.20 rather than 1.2"
+    return f"{x:.{max(0, 2 - math.floor(math.log10(abs(x))))}f}"
+
 def markdown(rows, n):
     head = ["Length"] + [f"{title}, {lname}" for _, title in COSTS for _, lname in LANGUAGES]
     print(f"ns per number, at n = {n:,}\n")
     print("| " + " | ".join(head) + " |")
     print("|" + "---:|" * len(head))
     for k, cs in rows:
-        print(f"| {k:,} | " + " | ".join(f"{c:.3g}" for c in cs) + " |")
+        print(f"| {k:,} | " + " | ".join(sig3(c) for c in cs) + " |")
 
 def latex(rows, out):
     cols = "r|" + "|".join("rr" for _ in COSTS)
@@ -63,7 +68,7 @@ def latex(rows, out):
         "Length & " + " & ".join(lname for _ in COSTS for _, lname in LANGUAGES) + " \\\\",
         "\\hline",
     ]
-    lines += [f"{k:,} & " + " & ".join(f"{c:.3g}" for c in cs) + " \\\\" for k, cs in rows]
+    lines += [f"{k:,} & " + " & ".join(sig3(c) for c in cs) + " \\\\" for k, cs in rows]
     lines.append("\\end{tabular}")
     out.write_text("\n".join(lines) + "\n")
 
