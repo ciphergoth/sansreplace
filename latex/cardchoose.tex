@@ -80,23 +80,26 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    A variety of algorithms exist for fairly choosing $k$ distinct
-    natural numbers below \(n\). We describe twelve of them, among them
-    one, Cardchoose, which we believe to be new, and benchmark C++ and
-    Rust implementations of each over a wide range of \(n\) and \(k\),
-    for both sorted and random order output. No algorithm is close to
-    the fastest everywhere, but scored by the worst time per number
-    output in each decade of \(k\), Cardchoose alone is never more
-    than 9 to 22\,ns per number slower than the best set of three,
-    choosing between them based on \(n\) and \(k\). Cardchoose needs no storage
-    beyond the output array and takes $\bigO{k \log k}$ time, using an
-    integer sort; it combines a P\'olya urn, which chooses a
-    multiset fairly, with the stars and bars bijection between
-    multisets and sets. It is the simplest of the three algorithms
-    whose time per number output is never far above the fastest's, the
-    best single algorithm in three of the four cases, and the best that
-    needs no floating point in all four; with a fast sort, it is the best
-    algorithm for sorted output at every \(k\) below \(10^7\).
+    We present Cardchoose, an algorithm for choosing \(k\) distinct
+    natural numbers below \(n\) such that every set of \(k\) is equally
+    likely, which we believe to be new. It draws a multiset of \(k\)
+    values below \(n - k + 1\) with a P\'olya urn, which makes every
+    multiset equally likely, then sorts it and adds each value's index,
+    which by the stars and bars bijection turns it into a set. It is a
+    few lines of integer arithmetic and a call to a standard sort, needs
+    no memory beyond the output array, and takes \(\bigO{k \log k}\)
+    time. We benchmark C++ and Rust implementations of it and eleven
+    other algorithms over a wide range of \(n\) and \(k\), for both
+    sorted and random order output. No algorithm is close to the fastest
+    everywhere, but scored by the worst time per number output in each
+    decade of \(k\), Cardchoose is the best single algorithm in three of
+    the four cases and the best that needs no floating point in all
+    four, and it is never more than 9 to 22\,ns per number slower than
+    the best set of three algorithms, choosing between them based on
+    \(n\) and \(k\). Of the three algorithms whose time per number
+    output is never far above the fastest's, it is the simplest; with a
+    fast sort, as in Rust, it is the best algorithm for sorted output at
+    every \(k\) below \(10^7\).
 \end{abstract}
 
 \section{Introduction}
