@@ -287,82 +287,49 @@ subset in \(\binom{\NN_{<n}}{k}\) with the same probability.
 \subsection{Prior art}\label{priorart}
 
 Physicists have names for the three distributions in this story
-\cite[Chapter II \S 5]{feller}. Distinguishable particles placed independently in
-cells, the biased way of picking a multiset in \autoref{fairmultiset},
-is Maxwell--Boltzmann statistics. Indistinguishable particles with every
-occupancy pattern equally likely, a uniform multiset, is Bose--Einstein.
-At most one particle per cell with every pattern equally likely, a
-uniform subset, is Fermi--Dirac. Stars and bars is the standard way to
-count the Bose--Einstein configurations, by matching them with
-Fermi--Dirac ones. So the one-line summary of Cardchoose is: generate
-a Bose--Einstein configuration with a Pólya urn, then map it to
+\cite[Chapter II \S 5]{feller}. Distinguishable particles placed
+independently in cells, the biased way of picking a multiset in
+\autoref{fairmultiset}, is Maxwell--Boltzmann statistics.
+Indistinguishable particles with every occupancy pattern equally
+likely, a uniform multiset, is Bose--Einstein. At most one particle
+per cell with every pattern equally likely, a uniform subset, is
+Fermi--Dirac. So the one-line summary of Cardchoose is: generate a
+Bose--Einstein configuration with a P\'olya urn, then map it to
 Fermi--Dirac by stars and bars.
 
-The mathematics of both halves is long established. The P\'olya urn is a
-textbook object of study, and Niven and Grendar \cite{nivengrendar} map
-all three statistics onto the urn, with Maxwell--Boltzmann as
-replacement without a copy, Bose--Einstein as replacement with a copy,
-and Fermi--Dirac as no replacement. But the urn is presented as a model,
-not as a way to generate anything. The nearest thing to running an urn as
-a sampler in earnest is in Bayesian statistics, where the
-Blackwell--MacQueen urn \cite{blackwellmacqueen} draws an exchangeable
-sequence from a Dirichlet process, which is a different purpose. The
-combinatorial generation literature does generate random multisets, but
-through stars and bars in the other direction: Nijenhuis and Wilf's
-RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a random
-\((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences it.
-Nor do surveys of sampling without replacement describe anything like
-it: Devroye's \cite[Chapter XII]{devroye} has no urn and no stars and
-bars, and Ting \cite{ting}, reworking the established algorithms into
-simpler forms, gives a sparse Fisher--Yates sampler, essentially HSEL,
-and a sorted sampler that draws each skip from a beta-binomial
-distribution, which needs floating point. What is new in Cardchoose
-is the urn used as a generator for uniform multisets, and its
-composition with stars and bars into a sampler for sampling without
-replacement. Needing no set, map or extra
-memory is not new in itself: Nijenhuis and Wilf's RANKSB
-\cite[Chapter 4]{nijenhuiswilf} also uses nothing but the output
-array, and so do Vitter's Algorithm D and, more recently, Shekelyan and
-Cormode's Hidden Shuffle \cite{hiddenshuffle}, though they need
-floating-point arithmetic where Cardchoose and RANKSB use only exact
-integer draws.
+Both halves are long established, but not as a way to generate
+samples. The P\'olya urn is a textbook model, and Niven and Grendar
+\cite{nivengrendar} map all three statistics onto it, but as a model,
+not a generator. The nearest thing to running an urn as a sampler in
+earnest is the Blackwell--MacQueen urn \cite{blackwellmacqueen}, which
+draws an exchangeable sequence from a Dirichlet process, a different
+purpose. The combinatorial generation literature does generate random
+multisets, but through stars and bars in the other direction:
+Nijenhuis and Wilf's RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a
+random \((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences
+it. Nor do surveys of sampling without replacement describe anything
+like Cardchoose: Devroye's \cite[Chapter XII]{devroye} has no urn and
+no stars and bars, and Ting's \cite{ting} reworkings of the
+established algorithms are a sparse Fisher--Yates sampler, essentially
+HSEL, and a sorted sampler that draws each skip from a beta-binomial
+distribution in floating point.
 
-Among earlier algorithms, Gupta and Bhattacharjee's GSEL \cite{gupta}
-also takes \(\bigO{k \log k}\) time and can return sorted output, but
-works quite differently. Like SELECT, it
-draws its \(i\)th value uniformly from the \(n - i + 1\) values not yet
-chosen, as a rank \(r\) among them; that value is \(r + u\), where \(u\)
-is the number of values already chosen below it, and GSEL finds \(u\)
-in a balanced binary tree of the chosen values that records the size
-of each subtree, as Ernvall and Nevalainen \cite{hsel} had suggested
-in passing to bound HSEL's worst case. Rouzankin and Voytishek \cite{RouzankinVoytishek} do
-the same with a sorted array, in \(\bigO{k^2}\) time, and with an
-unbalanced binary search tree, in \(\bigO{k \log k}\) expected time;
-they also split the range in half recursively, drawing how many values
-fall in each half from a hypergeometric distribution, which with
-stored tables of its probabilities takes \(\bigO{k}\) expected time,
-and is the division Sanders et al.\ \cite{sandersetal} use to sample
-in parallel. Cardchoose's last step also adds to each value a count
-of chosen values below it, but the resemblance ends there. GSEL's
-ranks count the values not chosen at the time of each draw, a set that
-shrinks with every draw, so it must turn each rank into a value as soon
-as it is drawn, and that needs the tree. Cardchoose's cell numbers
-count the values that are never chosen, so they never change, and the
-counting can wait for a single sort at the end, in the output array. We have
-not benchmarked GSEL: besides needing memory that Cardchoose does not,
-it follows pointers through the tree for every value drawn, where
-Cardchoose makes one sort over a flat array, and we see no way for it
-to be faster.
+Three other algorithms need no memory beyond the output array and take
+\(\bigO{k}\) expected time: Nijenhuis and Wilf's RANKSB
+\cite[Chapter 4]{nijenhuiswilf}, Vitter's Algorithm D and Shekelyan
+and Cormode's Hidden Shuffle \cite{hiddenshuffle}. The first two
+predate Cardchoose, and the last two need floating-point arithmetic.
 
-Sorted output without a sort has a long-standing answer for real numbers:
-Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
-reals in \(\bigO{k}\) time, drawing the largest as \(U^{1/k}\) and
-repeating for the rest below it, and credit Friedman \cite{friedman}
-with an essentially equivalent earlier program. This cannot stand in
-for the urn: sorted independent draws, even rounded to integers, follow
-the Maxwell--Boltzmann distribution over multisets, not the
-Bose--Einstein one. Its closest analogue for distinct integers is
-Vitter's Algorithm D, whose continuous approximation is the same step.
+Gupta and Bhattacharjee's GSEL \cite{gupta} also takes
+\(\bigO{k \log k}\) time and can return sorted output. Like SELECT, it
+draws each value as a uniform rank among the values not yet chosen,
+and it finds the value with that rank in a balanced tree of the values
+chosen so far, as Ernvall and Nevalainen \cite{hsel} had suggested;
+Rouzankin and Voytishek \cite{RouzankinVoytishek} use a sorted array
+or an unbalanced search tree instead. We have not benchmarked GSEL:
+the tree needs memory that Cardchoose does not, and following pointers
+through it for every value drawn is unlikely to beat one sort over a
+flat array.
 
 \section{Benchmarked algorithms}\label{otheralgs}
 We compare Cardchoose with eleven other algorithms. Every
