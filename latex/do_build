@@ -16,7 +16,6 @@
 
 import argparse
 import pathlib
-import shutil
 import subprocess
 import sys
 
@@ -48,7 +47,6 @@ def main():
             "-interaction=nonstopmode", "-halt-on-error", "-file-line-error",
             f"-outdir={out}", "cardchoose.tex"],
         cwd=scriptdir, check=True)
-    shutil.copy(out / "cardchoose.pdf", scriptdir / "cardchoose.pdf")
 
 if __name__ == "__main__":
     main()

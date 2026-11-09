@@ -14,5 +14,6 @@
     }
   ],
   "latex-workshop.latex.build.enableMagicComments": false,
+  "latex-workshop.latex.autoBuild.run": "onSave",
   "latex-workshop.latex.outDir": "%DIR%/build/latex.out"
 }

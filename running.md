@@ -148,8 +148,8 @@ cd latex
 ```
 
 This generates the paper's figures and tables from the CSVs in `results/latest` into
-`latex/generated`, which is not checked in, then builds it with `latexmk` and XeLaTeX into
-`latex/build` and copies the result to `latex/cardchoose.pdf`.
+`latex/generated`, which is not checked in, then builds it with `latexmk` and XeLaTeX, leaving the PDF at
+`latex/build/latex.out/cardchoose.pdf`.
 
 On every push to `master` that changes the paper, the results or the build, the Pages workflow
 builds the paper the same way and publishes it alongside the explorer, at

@@ -37,7 +37,7 @@ jobs:
       - run: cp -r web _site
       - run: devenv shell -- python/export_web --out _site/generated/data.json
       - run: devenv shell -- latex/do_build
-      - run: cp latex/cardchoose.pdf _site/
+      - run: cp latex/build/latex.out/cardchoose.pdf _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
