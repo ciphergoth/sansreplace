@@ -169,10 +169,10 @@ over \(\NN_{<n}\).
 
 The well-known ``stars and bars'' correspondence \cite[Chapter II
 \S 5]{feller} is a bijection between \(\binom{\NN_{<n}}{k}\) and
-\(\multichoose{\NN_{<n-k+1}}{k}\). Write the numbers \(0, \ldots,
-n-1\) in a row, marking each chosen number as a star and each unchosen
-one as a bar. For \(n = 7\), \(k = 3\) and the subset \(\{1, 2,
-5\}\):
+\(\multichoose{\NN_{<t}}{k}\), where \(t = n - k + 1\). Write the
+numbers \(0, \ldots, n-1\) in a row, marking each chosen number as a
+star and each unchosen one as a bar. For \(n = 7\), \(k = 3\) and the
+subset \(\{1, 2, 5\}\):
 
 \begin{displaymath}
     \begin{array}{ c c c c c c c }
@@ -196,7 +196,7 @@ the number of bars to its left:
 \end{displaymath}
 
 A cell number can be anything from \(0\) (before all the bars) to
-\(n - k\) (after all of them), so there are \(t = n - k + 1\) cells.
+\(n - k\) (after all of them), so there are \(t\) cells.
 Stars can share a cell, so the stars' cell numbers form a multiset
 rather than a set, in \(\multichoose{\NN_{<t}}{k}\). This is the map
 from \(\binom{\NN_{<n}}{k}\) to \(\multichoose{\NN_{<t}}{k}\).
@@ -227,7 +227,7 @@ arrive as \(0, 1\) or as \(1, 0\), while \([0, 0]\) and \([1, 1]\) get
 a quarter each. Independent draws favour variety; we need to favour
 repeats, by exactly the right amount.
 
-A classical probability model favours repeats in just this way: the
+A standard probability model favours repeats in just this way: the
 P\'olya urn \cite[Chapter V \S 2, pp.~119--120]{feller}. Feller's urn
 holds balls of two colours; we use its generalisation to \(t\) colours
 \cite[\S 2.4]{levinperes}, which starts with \(t\) balls, one of each
@@ -299,7 +299,7 @@ Fermi--Dirac ones. So the one-line summary of Cardchoose is: generate
 a Bose--Einstein configuration with a Pólya urn, then map it to
 Fermi--Dirac by stars and bars.
 
-The mathematics of both halves is classical. The P\'olya urn is a
+The mathematics of both halves is long established. The P\'olya urn is a
 textbook object of study, and Niven and Grendar \cite{nivengrendar} map
 all three statistics onto the urn, with Maxwell--Boltzmann as
 replacement without a copy, Bose--Einstein as replacement with a copy,
@@ -314,7 +314,7 @@ RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a random
 \((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences it.
 Nor do surveys of sampling without replacement describe anything like
 it: Devroye's \cite[Chapter XII]{devroye} has no urn and no stars and
-bars, and Ting \cite{ting}, reworking the classical algorithms into
+bars, and Ting \cite{ting}, reworking the established algorithms into
 simpler forms, gives a sparse Fisher--Yates sampler, essentially HSEL,
 and a sorted sampler that draws each skip from a beta-binomial
 distribution, which needs floating point. What is new in Cardchoose
@@ -355,7 +355,7 @@ it follows pointers through the tree for every value drawn, where
 Cardchoose makes one sort over a flat array, and we see no way for it
 to be faster.
 
-Sorted output without a sort has a classic answer for real numbers:
+Sorted output without a sort has a long-standing answer for real numbers:
 Bentley and Saxe \cite{bentleysaxe} generate \(k\) sorted uniform
 reals in \(\bigO{k}\) time, drawing the largest as \(U^{1/k}\) and
 repeating for the rest below it, and credit Friedman \cite{friedman}

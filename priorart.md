@@ -11,28 +11,28 @@ Bose–Einstein configurations, by matching them with Fermi–Dirac ones. So the
 Cardchoose is: generate a Bose–Einstein configuration with a Pólya urn, then map it to
 Fermi–Dirac by stars and bars.
 
-The mathematics of both halves is classical. Cardchoose's multiset loop is a **Pólya urn**: start
-with _t_ balls, one of each colour; draw a ball uniformly at random, and put it back along with a
-new ball of the same colour. `randrange(t + i)` picks one of the _t_+_i_ balls in the urn, and
-`d[r - t]` is what drawing a copy means. The urn is a textbook object of study, and that with one
-ball of each colour its counts are uniform, which is to say Bose–Einstein, is a standard lemma
-about it (Levin and Peres, Lemma 2.7); Niven and Grendar map all three statistics onto the urn,
-with Maxwell–Boltzmann as replacement without a copy, Bose–Einstein as replacement with a copy,
-and Fermi–Dirac as no replacement. But the urn is presented as a model, not as a way to generate
-anything. The nearest thing to running an urn as a sampler in earnest is in Bayesian statistics, where the
-Blackwell–MacQueen urn draws an exchangeable sequence from a Dirichlet process, which is a
+The mathematics of both halves is long established. Cardchoose's multiset loop is a **Pólya urn**:
+start with _t_ balls, one of each colour; draw a ball uniformly at random, and put it back along
+with a new ball of the same colour. `randrange(t + i)` picks one of the _t_+_i_ balls in the urn,
+and `d[r - t]` is what drawing a copy means. The urn is a textbook object of study, and that with
+one ball of each colour its counts are uniform, which is to say Bose–Einstein, is a standard lemma
+about it (Levin and Peres, Lemma 2.7); Niven and Grendar map all three statistics onto the urn, with
+Maxwell–Boltzmann as replacement without a copy, Bose–Einstein as replacement with a copy, and
+Fermi–Dirac as no replacement. But the urn is presented as a model, not as a way to generate
+anything. The nearest thing to running an urn as a sampler in earnest is in Bayesian statistics,
+where the Blackwell–MacQueen urn draws an exchangeable sequence from a Dirichlet process, which is a
 different purpose. The combinatorial generation literature does generate random multisets, but
 through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM chooses a random
 (_k_-1)-subset of {1, …, _n_+_k_-1} and differences it. Nor do surveys of sampling without
 replacement describe anything like it: Devroye's has no urn and no stars and bars, and Ting,
-reworking the classical algorithms into simpler forms, gives a sparse Fisher–Yates sampler,
-essentially HSEL, and a sorted sampler that draws each skip from a beta-binomial distribution,
-which needs floating point. What is new in Cardchoose is the urn used as a generator for
-uniform multisets, and its composition with stars and bars into a sampler for sampling without
-replacement. Needing no set, map or extra memory is not new in
-itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and so do Vitter's
-Algorithm D and, more recently, Shekelyan and Cormode's Hidden Shuffle, though they need
-floating-point arithmetic where Cardchoose and RANKSB use only exact integer draws.
+reworking the established algorithms into simpler forms, gives a sparse Fisher–Yates sampler,
+essentially HSEL, and a sorted sampler that draws each skip from a beta-binomial distribution, which
+needs floating point. What is new in Cardchoose is the urn used as a generator for uniform
+multisets, and its composition with stars and bars into a sampler for sampling without replacement.
+Needing no set, map or extra memory is not new in itself: Nijenhuis and Wilf's RANKSB also uses
+nothing but the output array, and so do Vitter's Algorithm D and, more recently, Shekelyan and
+Cormode's Hidden Shuffle, though they need floating-point arithmetic where Cardchoose and RANKSB use
+only exact integer draws.
 
 Among earlier algorithms, Gupta and Bhattacharjee's GSEL also takes O(_k_ log _k_) time and can
 return sorted output, but works quite differently. Like SELECT, it draws its _i_th value uniformly
@@ -51,12 +51,12 @@ must turn each rank into a value as soon as it is drawn, and that needs the tree
 cell numbers count the values that are never chosen, so they never change, and the counting can
 wait for a single sort at the end, in the output array.
 
-Sorted output without a sort has a classic answer for real numbers: Bentley and Saxe generate _k_
-sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the
-rest below it, and credit Friedman with an essentially equivalent earlier program. This can't
-stand in for the urn: sorted independent draws, even rounded to integers, follow the
-Maxwell–Boltzmann distribution over multisets, not the Bose–Einstein one. Its closest analogue
-for distinct integers is Vitter's Algorithm D, whose continuous approximation is the same step.
+Sorted output without a sort has a long-standing answer for real numbers: Bentley and Saxe generate
+_k_ sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the
+rest below it, and credit Friedman with an essentially equivalent earlier program. This can't stand
+in for the urn: sorted independent draws, even rounded to integers, follow the Maxwell–Boltzmann
+distribution over multisets, not the Bose–Einstein one. Its closest analogue for distinct integers
+is Vitter's Algorithm D, whose continuous approximation is the same step.
 
 * William Feller, _An Introduction to Probability Theory and Its Applications_, volume 1, Wiley.
   Chapter II §5 covers occupancy problems and the three statistics; chapter V §2 covers urn
