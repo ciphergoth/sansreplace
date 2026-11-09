@@ -55,3 +55,5 @@ svg { width: 100%; height: auto; display: block; font-size: 12px; }
 .label { fill: var(--fg); }
 .value { fill: var(--fg); font-variant-numeric: tabular-nums; }
 .ratio { fill: var(--muted); font-size: 11px; }
+.halo { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+.fastest { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 4 3; }

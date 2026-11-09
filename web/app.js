@@ -9,7 +9,7 @@ const YMAXES = [5, 10, 20, 50, 100, 200, 500, 1000];
 const SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 
 const state = { caseIndex: 0, n: 1e7, k: 1e5, ymax: 50 };
-let data, algs, cases;
+let data, algs, groups, cases;
 
 function el(name, attrs, parent) {
   const e = document.createElementNS(SVGNS, name);
@@ -167,16 +167,17 @@ function drawBars() {
   const pw = B.w - B.l - B.r, ph = B.h - B.t - B.b;
   const y = v => B.t + ph - Math.min(v, state.ymax) / state.ymax * ph;
   const axis = el("g", { class: "axis" }, svg);
-  const tick = state.ymax / 5;
-  for (let v = 0; v <= state.ymax + 1e-9; v += tick) {
-    el("line", { class: "gridline", x1: B.l, x2: B.w - B.r, y1: y(v), y2: y(v) }, axis);
+  // Only the axis and the top of the scale get a line, so the floor stands out.
+  for (let j = 0; j <= 5; j++) {
+    const v = state.ymax * j / 5;
+    if (j === 0 || j === 5)
+      el("line", { class: "gridline", x1: B.l, x2: B.w - B.r, y1: y(v), y2: y(v) }, axis);
     text(axis, B.l - 6, y(v) + 4, +v.toPrecision(3), { "text-anchor": "end" });
   }
   text(axis, 14, B.t + ph / 2, "ns per output", {
     "text-anchor": "middle", transform: `rotate(-90 14 ${B.t + ph / 2})`,
   });
 
-  const groups = data.families.length;
   const unit = pw / (algs.length + 0.6 * (groups - 1));
   const bw = unit * 0.72;
   const f = c.fastest[i];
@@ -189,21 +190,17 @@ function drawBars() {
     const t = c.times[alg.name]?.[i];
     const base = B.t + ph;
     if (t == null) {
-      el("rect", { x: cx - bw / 2, y: base - 14, width: bw, height: 14, fill: "url(#hatch)", stroke: "#999" }, svg);
-      text(svg, cx, base - 20, "not timed", {
-        class: "ratio", "text-anchor": "start", transform: `rotate(-90 ${cx} ${base - 20})`, dy: "0.35em",
+      // An algorithm is timed only until a call takes too long, so one not
+      // timed here would have been off the top: draw it that way.
+      el("rect", { x: cx - bw / 2, y: B.t, width: bw, height: base - B.t, fill: "url(#hatch)", stroke: "#999" }, svg);
+      breakBar(svg, cx, bw);
+      text(svg, cx, base - 6, "not timed", {
+        class: "ratio halo", "text-anchor": "start", transform: `rotate(-90 ${cx} ${base - 6})`, dy: "0.35em",
       });
     } else {
       const top = y(t);
       el("rect", { x: cx - bw / 2, y: top, width: bw, height: base - top, fill: alg.colour }, svg);
-      if (t > state.ymax) {
-        // A break in the bar shows that it goes on off the top.
-        const z = B.t + 10;
-        el("polygon", {
-          points: `${cx - bw / 2 - 1},${z} ${cx + bw / 2 + 1},${z - 5} ${cx + bw / 2 + 1},${z + 1} ${cx - bw / 2 - 1},${z + 6}`,
-          fill: "var(--bg)",
-        }, svg);
-      }
+      if (t > state.ymax) breakBar(svg, cx, bw);
       text(svg, cx, top - 4, short(t), { class: "value", "text-anchor": "middle" });
       text(svg, cx, top - 18, "×" + short(t / best), { class: "ratio", "text-anchor": "middle" });
     }
@@ -212,6 +209,19 @@ function drawBars() {
       "font-weight": a === f ? "bold" : "normal",
     });
   }
+  // The fastest time here is the floor: no algorithm, or choice between
+  // algorithms, can do better.
+  if (best !== null && best <= state.ymax)
+    el("line", { class: "fastest", x1: B.l, x2: B.w - B.r, y1: y(best), y2: y(best) }, svg);
+}
+
+// A break near the top of a bar shows that it goes on off the top.
+function breakBar(svg, cx, bw) {
+  const z = B.t + 10;
+  el("polygon", {
+    points: `${cx - bw / 2 - 1},${z} ${cx + bw / 2 + 1},${z - 5} ${cx + bw / 2 + 1},${z + 1} ${cx - bw / 2 - 1},${z + 6}`,
+    fill: "var(--bg)",
+  }, svg);
 }
 
 function drawReadout() {
@@ -220,7 +230,7 @@ function drawReadout() {
   const f = c.fastest[i];
   const fmt = x => x.toLocaleString("en");
   const fastest = f === null ? "" :
-    `Fastest: <b>${algs[f].name}</b>, ${short(c.times[algs[f].name][i])} ns per output`;
+    `Fastest (dashed line): <b>${algs[f].name}</b>, ${short(c.times[algs[f].name][i])} ns per output`;
   document.getElementById("readout").innerHTML =
     `<i>n</i> = ${fmt(n)}, <i>k</i> = ${fmt(k)}, <i>k</i>/<i>n</i> = ${(k / n).toPrecision(3)}<br>${fastest}`;
 }
@@ -256,7 +266,12 @@ function readHash() {
 
 async function main() {
   data = await (await fetch("generated/data.json")).json();
-  algs = data.families.flatMap((fam, family) => fam.map(([name, colour]) => ({ name, colour, family })));
+  // Cardchoose goes last, in a group of its own, so it is easy to compare
+  // with everything else.
+  const families = data.families.map(fam => fam.filter(([name]) => name !== "cardchoose"));
+  families.push(data.families.flat().filter(([name]) => name === "cardchoose"));
+  groups = families.length;
+  algs = families.flatMap((fam, family) => fam.map(([name, colour]) => ({ name, colour, family })));
   cases = data.cases.map(prepare);
   tri = triangleGeometry();
   readHash();
