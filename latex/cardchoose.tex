@@ -167,9 +167,12 @@ over \(\NN_{<n}\).
 
 \subsection{Subsets as stars and bars}\label{starsandbars}
 
-Write the numbers \(0, \ldots, n-1\) in a row, marking each chosen
-number as a star and each unchosen one as a bar. For \(n = 7\), \(k =
-3\) and the subset \(\{1, 2, 5\}\):
+The well-known ``stars and bars'' correspondence \cite[Chapter II
+\S 5]{feller} is a bijection between \(\binom{\NN_{<n}}{k}\) and
+\(\multichoose{\NN_{<n-k+1}}{k}\). Write the numbers \(0, \ldots,
+n-1\) in a row, marking each chosen number as a star and each unchosen
+one as a bar. For \(n = 7\), \(k = 3\) and the subset \(\{1, 2,
+5\}\):
 
 \begin{displaymath}
     \begin{array}{ c c c c c c c }
@@ -180,10 +183,10 @@ number as a star and each unchosen one as a bar. For \(n = 7\), \(k =
 
 A row of \(k\) stars and \(n - k\) bars is exactly a \(k\)-element
 subset of \(\NN_{<n}\): the stars' positions are the chosen numbers.
-Following Feller \cite[Chapter II \S 5]{feller}, think of the spaces
-between bars, including the space at each end, as \emph{cells}, and
-number them from \(0\). Instead of its position, we describe each star
-by its \emph{cell number}, the number of bars to its left:
+Following Feller, think of the spaces between bars, including the
+space at each end, as \emph{cells}, and number them from \(0\).
+Instead of its position, describe each star by its \emph{cell number},
+the number of bars to its left:
 
 \begin{displaymath}
     \begin{array}{ c c c c c c c }
@@ -193,17 +196,15 @@ by its \emph{cell number}, the number of bars to its left:
 \end{displaymath}
 
 A cell number can be anything from \(0\) (before all the bars) to
-\(n - k\) (after all of them), so there are \(t = n - k + 1\) cells,
-and stars can share a cell. The cell numbers of the stars therefore
-form a multiset in \(\multichoose{\NN_{<t}}{k}\). This is the
-well-known stars and bars bijection between \(\binom{\NN_{<n}}{k}\)
-and \(\multichoose{\NN_{<t}}{k}\). The bijection is usually used for
-counting, to show that \(\multichoose{t}{k} = \binom{t + k - 1}{k}\);
-here we use it to turn a random multiset into a random subset.
+\(n - k\) (after all of them), so there are \(t = n - k + 1\) cells.
+Stars can share a cell, so the stars' cell numbers form a multiset
+rather than a set, in \(\multichoose{\NN_{<t}}{k}\). This is the map
+from \(\binom{\NN_{<n}}{k}\) to \(\multichoose{\NN_{<t}}{k}\).
 
-In code, the way back is: sort the multiset, then add each star's
-index to its cell number, because a star's position is its bars to the left
-plus its stars to the left:
+A star's position is the number of bars to its left plus the number of
+stars to its left. From this we can implement the inverse map: sort
+the multiset, which makes each star's index the number of stars to its
+left, and add each index to its cell number:
 
 \begin{displaymath}
     \begin{array}{ l c c c }
@@ -213,8 +214,8 @@ plus its stars to the left:
     \end{array}
 \end{displaymath}
 
-That is the last three lines of the algorithm. So what remains is to
-choose a multiset in \(\multichoose{\NN_{<t}}{k}\) uniformly at
+This inversion is the last three lines of the algorithm. What remains
+is to choose a multiset in \(\multichoose{\NN_{<t}}{k}\) uniformly at
 random.
 
 \subsection{Choosing a multiset fairly}\label{fairmultiset}
