@@ -153,9 +153,12 @@ algorithm is fastest can depend on which order the caller wants. In
 our benchmarks we time both a sorted and a random variant of every
 algorithm.
 
-For each algorithm we give a Python listing, how it works, the order
-it returns, its expected time, and any memory it needs beyond the
-output array. All but two draw only random integers below a bound;
+For each algorithm we give how it works, the order it returns, its
+expected time, and any memory it needs beyond the output array, and a
+Python listing for all but RANKSB, Algorithm D and Hidden Shuffle,
+whose code is too long to list; the repository has Python
+implementations of all twelve, in
+\href{https://github.com/ciphergoth/sansreplace/tree/master/python/algorithms}{\texttt{python/algorithms}}. All but two draw only random integers below a bound;
 Vitter's Algorithm D and Hidden Shuffle also need floating-point
 arithmetic.
 
@@ -208,7 +211,6 @@ mount: the expected number of draws is \(n(H_n - H_{n-k})\), where
 \(\bigO{n \log n}\) time.
 
 \subsection{RANKSB}
-\inputminted{Python}{code/ranksb.py}
 Divide \(\NN_{<n}\) into \(k\) bins of nearly equal size. First
 decide how many of the chosen values fall in each bin, by simulating
 set-based rejection sampling while keeping only a count for each bin:
@@ -301,7 +303,6 @@ floating point, and we take Algorithm D and Hidden Shuffle to represent
 them.
 
 \subsection{Hidden Shuffle}
-\inputminted{Python}{code/hiddenshuffle.py}
 Shekelyan and Cormode's Hidden Shuffle \cite{hiddenshuffle} considers
 a Fisher--Yates shuffle of \(\NN_{<n}\) that stops after \(k\) steps,
 so that the sample is whatever ends up in the first \(k\) positions;
