@@ -1,0 +1,42 @@
+config,algorithm,['fill']
+config,build_dir,
+config,csv,/home/bench/runs/components1/rust-component/fill.csv
+config,fix_freq,False
+config,language,rust
+config,max_k,102334155
+config,nk,"[[4294967295, 144], [4294967295, 1597], [4294967295, 17711], [4294967295, 196418], [4294967295, 2178309], [4294967295, 24157817]]"
+config,sorttype,component
+config,time_for,0.2
+config,time_limit,30.0
+config,values,
+info,version,1f84ec366d0201bb4886c53a3d62a10fec9c8dc7
+info,donothing_s,1.1181585165649187e-09
+info,algorithms,['fill']
+info,machine,"r8a.xlarge, AMD EPYC 9R45"
+info,os,NixOS 25.11 (Xantusia) 6.12.93
+info,cxx,clang version 21.1.8
+info,cxxlib,libc++ 210108
+info,rustc,rustc 1.98.1 (48a229cea 2026-09-01) (built from a source tarball)
+info,memory_bytes,33008013312
+info,memory_free_bytes,30694821888
+info,memory_available_bytes,31590764544
+info,swap_used_bytes,0
+info,memory_counters,pswpin pswpout pgmajfault pgscan_direct
+result,fill,4294967295,144,2.434902691730938e-07
+memory,fill,4294967295,144,0,0,0,0
+faults,fill,4294967295,144,0,735549
+result,fill,4294967295,1597,2.6239126173948553e-06
+memory,fill,4294967295,1597,0,0,0,0
+faults,fill,4294967295,1597,0,68572
+result,fill,4294967295,17711,2.910404471347861e-05
+memory,fill,4294967295,17711,0,0,0,0
+faults,fill,4294967295,17711,0,6195
+result,fill,4294967295,196418,0.00032175205594405594
+memory,fill,4294967295,196418,0,0,0,0
+faults,fill,4294967295,196418,0,572
+result,fill,4294967295,2178309,0.0035906029
+memory,fill,4294967295,2178309,0,0,0,0
+faults,fill,4294967295,2178309,1936,40
+result,fill,4294967295,24157817,0.045942594
+memory,fill,4294967295,24157817,0,0,0,0
+faults,fill,4294967295,24157817,23592,2

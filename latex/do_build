@@ -34,6 +34,7 @@ def generate():
         ["make_plots", "--pgf", generated],
         ["summarise", "--latex", generated],
         ["cover", "--latex", generated / "cover.tex"],
+        ["components", "--latex", generated / "components.tex"],
     ]:
         subprocess.run([sys.executable, pythondir / cmd[0], *cmd[1:]], check=True,
             stdout=subprocess.DEVNULL)

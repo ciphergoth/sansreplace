@@ -1,0 +1,42 @@
+config,algorithm,['fillshuffle']
+config,build_dir,
+config,csv,/home/bench/runs/components1/cpp-component/fillshuffle.csv
+config,fix_freq,False
+config,language,cpp
+config,max_k,102334155
+config,nk,"[[4294967295, 144], [4294967295, 1597], [4294967295, 17711], [4294967295, 196418], [4294967295, 2178309], [4294967295, 24157817]]"
+config,sorttype,component
+config,time_for,0.2
+config,time_limit,30.0
+config,values,
+info,version,1f84ec366d0201bb4886c53a3d62a10fec9c8dc7
+info,donothing_s,1.1176852656884475e-09
+info,algorithms,['fillshuffle']
+info,machine,"r8a.xlarge, AMD EPYC 9R45"
+info,os,NixOS 25.11 (Xantusia) 6.12.93
+info,cxx,clang version 21.1.8
+info,cxxlib,libc++ 210108
+info,rustc,rustc 1.98.1 (48a229cea 2026-09-01) (built from a source tarball)
+info,memory_bytes,33008013312
+info,memory_free_bytes,31292375040
+info,memory_available_bytes,31984349184
+info,swap_used_bytes,0
+info,memory_counters,pswpin pswpout pgmajfault pgscan_direct
+result,fillshuffle,4294967295,144,3.2664614739532375e-07
+memory,fillshuffle,4294967295,144,0,0,0,0
+faults,fillshuffle,4294967295,144,0,550913
+result,fillshuffle,4294967295,1597,3.5631389527509117e-06
+memory,fillshuffle,4294967295,1597,0,0,0,0
+faults,fillshuffle,4294967295,1597,0,50456
+result,fillshuffle,4294967295,17711,3.9501229753521126e-05
+memory,fillshuffle,4294967295,17711,0,0,0,0
+faults,fillshuffle,4294967295,17711,0,4544
+result,fillshuffle,4294967295,196418,0.00045055578696741853
+memory,fillshuffle,4294967295,196418,0,0,0,0
+faults,fillshuffle,4294967295,196418,0,399
+result,fillshuffle,4294967295,2178309,0.005377138857142857
+memory,fillshuffle,4294967295,2178309,0,0,0,0
+faults,fillshuffle,4294967295,2178309,1935,35
+result,fillshuffle,4294967295,24157817,0.201934635
+memory,fillshuffle,4294967295,24157817,0,0,0,0
+faults,fillshuffle,4294967295,24157817,23592,1
