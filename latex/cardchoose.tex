@@ -333,8 +333,7 @@ lemma about it \cite[Lemma 2.7]{levinperes}; Niven and Grendar \cite{nivengrenda
 all three statistics onto the urn, with Maxwell--Boltzmann as
 replacement without a copy, Bose--Einstein as replacement with a copy,
 and Fermi--Dirac as no replacement. But the urn is presented as a model,
-not as a way to generate anything, beyond passing remarks that it could
-be used so \cite{cancriniposta}. The nearest thing to running an urn as
+not as a way to generate anything. The nearest thing to running an urn as
 a sampler in earnest is in Bayesian statistics, where the
 Blackwell--MacQueen urn \cite{blackwellmacqueen} draws an exchangeable
 sequence from a Dirichlet process, which is a different purpose. The
@@ -358,9 +357,9 @@ Cormode's Hidden Shuffle \cite{hiddenshuffle}, though they need
 floating-point arithmetic where Cardchoose and RANKSB use only exact
 integer draws.
 
-The earlier algorithm closest to Cardchoose is Gupta and
-Bhattacharjee's GSEL \cite{gupta}, which also takes
-\(\bigO{k \log k}\) time and can return sorted output. Like SELECT, it
+Among earlier algorithms, Gupta and Bhattacharjee's GSEL \cite{gupta}
+also takes \(\bigO{k \log k}\) time and can return sorted output, but
+works quite differently. Like SELECT, it
 draws its \(i\)th value uniformly from the \(n - i + 1\) values not yet
 chosen, as a rank \(r\) among them; that value is \(r + u\), where \(u\)
 is the number of values already chosen below it, and GSEL finds \(u\)
@@ -373,12 +372,13 @@ they also split the range in half recursively, drawing how many values
 fall in each half from a hypergeometric distribution, which with
 stored tables of its probabilities takes \(\bigO{k}\) expected time,
 and is the division Sanders et al.\ \cite{sandersetal} use to sample
-in parallel. Adding to each value the number of chosen values
-below it is also the last step of Cardchoose, where each sorted value
-has its index added. But GSEL must keep its chosen values in order to
-count as it goes, and so needs a tree of \(k\) nodes, while the urn
-never needs the earlier values in order, so Cardchoose can leave the
-counting to a single sort at the end, in the output array. We have
+in parallel. Cardchoose's last step also adds to each value a count
+of chosen values below it, but the resemblance ends there. GSEL's
+ranks count the values not chosen at the time of each draw, a set that
+shrinks with every draw, so it must turn each rank into a value as soon
+as it is drawn, and that needs the tree. Cardchoose's cell numbers
+count the values that are never chosen, so they never change, and the
+counting can wait for a single sort at the end, in the output array. We have
 not benchmarked GSEL: besides needing memory that Cardchoose does not,
 it follows pointers through the tree for every value drawn, where
 Cardchoose makes one sort over a flat array, and we see no way for it

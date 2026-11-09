@@ -19,8 +19,7 @@ ball of each colour its counts are uniform, which is to say Bose–Einstein, is 
 about it (Levin and Peres, Lemma 2.7); Niven and Grendar map all three statistics onto the urn,
 with Maxwell–Boltzmann as replacement without a copy, Bose–Einstein as replacement with a copy,
 and Fermi–Dirac as no replacement. But the urn is presented as a model, not as a way to generate
-anything, beyond passing remarks that it could be used so, as in Cancrini and Posta. The nearest
-thing to running an urn as a sampler in earnest is in Bayesian statistics, where the
+anything. The nearest thing to running an urn as a sampler in earnest is in Bayesian statistics, where the
 Blackwell–MacQueen urn draws an exchangeable sequence from a Dirichlet process, which is a
 different purpose. The combinatorial generation literature does generate random multisets, but
 through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM chooses a random
@@ -35,8 +34,8 @@ itself: Nijenhuis and Wilf's RANKSB also uses nothing but the output array, and 
 Algorithm D and, more recently, Shekelyan and Cormode's Hidden Shuffle, though they need
 floating-point arithmetic where Cardchoose and RANKSB use only exact integer draws.
 
-The earlier algorithm closest to Cardchoose is Gupta and Bhattacharjee's GSEL, which also takes
-O(_k_ log _k_) time and can return sorted output. Like SELECT, it draws its _i_th value uniformly
+Among earlier algorithms, Gupta and Bhattacharjee's GSEL also takes O(_k_ log _k_) time and can
+return sorted output, but works quite differently. Like SELECT, it draws its _i_th value uniformly
 from the _n_ − _i_ + 1 values not yet chosen, as a rank _r_ among them; that value is _r_ + _u_,
 where _u_ is the number of values already chosen below it, and GSEL finds _u_ in a balanced
 binary tree of the chosen values that records the size of each subtree, as Ernvall and Nevalainen
@@ -45,11 +44,12 @@ do the same with a sorted array, in O(_k_²) time, and with an unbalanced binary
 O(_k_ log _k_) expected time; they also split the range in half recursively, drawing how many
 values fall in each half from a hypergeometric distribution, which with stored tables of its
 probabilities takes O(_k_) expected time, and is the division Sanders et al. use to sample in
-parallel. Adding to each value the
-number of chosen values below it is also the last step of Cardchoose, where each sorted value has
-its index added. But GSEL must keep its chosen values in order to count as it goes, and so needs a
-tree of _k_ nodes, while the urn never needs the earlier values in order, so Cardchoose can leave
-the counting to a single sort at the end, in the output array.
+parallel. Cardchoose's last step also adds
+to each value a count of chosen values below it, but the resemblance ends there. GSEL's ranks
+count the values not chosen at the time of each draw, a set that shrinks with every draw, so it
+must turn each rank into a value as soon as it is drawn, and that needs the tree. Cardchoose's
+cell numbers count the values that are never chosen, so they never change, and the counting can
+wait for a single sort at the end, in the output array.
 
 Sorted output without a sort has a classic answer for real numbers: Bentley and Saxe generate _k_
 sorted uniform reals in O(_k_) time, drawing the largest as _U_^(1/_k_) and repeating for the
@@ -66,8 +66,6 @@ for distinct integers is Vitter's Algorithm D, whose continuous approximation is
 * Robert K. Niven and Marian Grendar, "Generalized classical, quantum and intermediate statistics
   and the Pólya urn model", _Physics Letters A_ 373(6), 621–626, 2009.
   [arXiv:0808.2102](https://arxiv.org/abs/0808.2102).
-* Nicoletta Cancrini and Gustavo Posta, "Propagation of chaos for a general balls into bins
-  dynamics", [arXiv:1906.03876](https://arxiv.org/abs/1906.03876), 2019.
 * David Blackwell and James B. MacQueen, "Ferguson distributions via Pólya urn schemes",
   _Annals of Statistics_ 1(2), 353–355, 1973.
 * P. Gupta and G. P. Bhattacharjee, "An efficient algorithm for random sampling without
