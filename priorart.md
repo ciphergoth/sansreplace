@@ -13,17 +13,19 @@ bars.
 Both halves are long established, but not as a way to generate samples. Cardchoose's multiset loop
 is a **Pólya urn**: start with _t_ balls, one of each colour; draw a ball uniformly at random, and
 put it back along with a new ball of the same colour. `randrange(t + i)` picks one of the _t_+_i_
-balls in the urn, and `d[r - t]` is what drawing a copy means. The urn is a textbook model, and
-that with one ball of each colour its counts are uniform, which is to say Bose–Einstein, is a
-standard lemma about it (Levin and Peres, Lemma 2.7); Niven and Grendar map all three statistics
-onto it, but as a model, not a generator. The nearest thing to running an urn as a sampler in
-earnest is the Blackwell–MacQueen urn, which draws an exchangeable sequence from a Dirichlet
-process, a different purpose. The combinatorial generation literature does generate random
-multisets, but through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM chooses
-a random (_k_-1)-subset of {1, …, _n_+_k_-1} and differences it. Nor do surveys of sampling
-without replacement describe anything like Cardchoose: Devroye's has no urn and no stars and bars,
-and Ting's reworkings of the established algorithms are a sparse Fisher–Yates sampler, essentially
-HSEL, and a sorted sampler that draws each skip from a beta-binomial distribution in floating point.
+balls in the urn, and `d[r - t]` is what drawing a copy means. The urn is a textbook model, and that
+with one ball of each colour its counts are uniform, which is to say Bose–Einstein, is a standard
+lemma about it (Levin and Peres, Lemma 2.7); Niven and Grendar map all three statistics onto it, but
+as a model, not a generator. In Bayesian terms, each draw is Laplace's rule of succession (Feller,
+chapter V §2) for _t_ outcomes, and uniform counts are what the scholium of Bayes's essay takes to
+characterise knowing nothing beforehand. The nearest thing to running an urn as a sampler in earnest
+is the Blackwell–MacQueen urn, which draws an exchangeable sequence from a Dirichlet process, a
+different purpose. The combinatorial generation literature does generate random multisets, but
+through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM chooses a random
+(_k_-1)-subset of {1, …, _n_+_k_-1} and differences it. Nor do surveys of sampling without
+replacement describe anything like Cardchoose: Devroye's has no urn and no stars and bars, and
+Ting's reworkings of the established algorithms are a sparse Fisher–Yates sampler, essentially HSEL,
+and a sorted sampler that draws each skip from a beta-binomial distribution in floating point.
 
 Three other algorithms need no memory beyond the output array and take O(_k_) expected time:
 Nijenhuis and Wilf's RANKSB, Vitter's Algorithm D and Shekelyan and Cormode's Hidden Shuffle. The
@@ -44,6 +46,9 @@ drawn is unlikely to beat one sort over a flat array.
 * Robert K. Niven and Marian Grendar, "Generalized classical, quantum and intermediate statistics
   and the Pólya urn model", _Physics Letters A_ 373(6), 621–626, 2009.
   [arXiv:0808.2102](https://arxiv.org/abs/0808.2102).
+* Thomas Bayes and Richard Price, "An essay towards solving a problem in the doctrine of chances",
+  _Philosophical Transactions of the Royal Society of London_ 53, 370–418, 1763.
+  [doi:10.1098/rstl.1763.0053](https://doi.org/10.1098/rstl.1763.0053).
 * David Blackwell and James B. MacQueen, "Ferguson distributions via Pólya urn schemes",
   _Annals of Statistics_ 1(2), 353–355, 1973.
 * P. Gupta and G. P. Bhattacharjee, "An efficient algorithm for random sampling without
