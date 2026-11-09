@@ -58,6 +58,12 @@
 
 \newcommand*{\defeq}{\stackrel{\text{def}}{=}}
 
+% A link to a file in the repository
+\newcommand{\repo}[2]{\href{https://github.com/ciphergoth/sansreplace/blob/master/#1}{#2}}
+% Links to an algorithm's Python, C++ and Rust implementations
+\newcommand{\impls}[1]{\repo{python/algorithms/#1.py}{Python},
+  \repo{cpp/#1.cpp}{C++} and \repo{rust/src/algorithms/#1.rs}{Rust}}
+
 \addbibresource{bib.bib}
 
 \setmainfont{TeX Gyre Pagella}
@@ -425,8 +431,8 @@ Bose--Einstein one. Its closest analogue for distinct integers is
 Vitter's Algorithm D, whose continuous approximation is the same step.
 
 \section{Benchmarked algorithms}\label{otheralgs}
-We compare Cardchoose with eleven other algorithms. Though the literature includes algorithms that return an
-iterator, we here focus on algorithms that return an array of \(k\)
+We compare Cardchoose with eleven other algorithms. Implementations
+must fill an array of \(k\)
 elements. Some applications require that the returned elements be in
 sorted order, while others need the order of the elements to be a fair
 random draw. Both Python's \mintinline{python}{random.sample()} and
@@ -441,12 +447,8 @@ our benchmarks we time both a sorted and a random variant of every
 algorithm.
 
 For each algorithm we give how it works, the order it returns, its
-expected time, and any memory it needs beyond the output array, and a
-Python listing for all but RANKSB, Algorithm D and Hidden Shuffle,
-whose code is too long to list, and Cardchoose, whose listing is in
-\autoref{cardchoose}; the repository has Python
-implementations of all twelve, in
-\href{https://github.com/ciphergoth/sansreplace/tree/master/python/algorithms}{\texttt{python/algorithms}}. All but two draw only random integers below a bound;
+expected time, and any memory it needs beyond the output array.
+All but two draw only random integers below a bound;
 Vitter's Algorithm D and Hidden Shuffle also need floating-point
 arithmetic.
 
@@ -590,10 +592,13 @@ Then choose that many values within each bin; bins hold about one value
 each, so a quadratic method suffices. The output is sorted, the expected
 time is \(\bigO{k}\) for \(k \leq n/2\), and the program in
 \cite[Chapter 4]{nijenhuiswilf} needs no memory beyond the output
-array. Our C++ and Rust implementations follow that program, except
-that they fill each bin as soon as they know where its values go,
-rather than first marking out every bin's slots and then scanning for
-the marks.
+array. Our \repo{cpp/ranksb.cpp}{C++} and
+\repo{rust/src/algorithms/ranksb.rs}{Rust} implementations follow that
+program, except that they fill each bin as soon as they know where its
+values go, rather than first marking out every bin's slots and then
+scanning for the marks; our \repo{python/algorithms/ranksb.py}{Python}
+implementation keeps the counts in a separate array, which is easier to
+follow.
 
 \subsection{Vitter's Algorithm D}
 Like iterative choosing, produce the output in sorted order, but
@@ -606,7 +611,7 @@ output, at the cost of a few floating-point exponentiations, and with
 no extra memory. Once \(n \leq 13k\) it falls back on Vitter's
 Algorithm A, which draws each skip in time proportional to its length.
 Vitter introduced Algorithm D in \cite{vitterfaster}; our
-implementation follows the improved code in the appendix of
+\impls{vitterd} implementations follow the improved code in the appendix of
 \cite{vitterD}, which is too long to list here. Ahrens and Dieter
 \cite{ahrensd} give other sequential methods that take \(\bigO{k}\)
 time, and Ting \cite{ting} one that draws each skip from a
@@ -633,7 +638,7 @@ the worst case, and no extra memory is needed; like Algorithm D, it
 relies on floating-point arithmetic, with an exponentiation for each
 high draw. The code printed in the paper can divide by zero, and its
 last step has an off-by-one error that biases the output; our
-implementations apply the corrections from the errata in
+\impls{hiddenshuffle} implementations apply the corrections from the errata in
 \cite{sampleiterator}. We thank metasj for bringing this algorithm to
 our attention.
 
