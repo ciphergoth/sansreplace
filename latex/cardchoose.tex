@@ -161,20 +161,20 @@ arithmetic.
 
 \begin{center}
     \begin{tabular}{l|l|l|l|l}
-    Algorithm & Order & Extra memory & Time & Floats \\
+    Algorithm & Time & Order & Extra memory & Floats \\
     \hline
-    Quadratic rejection sampling & Random &  & \(k^2\) & \\
-    Set-based rejection sampling & Random & Set & \(k\) & \\
-    RANKSB & Sorted &  & \(k\) & \\
-    Floyd's F2 & None & Set & \(k\) & \\
-    Quadratic F2 & Random & & \(k^2\) & \\
-    Iterative choosing & Sorted &  & \(n\) & \\
-    Reservoir sampling & Random &  & \(n\) & \\
-    Vitter's Algorithm D & Sorted &  & \(k\) & Yes \\
-    Hidden Shuffle & Sorted &  & \(k\) & Yes \\
-    SELECT & Random & \(n\)-element array & \(n\) & \\
-    HSEL & Random & Dictionary & \(k\) & \\
-    Cardchoose & Sorted &  & \(k \log k\) &
+    Quadratic rejection sampling & \(k^2\) & Random &  & \\
+    Set-based rejection sampling & \(k\) & Random & Set & \\
+    RANKSB & \(k\) & Sorted &  & \\
+    Floyd's F2 & \(k\) & None & Set & \\
+    Quadratic F2 & \(k^2\) & Random &  & \\
+    Iterative choosing & \(n\) & Sorted &  & \\
+    Reservoir sampling & \(n\) & Random &  & \\
+    Vitter's Algorithm D & \(k\) & Sorted &  & Yes \\
+    Hidden Shuffle & \(k\) & Sorted &  & Yes \\
+    SELECT & \(n\) & Random & \(n\)-element array & \\
+    HSEL & \(k\) & Random & Dictionary & \\
+    Cardchoose & \(k \log k\) & Sorted &  &
     \end{tabular}
 \end{center}
 
