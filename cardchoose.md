@@ -78,20 +78,21 @@ _k_ = 2, the bag {0, 1} comes up half the time, because it can arrive as 0,1 or 
 {0, 0} and {1, 1} get a quarter each. Independent draws favour variety; a fair draw must favour
 repeats, by exactly the right amount.
 
-## Each new star goes in a random gap
+## Each new star goes in a random slot
 
 Build the row one star at a time, starting from the _t_-1 bars alone, and put each new star in a
-uniformly random gap of the row so far. With _i_ stars already placed, the row holds _t_-1+_i_
-things, so it has _t_+_i_ gaps. Name each gap by what is just to its left:
+uniformly random slot of the row so far: a place between two neighbouring symbols, or at either
+end. With _i_ stars already placed, the row holds _t_-1+_i_ things, so it has _t_+_i_ slots. Name
+each slot by what is just to its left:
 
-* The gap at the start of the row, and the gap just after each bar. There are _t_ of these, and a
+* The slot at the start of the row, and the slot just after each bar. There are _t_ of these, and a
   star placed in the one after bar _b_, or at the start for _b_ = 0, gets the value _b_. This is a
   **fresh** value.
-* The gap just after each star. There are _i_ of these, and a star placed in one sits in the same
+* The slot just after each star. There are _i_ of these, and a star placed in one sits in the same
   gap between bars as its left neighbour, so it gets the same value. This is a **copy**.
 
 For example, with _t_ = 4, so three bars, and two stars already placed, `d = [1, 3]`, there are
-six gaps, each marked `∘` here with the `r` that picks it above and the value it gives below:
+six slots, each marked `∘` here with the `r` that picks it above and the value it gives below:
 
 ```
 r:       0     1     4     2     3     5
@@ -99,12 +100,12 @@ row:     ∘  |  ∘  ★₀ ∘  |  ∘  |  ∘  ★₁ ∘
 value:   0     1     1     2     3     3
 ```
 
-That is the loop. `randrange(t + i)` picks a gap. If `r < t`, the new star takes the fresh value
+That is the loop. `randrange(t + i)` picks a slot. If `r < t`, the new star takes the fresh value
 `r`. Otherwise `r - t` picks one of the stars already placed, and the new star copies its value,
 `d[r - t]`. The list `d` holds values in the order they were drawn, so the copy is a single index
 lookup: one random number, one comparison and one write per star, with no search.
 
-A value that _c_ stars already have owns _c_+1 gaps: one fresh gap, and one after each of those
+A value that _c_ stars already have owns _c_+1 slots: one fresh slot, and one after each of those
 stars. So a value drawn once is now twice as likely as one never drawn, a value drawn twice three
 times as likely, and so on. That is how repeats get favoured. The next section shows it is by
 exactly the right amount.
@@ -112,8 +113,8 @@ exactly the right amount.
 ## Why that's exactly fair
 
 Tag each star with the number of the draw that placed it. Different values of `r` put the new
-star in different gaps, so a tagged row records its whole history: pull out the highest-tagged
-star, and its left neighbour says which gap it went in, so whether it was fresh (a bar, or
+star in different slots, so a tagged row records its whole history: pull out the highest-tagged
+star, and its left neighbour says which slot it went in, so whether it was fresh (a bar, or
 nothing) or a copy (a star, and which one). Repeat to recover every draw.
 
 Here is every possible run for _t_ = 2, _k_ = 2, one bar and two stars:

@@ -27,7 +27,7 @@ through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM choos
 (_k_-1)-subset of {1, …, _n_+_k_-1} and differences it. Nor do surveys of sampling without
 replacement describe anything like it: Devroye's has no urn and no stars and bars, and Ting,
 reworking the classical algorithms into simpler forms, gives a sparse Fisher–Yates sampler,
-essentially HSEL, and a sorted sampler that draws each gap from a beta-binomial distribution,
+essentially HSEL, and a sorted sampler that draws each skip from a beta-binomial distribution,
 which needs floating point. What is new in Cardchoose is the urn used as a generator for
 uniform multisets, and its composition with stars and bars into a sampler for sampling without
 replacement. Needing no set, map or extra memory is not new in

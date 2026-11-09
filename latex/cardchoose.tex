@@ -442,21 +442,22 @@ draws favour variety; we need to favour repeats, by exactly the right
 amount.
 
 Instead, build the row one star at a time, starting from the \(t -
-1\) bars alone, and put each new star in a uniformly random gap of the
-row so far. With \(i\) stars already placed, the row holds \(t - 1 +
-i\) things, so it has \(t + i\) gaps. Name each gap by what is just to
+1\) bars alone, and put each new star in a uniformly random slot of
+the row so far: a place between two neighbouring symbols, or at either
+end. With \(i\) stars already placed, the row holds \(t - 1 + i\)
+things, so it has \(t + i\) slots. Name each slot by what is just to
 its left:
 \begin{itemize}
-    \item The gap at the start of the row, and the gap just after each
-    bar. There are \(t\) of these, and a star placed in the one after
+    \item The slot at the start of the row, and the slot just after
+    each bar. There are \(t\) of these, and a star placed in the one after
     the \(b\)-th bar, or at the start for \(b = 0\), gets the value
     \(b\). This is a \emph{fresh} value.
-    \item The gap just after each star. There are \(i\) of these, and a
-    star placed in one sits in the same gap between bars as its left
+    \item The slot just after each star. There are \(i\) of these, and
+    a star placed in one sits in the same gap between bars as its left
     neighbour, so it gets the same value. This is a \emph{copy}.
 \end{itemize}
 For example, with \(t = 4\), so three bars, and two stars already
-placed, \(d = [1, 3]\), there are six gaps, each marked \(\circ\) here
+placed, \(d = [1, 3]\), there are six slots, each marked \(\circ\) here
 with the \(r\) that picks it above and the value it gives below:
 
 \begin{displaymath}
@@ -467,7 +468,7 @@ with the \(r\) that picks it above and the value it gives below:
     \end{array}
 \end{displaymath}
 
-That is the loop. \mintinline{python}{randrange(t + i)} picks a gap.
+That is the loop. \mintinline{python}{randrange(t + i)} picks a slot.
 If \(r < t\), the new star takes the fresh value \(r\). Otherwise
 \(r - t\) picks one of the stars already placed, and the new star
 copies its value, \mintinline{python}{d[r - t]}. The list
@@ -475,8 +476,8 @@ copies its value, \mintinline{python}{d[r - t]}. The list
 the copy is a single index lookup: one random number, one comparison
 and one write per star, with no search.
 
-A value that \(c\) stars already have owns \(c + 1\) gaps: one fresh
-gap, and one after each of those stars. So a value drawn once is now
+A value that \(c\) stars already have owns \(c + 1\) slots: one fresh
+slot, and one after each of those stars. So a value drawn once is now
 twice as likely as one never drawn, a value drawn twice three times as
 likely, and so on. That is how repeats get favoured; the next subsection
 shows it is by exactly the right amount.
@@ -484,9 +485,9 @@ shows it is by exactly the right amount.
 \subsection{Proof}\label{proof}
 
 Tag each star with the number of the draw that placed it. Different
-values of \(r\) put the new star in different gaps, so a tagged row
+values of \(r\) put the new star in different slots, so a tagged row
 records its whole history: remove the highest-tagged star, and its
-left neighbour says which gap it went in, so whether it was fresh (a
+left neighbour says which slot it went in, so whether it was fresh (a
 bar, or nothing) or a copy (a star, and which one). Repeat to recover
 every draw. So distinct sequences of draws produce distinct tagged
 rows.
@@ -579,7 +580,7 @@ Nor do surveys of sampling without replacement describe anything like
 it: Devroye's \cite[Chapter XII]{devroye} has no urn and no stars and
 bars, and Ting \cite{ting}, reworking the classical algorithms into
 simpler forms, gives a sparse Fisher--Yates sampler, essentially HSEL,
-and a sorted sampler that draws each gap from a beta-binomial
+and a sorted sampler that draws each skip from a beta-binomial
 distribution, which needs floating point. What is new in Cardchoose
 is the urn used as a generator for uniform multisets, and its
 composition with stars and bars into a sampler for sampling without
