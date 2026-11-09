@@ -112,23 +112,29 @@ their standard libraries, for example Python's
 \mintinline{rust}{rand::seq::index::sample}; Ting \cite{ting} lists
 the algorithms that several of them use.
 
-Many algorithms solve this problem, with different strengths. Some are
-fast only for certain values of \(k, n\), for example where \(k\) is
-small or where \(\frac{n}{k}\) is small. Some update a hash-based data
-structure such as a set or dictionary for each value generated, which
-adds memory and a significant constant factor to the runtime. Some need
-extra memory proportional to \(n\), or floating-point arithmetic. In
-\autoref{otheralgs} we describe twelve algorithms, and in
-\autoref{benchmarks} we compare C++ and Rust implementations of each.
-Since no single algorithm is close to the fastest for all \(n, k\), in
-\autoref{choosing} we find the small sets of algorithms that between
-them come closest, which are what a library should choose between.
+We present Cardchoose, an algorithm for this problem which we believe
+to be new; we first proposed it in October 2018. It chooses a multiset
+with a P\'olya urn and turns it into a set with a sort, so that it is a
+few lines of integer arithmetic and a call to a standard sort. It needs
+no memory beyond the array in which the result is written, and takes
+\(\bigO{k \log k}\) time. \autoref{cardchoose} explains it and proves
+it fair, and \autoref{priorart} places it relative to earlier work.
 
-One of the algorithms, which we call Cardchoose, we believe to be new.
-It needs no storage beyond the array in which the result is written,
-and takes \(\bigO{k \log k}\) time. We first proposed it in October
-2018; \autoref{cardchoose} explains it,
-and \autoref{priorart} places it relative to earlier work.
+Many other algorithms solve this problem, with different strengths.
+Some are fast only for certain values of \(k, n\), for example where
+\(k\) is small or where \(\frac{n}{k}\) is small. Some update a
+hash-based data structure such as a set or dictionary for each value
+generated, which adds memory and a significant constant factor to the
+runtime. Some need extra memory proportional to \(n\), or
+floating-point arithmetic. To see where Cardchoose stands among them,
+in \autoref{otheralgs} we describe it and eleven others, and in
+\autoref{benchmarks} we compare C++ and Rust implementations of each.
+No single algorithm is close to the fastest for all \(n, k\), so in
+\autoref{choosing} we find the small sets of algorithms that between
+them come closest, which are what a library might choose between, and
+show that Cardchoose alone is never far behind them. Along the way, in
+\autoref{quadraticf2}, we give a way to keep a quadratic version of
+Floyd's F2 in random order that needs no extra random draws.
 
 \section{Algorithms}\label{otheralgs}
 Let \(\NN_{<n}\) denote the \(n\)-element set \(\{0, 1, \ldots,
@@ -235,7 +241,7 @@ they move a randomly chosen earlier output to the end and put the new
 value in its place. This keeps the order uniformly random, and costs an
 extra random number only on collisions.
 
-\subsection{Quadratic F2}
+\subsection{Quadratic F2}\label{quadraticf2}
 \inputminted{Python}{code/quadraticf2.py}
 Floyd's F2 with the output array as its set, scanned to check each
 draw, so that it needs no extra memory and takes \(\bigO{k^2}\) time.
