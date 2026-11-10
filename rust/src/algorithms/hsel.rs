@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use super::HashMap;
 use std::collections::hash_map::Entry;
 
 pub fn random_order<R>(rng: &mut R, length: u32, res: &mut [u32])
@@ -9,7 +9,8 @@ where
     // [0, length). The first k entries of the virtual array are res itself;
     // the map holds only the entries beyond k that a swap has changed.
     let k = res.len() as u32;
-    let mut options: HashMap<u32, u32> = HashMap::with_capacity(k as usize);
+    let mut options: HashMap<u32, u32> =
+        HashMap::with_capacity_and_hasher(k as usize, Default::default());
     for (i, x) in res.iter_mut().enumerate() {
         *x = i as u32;
     }

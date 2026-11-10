@@ -4,7 +4,7 @@ where
 {
     assert!(res.len() <= (length as usize));
     let amount = res.len() as u32;
-    let mut done = std::collections::HashSet::with_capacity(amount as usize);
+    let mut done = super::HashSet::with_capacity_and_hasher(amount as usize, Default::default());
     for i in 0..amount {
         let j = length - amount + i;
         let t = rng.random_range(0..j + 1);
@@ -24,7 +24,7 @@ where
 {
     assert!(res.len() <= (length as usize));
     let amount = res.len() as u32;
-    let mut done = std::collections::HashSet::with_capacity(amount as usize);
+    let mut done = super::HashSet::with_capacity_and_hasher(amount as usize, Default::default());
     for i in 0..amount {
         let j = length - amount + i;
         let t = rng.random_range(0..j + 1);

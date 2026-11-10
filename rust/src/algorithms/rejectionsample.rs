@@ -3,7 +3,7 @@ where
     R: rand::RngExt + ?Sized,
 {
     assert!(res.len() <= (length as usize));
-    let mut done = std::collections::HashSet::with_capacity(res.len());
+    let mut done = super::HashSet::with_capacity_and_hasher(res.len(), Default::default());
     for r in res.iter_mut() {
         loop {
             let t = rng.random_range(0..length);

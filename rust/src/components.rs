@@ -1,12 +1,10 @@
-//! Parts of the algorithms, timed on their own to compare the two standard
-//! libraries, as in cpp/components.cpp: fill draws k random numbers below n
+//! Parts of the algorithms, timed on their own to compare the libraries the
+//! C++ and the Rust use, as in cpp/components.cpp: fill draws k random numbers below n
 //! into the output, and each of the others does the same and then one thing
 //! more, as the algorithms do it, so that its time less fill's is what that
 //! thing costs on k random numbers.
 
-use std::collections::HashSet;
-
-use crate::algorithms::Algorithm;
+use crate::algorithms::{Algorithm, HashSet};
 
 fn fill<R>(rng: &mut R, length: u32, res: &mut [u32])
 where
@@ -47,7 +45,7 @@ where
             "hashinsert",
             Box::new(|rng: &mut R, length: u32, res: &mut [u32]| {
                 fill(rng, length, res);
-                let mut done = HashSet::with_capacity(res.len());
+                let mut done = HashSet::with_capacity_and_hasher(res.len(), Default::default());
                 for &r in res.iter() {
                     done.insert(r);
                 }

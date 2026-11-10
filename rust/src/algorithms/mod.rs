@@ -20,6 +20,13 @@ pub enum SortType {
 
 pub type Algorithm<R> = Box<dyn Fn(&mut R, u32, &mut [u32])>;
 
+// The hash tables the algorithms use: the standard library's, with foldhash's
+// hasher rather than the default SipHash, which resists collision attacks at a
+// cost that the C++'s Boost tables don't pay. Its fixed seed, like Boost's
+// unseeded hash, keeps reruns the same.
+pub type HashSet<T> = std::collections::HashSet<T, foldhash::fast::FixedState>;
+pub type HashMap<K, V> = std::collections::HashMap<K, V, foldhash::fast::FixedState>;
+
 // The algorithms draw from 0..x + 1 rather than 0..=x. rand's random_range has
 // no #[inline], and LLVM kept the RangeInclusive instance out of line once it
 // had several callers, so that every draw was a call, passing the generator's
