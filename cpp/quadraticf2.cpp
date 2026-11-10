@@ -19,6 +19,8 @@
 #include <algorithm>
 
 #include "contains.h"
+#include <boost/sort/pdqsort/pdqsort.hpp>
+
 #include "randbelow.h"
 
 extern "C" void random_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
@@ -43,6 +45,6 @@ extern "C" void sorted_quadraticf2(uint32_t n, uint32_t k, uint32_t* result) {
         uint32_t r = randbelow(m + 1);
         result[i] = contains(r, i, result) ? m : r;
     }
-    std::sort(result, result + k);
+    boost::sort::pdqsort(result, result + k);
 }
 

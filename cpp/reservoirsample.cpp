@@ -18,6 +18,8 @@
 
 #include <algorithm>
 
+#include <boost/sort/pdqsort/pdqsort.hpp>
+
 #include "randbelow.h"
 
 extern "C" void random_reservoirsample(uint32_t n, uint32_t k, uint32_t* result) {
@@ -44,5 +46,5 @@ extern "C" void sorted_reservoirsample(uint32_t n, uint32_t k, uint32_t* result)
             result[r] = i;
         }
     }
-    std::sort(result, result + k);
+    boost::sort::pdqsort(result, result + k);
 }

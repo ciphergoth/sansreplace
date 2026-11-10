@@ -17,14 +17,16 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <unordered_map>
+
+#include <boost/sort/pdqsort/pdqsort.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 
 #include "randbelow.h"
 
 
 extern "C" void random_hsel(uint32_t n, uint32_t k, uint32_t* result) {
-    std::unordered_map<uint32_t, uint32_t> hsel_options;
-    hsel_options.reserve(1.45*k); // give 45% extra space to keep load-factor low
+    boost::unordered_flat_map<uint32_t, uint32_t> hsel_options;
+    hsel_options.reserve(k);
 
     for (uint32_t i = 0; i != k; ++i) {
       result[i] = i;
@@ -49,5 +51,5 @@ extern "C" void random_hsel(uint32_t n, uint32_t k, uint32_t* result) {
 
 extern "C" void sorted_hsel(uint32_t n, uint32_t k, uint32_t* result) {
     random_hsel(n, k, result);
-    std::sort(result, result + k);
+    boost::sort::pdqsort(result, result + k);
 }

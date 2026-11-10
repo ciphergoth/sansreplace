@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-// Parts of the algorithms, timed on their own to compare the two standard
-// libraries. fill draws k random numbers below n into the output; each of the
-// others does the same and then one thing more, so its time less fill's is
-// what that thing costs on k random numbers. Each does that thing as the
+// Parts of the algorithms, timed on their own to compare the libraries the C++
+// and the Rust use. fill draws k random numbers below n into the output; each
+// of the others does the same and then one thing more, so its time less fill's
+// is what that thing costs on k random numbers. Each does that thing as the
 // algorithms do.
 
 #include <stdint.h>
 
 #include <algorithm>
-#include <unordered_set>
+
+#include <boost/sort/pdqsort/pdqsort.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
 
 #include "randbelow.h"
 
@@ -39,7 +41,7 @@ extern "C" void component_fill(uint32_t n, uint32_t k, uint32_t* result) {
 
 extern "C" void component_fillsort(uint32_t n, uint32_t k, uint32_t* result) {
     fill(n, k, result);
-    std::sort(result, result + k);
+    boost::sort::pdqsort(result, result + k);
 }
 
 // The shuffle that puts the sorted algorithms' output in random order
@@ -57,7 +59,8 @@ extern "C" void component_fillshuffle(uint32_t n, uint32_t k, uint32_t* result) 
 // so that building it can't be optimised away.
 extern "C" void component_hashinsert(uint32_t n, uint32_t k, uint32_t* result) {
     fill(n, k, result);
-    std::unordered_set<uint32_t> done(2 * k);
+    boost::unordered_flat_set<uint32_t> done;
+    done.reserve(k);
     for (uint32_t i = 0; i < k; i++) {
         done.insert(result[i]);
     }

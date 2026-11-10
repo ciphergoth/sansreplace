@@ -19,6 +19,8 @@
 #include <algorithm>
 
 #include "contains.h"
+#include <boost/sort/pdqsort/pdqsort.hpp>
+
 #include "randbelow.h"
 
 extern "C" void random_quadraticreject(uint32_t n, uint32_t k, uint32_t* result) {
@@ -32,5 +34,5 @@ extern "C" void random_quadraticreject(uint32_t n, uint32_t k, uint32_t* result)
 
 extern "C" void sorted_quadraticreject(uint32_t n, uint32_t k, uint32_t* result) {
     random_quadraticreject(n, k, result);
-    std::sort(result, result + k);
+    boost::sort::pdqsort(result, result + k);
 }

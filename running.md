@@ -60,15 +60,17 @@ what the published results use; see `--help`. On macOS it keeps the machine from
 it runs, so give one run everything you want timed, rather than running it several times in a row:
 the machine can fall asleep between one run and the next. Closing the lid still sleeps it, but
 `bench` notices when the machine slept during a point, and times that point again. Each CSV records
-the machine, OS, compilers, C++ standard library and, on macOS, power state it was timed with, and
-the tools that compare algorithms warn if these differ. Timings on battery or in Low Power Mode are
-not comparable with timings on mains power.
+the machine, OS, compilers, C++ standard library, Boost version and, on macOS, power state it was
+timed with, and the tools that compare algorithms warn if these differ. Timings on battery or in
+Low Power Mode are not comparable with timings on mains power.
 
 On x86-64, both the C++ and the Rust are compiled for `x86-64-v3`, the baseline with AVX2, rather
 than the compilers' default of the original x86-64 baseline, whose vectors are only SSE2; see
-[`cpp/meson.build`](cpp/meson.build) and [`.cargo/config.toml`](.cargo/config.toml). On Linux, as
-on macOS, the C++ is built with clang and its own standard library, libc++, rather than GCC's
-libstdc++, whose `std::sort` and hash tables are different code; see [`devenv.nix`](devenv.nix).
+[`cpp/meson.build`](cpp/meson.build) and [`.cargo/config.toml`](.cargo/config.toml). The C++ is
+built with clang, using the system's standard library: GCC's libstdc++ on Linux and libc++ on
+macOS. Its sort and hash tables come from [Boost](https://www.boost.org/) rather than the standard
+library: `boost::sort::pdqsort`, and `boost::unordered_flat_set` and `unordered_flat_map`; see
+[`devenv.nix`](devenv.nix).
 
 ### The results CSVs
 

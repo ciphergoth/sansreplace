@@ -18,6 +18,8 @@
 
 #include <algorithm>
 
+#include <boost/sort/pdqsort/pdqsort.hpp>
+
 #include "randbelow.h"
 
 static inline void cardchoose(uint32_t n, uint32_t k, uint32_t* result) {
@@ -30,7 +32,7 @@ static inline void cardchoose(uint32_t n, uint32_t k, uint32_t* result) {
             result[i] = result[r - t];
         }
     }
-    std::sort(result, result + k);
+    boost::sort::pdqsort(result, result + k);
 }
 
 extern "C" void sorted_cardchoose(uint32_t n, uint32_t k, uint32_t* result) {

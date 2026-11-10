@@ -28,6 +28,7 @@ let
 in
 {
   packages = with pkgs; [
+    boost
     meson
     ninja
     (python3.withPackages (ps: with ps; [ cffi matplotlib numpy ]))
@@ -55,15 +56,16 @@ in
 
   languages.rust.enable = true;
 
-  # Build C and C++ with clang and libc++ everywhere, as on macOS: on Linux the
-  # default stdenv is GCC's, so $CC and $CXX, which Meson uses, would be gcc and
-  # g++, and clangStdenv's clang uses GCC's libstdc++, whose std::sort and hash
-  # tables are not libc++'s
-  stdenv = pkgs.libcxxStdenv;
+  # Build C and C++ with clang everywhere. On Linux the default stdenv is GCC's,
+  # so $CC and $CXX, which Meson uses, would be gcc and g++; clangStdenv's clang
+  # uses the system's standard library, GCC's libstdc++ on Linux and libc++ on
+  # macOS. The algorithms take their sort and hash tables from Boost, not the
+  # standard library.
+  stdenv = pkgs.clangStdenv;
   # The stdenv's compiler wrapper sets $CC and $CXX to bare names, but on Linux
-  # languages.rust also puts pkgs.clang, which uses libstdc++, ahead of it on
-  # the PATH, as Rust's linker driver; name the stdenv's compiler in full. The
-  # wrapper's setup hook overwrites env, so this runs after it, in enterShell.
+  # languages.rust also puts pkgs.clang ahead of it on the PATH, as Rust's
+  # linker driver; name the stdenv's compiler in full. The wrapper's setup hook
+  # overwrites env, so this runs after it, in enterShell.
   enterShell = ''
     export CC=${config.stdenv.cc}/bin/clang
     export CXX=${config.stdenv.cc}/bin/clang++

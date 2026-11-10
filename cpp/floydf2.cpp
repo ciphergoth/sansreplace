@@ -17,12 +17,15 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <unordered_set>
+
+#include <boost/sort/pdqsort/pdqsort.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
 
 #include "randbelow.h"
 
 static void floydf2(uint32_t n, uint32_t k, uint32_t* result) {
-    std::unordered_set<uint32_t> done(2 * k);
+    boost::unordered_flat_set<uint32_t> done;
+    done.reserve(k);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
@@ -38,11 +41,12 @@ static void floydf2(uint32_t n, uint32_t k, uint32_t* result) {
 
 extern "C" void sorted_floydf2(uint32_t n, uint32_t k, uint32_t* result) {
     floydf2(n, k, result);
-    std::sort(result, result + k);
+    boost::sort::pdqsort(result, result + k);
 }
 
 extern "C" void random_floydf2(uint32_t n, uint32_t k, uint32_t* result) {
-    std::unordered_set<uint32_t> done(2 * k);
+    boost::unordered_flat_set<uint32_t> done;
+    done.reserve(k);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);

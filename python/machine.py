@@ -21,7 +21,7 @@ import os
 import subprocess
 import sys
 
-KEYS = ["machine", "os", "cxx", "cxxlib", "rustc", "power"]
+KEYS = ["machine", "os", "cxx", "cxxlib", "boost", "rustc", "power"]
 
 def output(*cmd):
     return subprocess.run(cmd, check=True, capture_output=True, text=True).stdout
@@ -31,17 +31,23 @@ def get():
         # Meson builds with $CXX, which need not be the c++ on the PATH
         "cxx": output(os.environ["CXX"], "--version").splitlines()[0],
         "cxxlib": cxx_library(),
+        "boost": cxx_macros("boost/version.hpp")["BOOST_LIB_VERSION"].strip('"'),
         "rustc": output("rustc", "--version").strip(),
     }
 
-# The same compiler can use either C++ standard library, whose std::sort and
-# hash tables differ; each defines its version macro in <version>
-def cxx_library():
+def cxx_macros(header):
+    "The macros defined after including header"
     macros = {}
-    for line in output(os.environ["CXX"], "-x", "c++", "-dM", "-E", "-include", "version",
+    for line in output(os.environ["CXX"], "-x", "c++", "-dM", "-E", "-include", header,
             "/dev/null").splitlines():
         _, name, *value = line.split(maxsplit=2)
         macros[name] = value[0] if value else ""
+    return macros
+
+# The same compiler can use either C++ standard library; each defines its
+# version macro in <version>
+def cxx_library():
+    macros = cxx_macros("version")
     if "_LIBCPP_VERSION" in macros:
         return f"libc++ {macros['_LIBCPP_VERSION']}"
     return f"libstdc++ {macros['_GLIBCXX_RELEASE']} {macros['__GLIBCXX__']}"
