@@ -18,8 +18,13 @@ project('sansreplace', ['c', 'cpp'],
     default_options : ['buildtype=debugoptimized', 'c_std=c23',
 'cpp_std=c++23', 'b_ndebug=true'])
 
+# Start every function on a cache line, as /.cargo/config.toml does for Rust.
+# Otherwise where a function starts depends on everything the linker put before
+# it, and that alone moved a tight loop's time by up to 15%, so that changing
+# one algorithm or library could change another's timings.
 add_project_arguments(
     '-O3',
+    '-falign-functions=64',
     language : ['c', 'cpp'])
 # The x86-64 default is the 2003 baseline, with only SSE2 vectors; target the
 # AVX2 baseline instead, as /.cargo/config.toml does for Rust

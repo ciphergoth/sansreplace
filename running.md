@@ -69,8 +69,11 @@ than the compilers' default of the original x86-64 baseline, whose vectors are o
 [`cpp/meson.build`](cpp/meson.build) and [`.cargo/config.toml`](.cargo/config.toml). The Rust is
 compiled as a single codegen unit, with link-time optimisation, so that how each algorithm is
 compiled doesn't depend on how the compiler happens to split the rest of the library into parts;
-see [`rust/Cargo.toml`](rust/Cargo.toml). The C++ is built with clang, using the system's
-standard library: GCC's libstdc++ on Linux and libc++ on macOS. Its sort and hash tables come from
+see [`rust/Cargo.toml`](rust/Cargo.toml). In both languages, every function starts on a 64-byte
+cache line: otherwise where a function starts depends on all the code the linker put before it, and
+that alone can move a tight loop's time by 15% or more, so that changing one algorithm could change
+another's timings. The C++ is built with clang, using the system's standard library: GCC's
+libstdc++ on Linux and libc++ on macOS. Its sort and hash tables come from
 [Boost](https://www.boost.org/) rather than the standard library: `boost::sort::pdqsort`, and
 `boost::unordered_flat_set` and `unordered_flat_map`; see [`devenv.nix`](devenv.nix).
 

@@ -1,7 +1,15 @@
 # Cargo reads this from the directory it runs in and its parents, so it applies
 # whether cargo runs at the top or, as python/load_rust.py runs it, in rust/.
 #
+# Start every function on a cache line, as cpp/meson.build does for C++.
+# Otherwise where a function starts depends on everything the linker put before
+# it, and that alone made the bit-vector F2's scan up to 1.7 times slower, so
+# that changing one algorithm or library could change another's timings.
+[build]
+rustflags = ["-C", "llvm-args=-align-all-functions=6"]
+
 # The x86-64 default is the 2003 baseline, with only SSE2 vectors; target the
-# AVX2 baseline instead, as cpp/meson.build does for C++
+# AVX2 baseline instead, as cpp/meson.build does for C++. Flags given for a
+# target replace those under [build], so this repeats the alignment.
 [target.'cfg(target_arch = "x86_64")']
-rustflags = ["-C", "target-cpu=x86-64-v3"]
+rustflags = ["-C", "target-cpu=x86-64-v3", "-C", "llvm-args=-align-all-functions=6"]
