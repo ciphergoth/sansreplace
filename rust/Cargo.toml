@@ -10,6 +10,16 @@ edition = "2024"
 [lib]
 crate-type = ["cdylib"]
 
+# Compile the whole library as one unit. By default the release profile splits
+# a crate into 16 codegen units by heuristics over the whole crate, and inlines
+# within each separately, so that changing one algorithm could change how
+# another, or the standard library's sort, was compiled: changing the hash
+# tables' hasher changed what was inlined into the sort and into several
+# algorithms that use no hash table.
+[profile.release]
+codegen-units = 1
+lto = true
+
 # We deliberately don't enable the "unbiased" feature. The default
 # random_range is very slightly biased (at worst 1 in 2^96 for u32), but
 # the unbiased version adds a cost per sample, which would unfairly favour

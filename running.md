@@ -66,11 +66,13 @@ Low Power Mode are not comparable with timings on mains power.
 
 On x86-64, both the C++ and the Rust are compiled for `x86-64-v3`, the baseline with AVX2, rather
 than the compilers' default of the original x86-64 baseline, whose vectors are only SSE2; see
-[`cpp/meson.build`](cpp/meson.build) and [`.cargo/config.toml`](.cargo/config.toml). The C++ is
-built with clang, using the system's standard library: GCC's libstdc++ on Linux and libc++ on
-macOS. Its sort and hash tables come from [Boost](https://www.boost.org/) rather than the standard
-library: `boost::sort::pdqsort`, and `boost::unordered_flat_set` and `unordered_flat_map`; see
-[`devenv.nix`](devenv.nix).
+[`cpp/meson.build`](cpp/meson.build) and [`.cargo/config.toml`](.cargo/config.toml). The Rust is
+compiled as a single codegen unit, with link-time optimisation, so that how each algorithm is
+compiled doesn't depend on how the compiler happens to split the rest of the library into parts;
+see [`rust/Cargo.toml`](rust/Cargo.toml). The C++ is built with clang, using the system's
+standard library: GCC's libstdc++ on Linux and libc++ on macOS. Its sort and hash tables come from
+[Boost](https://www.boost.org/) rather than the standard library: `boost::sort::pdqsort`, and
+`boost::unordered_flat_set` and `unordered_flat_map`; see [`devenv.nix`](devenv.nix).
 
 ### The results CSVs
 
