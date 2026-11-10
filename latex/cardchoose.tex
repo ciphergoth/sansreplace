@@ -250,31 +250,40 @@ an original, of colour \(r\). Otherwise it is the ball added at step
 \(r - t\), whose colour is the one drawn at that step,
 \mintinline{python}{d[r - t]}.
 
-Another way to picture this is as a process on the row of
-\autoref{starsandbars}: starting from the \(t - 1\) bars alone, insert
-each new star in a uniformly random slot in the row so far, between
-two neighbouring symbols or at either end. A cell holding \(c\) stars
-has \(c + 1\) such slots, corresponding to the \(c + 1\) balls of its
-colour in the urn \cite{video}.
-
 \subsection{Why the urn is fair}\label{proof}
 
-For an intuition, picture a uniformly random multiset in
-\(\multichoose{\NN_{<t}}{k}\) being revealed one element at a time, in
-random order. This has the same distribution as rolling a \(t\)-sided
-die \(k\) times, where the die's probabilities are unknown and every
-possible set of them is equally likely. After \(i\) rolls, of which \(c\) came up \(j\), the
-next comes up \(j\) with probability \((c + 1) / (t + i)\): Laplace's
-rule of succession \cite[Chapter V \S 2, pp.~123--124]{feller}, for
-\(t\) outcomes. That is exactly the urn's step, so the urn draws each
-element from its correct distribution given those before it. The proof
-checks this directly.
+That the urn draws every multiset in \(\multichoose{\NN_{<t}}{k}\) with
+the same probability is a standard lemma \cite[Lemma 2.7]{levinperes};
+for completeness, we give two independent proofs.
 
-Consider a run of the urn that draws the colours \(x_0, \ldots,
-x_{k-1}\), and let \(c_j\) be the number of times colour \(j\)
-appears. At step \(i\) the urn holds \(t + i\) balls, and one more
-ball of colour \(x_i\) than the number of earlier steps that drew
-\(x_i\). Over the whole run, the numerators for colour \(j\) are
+\paragraph{By counting insertions.} Picture the urn as a process on
+the row of \autoref{starsandbars} \cite{video}: starting from the \(t -
+1\) bars alone, insert each new star in a uniformly random slot in the
+row so far, between two neighbouring symbols or at either end. Before
+step \(i\) the row holds \(t - 1\) bars and \(i\) stars, so it has \(t
++ i\) slots, and a cell holding \(c\) stars has \(c + 1\) of them. So
+the cell receives the new star with probability \((c + 1) / (t +
+i)\), just as the urn draws a colour, and the stars' cell numbers, in
+the order they are inserted, have the same distribution as the colours
+the urn draws.
+
+Label each star with the step that inserted it, \(0\) to \(k
+- 1\). A run is a sequence of slots \(s_0, \ldots, s_{k-1}\) with \(s_i
+\in \NN_{<t + i}\), and all \(t (t + 1) \cdots (t + k - 1)\) such
+sequences are equally likely. Each run ends in a row of \(t - 1\) bars
+and \(k\) labelled stars, and every such row is the end of exactly one
+run: deleting star \(k - 1\) recovers the row before the last step, and
+the slot \(s_{k-1}\) the star went into, and repeating this recovers
+the whole sequence. So every labelled row has the same probability.
+Erasing the labels takes exactly \(k!\) labelled rows to each
+unlabelled one, so every row of \(t - 1\) bars and \(k\) stars has the
+same probability, and with it every multiset of cell numbers.
+
+\paragraph{By calculation.} Consider a run of the urn that draws the
+colours \(x_0, \ldots, x_{k-1}\), and let \(c_j\) be the number of
+times colour \(j\) appears. At step \(i\) the urn holds \(t + i\)
+balls, and one more ball of colour \(x_i\) than the number of earlier
+steps that drew \(x_i\). Over the whole run, the numerators for colour \(j\) are
 therefore \(1, 2, \ldots, c_j\), and the probability of this sequence
 is
 \begin{displaymath}
@@ -290,9 +299,9 @@ sequences, so its probability is
     = \frac{k! \, (t - 1)!}{(t + k - 1)!}
     = 1 \Big/ \binom{t + k - 1}{k},
 \end{displaymath}
-the same for every multiset in \(\multichoose{\NN_{<t}}{k}\). This is a
-standard lemma about the urn \cite[Lemma 2.7]{levinperes}. By
-\autoref{starsandbars}, converting the multiset then gives every
+the same for every multiset in \(\multichoose{\NN_{<t}}{k}\).
+
+By \autoref{starsandbars}, converting the multiset then gives every
 subset in \(\binom{\NN_{<n}}{k}\) with the same probability.
 
 \subsection{Prior art}\label{priorart}
@@ -313,7 +322,13 @@ samples. The P\'olya urn is a textbook model, and Niven and Grendar
 \cite{nivengrendar} map all three statistics onto it, but as a model,
 not a generator. Uniform counts are also what the scholium of Bayes's
 essay \cite{bayes} takes to characterise knowing nothing beforehand,
-the assumption behind Laplace's rule. The nearest thing to running an urn as a sampler in
+the assumption behind Laplace's rule of succession \cite[Chapter V \S
+2, pp.~123--124]{feller}. For \(t\) outcomes, that rule says that after
+\(i\) trials, of which \(c\) came out \(j\), the next comes out \(j\)
+with probability \((c + 1) / (t + i)\): exactly the urn's step, so the
+urn draws each element of a uniformly random multiset revealed in
+random order from its correct distribution given those before it. The
+nearest thing to running an urn as a sampler in
 earnest is the Blackwell--MacQueen urn \cite{blackwellmacqueen}, which
 draws an exchangeable sequence from a Dirichlet process, a different
 purpose. The combinatorial generation literature does generate random
