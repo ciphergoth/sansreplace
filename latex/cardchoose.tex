@@ -604,7 +604,15 @@ same fixed value, and the C++ and Rust generators start in the same
 state, so running the same code again makes the same draws. Timing the
 same points on four separate boots of the machine, which may come back
 on a different host each time, every algorithm agreed to within about
-1\%. We describe what we found and changed to make these timings
+1\%. Both languages start every function on a 64-byte cache line:
+otherwise where a function starts depends on all the code linked before
+it, and that alone moved the time of some algorithms' inner loops by
+15\% or more, a kind of measurement bias that \textcite{mytkowicz}
+describe in general. This makes the timings stable when unrelated code
+changes, but not optimal, since a loop's alignment still depends on the
+code before it in its own function; so differences of up to about 15\%
+between algorithms dominated by a tight inner loop should not be read
+as meaningful. We describe what we found and changed to make these timings
 trustworthy, such as aligning arrays that were otherwise slower to fill
 depending on where earlier allocations left them, in
 \href{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}{\texttt{measurement.md}} in the
