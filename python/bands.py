@@ -49,6 +49,7 @@ LATEX_NAMES = {
     "vitterd": "Vitter's D",
     "hiddenshuffle": "Hidden Shuffle",
     "select": "SELECT",
+    "bitvectorf2": "bit-vector F2",
     "hsel": "HSEL",
     "cardchoose": "Cardchoose",
 }

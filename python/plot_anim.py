@@ -16,6 +16,7 @@ FAMILIES = [
         "iterativechoose": "tab:cyan",
         "reservoirsample": "black",
         "select": "darkgoldenrod",
+        "bitvectorf2": "magenta",
     }),
     ({"linestyle": "--"}, {            # hash-based
         "rejectionsample": "tab:purple",

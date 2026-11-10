@@ -57,6 +57,7 @@ def main():
         'vitterd': 'v',
         'hiddenshuffle': '<',
         'select': 'x',
+        'bitvectorf2': '>',
         'hsel': 'h',
         'cardchoose': '^',
     }

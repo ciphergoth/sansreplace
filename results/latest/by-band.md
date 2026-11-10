@@ -16,6 +16,7 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 | `iterativechoose` | 96.2ms | 8.68ms | 783µs | 114µs | 10.3µs | 938ns | 109ns |
 | `reservoirsample` | 91.1ms | 8.09ms | 755µs | 110µs | 9.95µs | 923ns | 141ns |
 | `select` | 34.5ms | 3.11ms | 281µs | 41.0µs | 3.74µs | 355ns | 45.7ns |
+| `bitvectorf2` | 986µs | 88.8µs | 8.07µs | 1.20µs | 123ns | 25.7ns | 23.0ns |
 | `rejectionsample` | 39.6ns | 47.6ns | 53.4ns | 78.6ns | 289ns | 979ns | 1.11µs |
 | `floydf2` | 33.2ns | 36.1ns | 36.2ns | 39.1ns | 83.2ns | 208ns | 220ns |
 | `hsel` | 32.8ns | 36.1ns | 36.5ns | 39.2ns | 106ns | 228ns | 225ns |
@@ -23,7 +24,7 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 | `vitterd` | 26.7ns | 26.9ns | 26.9ns | 26.8ns | 27.0ns | 28.1ns | 34.9ns |
 | `hiddenshuffle` | 23.9ns | 22.6ns | 22.9ns | 23.1ns | 22.4ns | 24.7ns | 31.7ns |
 | `cardchoose` | 16.4ns | 18.8ns | 20.9ns | 23.1ns | 24.7ns | 29.4ns | 43.8ns |
-| floor | 4.63ns | 10.8ns | 11.2ns | 11.8ns | 14.2ns | 17.7ns | 22.1ns |
+| floor | 4.63ns | 9.64ns | 10.0ns | 11.2ns | 11.7ns | 13.2ns | 19.7ns |
 
 ## C++, sorted order
 
@@ -34,6 +35,7 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 | `iterativechoose` | 94.4ms | 8.52ms | 767µs | 112µs | 10.1µs | 912ns | 88.1ns |
 | `reservoirsample` | 87.3ms | 7.91ms | 713µs | 104µs | 9.45µs | 908ns | 152ns |
 | `select` | 34.3ms | 3.10ms | 280µs | 41.0µs | 3.76µs | 373ns | 67.3ns |
+| `bitvectorf2` | 1.18ms | 107µs | 9.70µs | 1.43µs | 148ns | 33.2ns | 20.3ns |
 | `rejectionsample` | 50.7ns | 62.7ns | 69.8ns | 106ns | 303ns | 1.04µs | 1.19µs |
 | `floydf2` | 45.5ns | 50.8ns | 52.0ns | 55.2ns | 140ns | 214ns | 232ns |
 | `hsel` | 44.9ns | 50.9ns | 51.9ns | 57.2ns | 78.4ns | 234ns | 245ns |
@@ -41,7 +43,7 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 | `vitterd` | 25.4ns | 25.6ns | 25.6ns | 25.8ns | 25.8ns | 25.7ns | 25.7ns |
 | `hiddenshuffle` | 22.3ns | 21.6ns | 21.4ns | 21.4ns | 21.5ns | 21.7ns | 22.1ns |
 | `cardchoose` | 15.8ns | 17.9ns | 19.5ns | 21.5ns | 23.4ns | 26.8ns | 33.8ns |
-| floor | 13.2ns | 13.9ns | 13.9ns | 13.9ns | 13.9ns | 14.3ns | 14.7ns |
+| floor | 9.90ns | 9.60ns | 10.1ns | 10.3ns | 10.4ns | 11.4ns | 14.6ns |
 
 ## Rust, random order
 
@@ -52,6 +54,7 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 | `iterativechoose` | 82.9ms | 7.48ms | 675µs | 98.4µs | 8.88µs | 809ns | 100.0ns |
 | `reservoirsample` | 89.1ms | 8.06ms | 726µs | 106µs | 9.59µs | 898ns | 107ns |
 | `select` | 34.4ms | 3.16ms | 281µs | 41.1µs | 3.77µs | 357ns | 51.4ns |
+| `bitvectorf2` | 975µs | 87.9µs | 7.94µs | 1.19µs | 128ns | 30.2ns | 30.8ns |
 | `rejectionsample` | 39.3ns | 52.3ns | 68.8ns | 94.2ns | 169ns | 1.07µs | 2.07µs |
 | `floydf2` | 15.2ns | 14.5ns | 14.8ns | 16.1ns | 29.6ns | 173ns | 315ns |
 | `hsel` | 11.0ns | 10.0ns | 9.77ns | 10.4ns | 13.5ns | 54.4ns | 99.2ns |
@@ -59,7 +62,7 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 | `vitterd` | 26.6ns | 26.8ns | 26.8ns | 26.8ns | 27.2ns | 29.4ns | 39.6ns |
 | `hiddenshuffle` | 24.4ns | 23.5ns | 23.4ns | 23.4ns | 23.7ns | 26.7ns | 37.6ns |
 | `cardchoose` | 11.8ns | 11.2ns | 12.1ns | 13.2ns | 14.9ns | 20.0ns | 38.1ns |
-| floor | 4.55ns | 8.24ns | 8.84ns | 9.55ns | 12.7ns | 18.3ns | 27.5ns |
+| floor | 4.55ns | 8.24ns | 8.84ns | 9.55ns | 12.5ns | 15.6ns | 25.3ns |
 
 ## Rust, sorted order
 
@@ -70,6 +73,7 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 | `iterativechoose` | 84.6ms | 7.63ms | 688µs | 101µs | 9.07µs | 824ns | 81.1ns |
 | `reservoirsample` | 80.2ms | 7.24ms | 653µs | 95.3µs | 8.66µs | 826ns | 106ns |
 | `select` | 34.2ms | 3.09ms | 279µs | 41.0µs | 3.75µs | 366ns | 61.7ns |
+| `bitvectorf2` | 1.21ms | 108µs | 9.90µs | 1.47µs | 158ns | 37.1ns | 23.0ns |
 | `rejectionsample` | 44.0ns | 58.3ns | 76.2ns | 100.0ns | 239ns | 1.04µs | 2.04µs |
 | `floydf2` | 19.8ns | 19.6ns | 21.3ns | 23.2ns | 29.8ns | 103ns | 186ns |
 | `hsel` | 18.6ns | 16.0ns | 17.0ns | 18.8ns | 22.5ns | 67.2ns | 106ns |
@@ -77,4 +81,4 @@ _k_ it was not timed at, because it went over the time limit at a smaller _k_. G
 | `vitterd` | 25.2ns | 25.5ns | 25.6ns | 25.7ns | 25.6ns | 26.2ns | 26.2ns |
 | `hiddenshuffle` | 23.6ns | 22.2ns | 22.1ns | 22.2ns | 22.1ns | 22.5ns | 22.5ns |
 | `cardchoose` | 11.1ns | 10.1ns | 11.1ns | 12.2ns | 13.3ns | 17.2ns | 24.8ns |
-| floor | 9.87ns | 8.81ns | 9.15ns | 10.7ns | 11.5ns | 14.5ns | 15.9ns |
+| floor | 9.87ns | 8.81ns | 9.15ns | 10.7ns | 11.1ns | 12.6ns | 15.9ns |
