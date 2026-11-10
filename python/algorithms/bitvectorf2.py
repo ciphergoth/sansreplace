@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Floyd's F2, as in floydf2.py, with a bitset of n bits as its set: sorted
-# output comes from scanning the bitset, with no sort. Here the bitset has a
-# byte per bit, for clarity.
+# Floyd's F2, as in floydf2.py, with a bit vector of n bits as its set:
+# sorted output comes from scanning the bit vector, with no sort. Here the bit
+# vector has a byte per bit, for clarity.
 
 import random
 

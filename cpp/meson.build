@@ -38,7 +38,7 @@ libsrc = [
     'iterativechoose.cpp',
     'reservoirsample.cpp',
     'select.cpp',
-    'bitsetf2.cpp',
+    'bitvectorf2.cpp',
     'rejectionsample.cpp',
     'floydf2.cpp',
     'hsel.cpp',

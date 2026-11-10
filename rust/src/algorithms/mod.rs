@@ -1,4 +1,4 @@
-mod bitsetf2;
+mod bitvectorf2;
 mod cardchoose;
 mod floydf2;
 mod hiddenshuffle;
@@ -47,7 +47,7 @@ where
         iterativechoose,
         reservoirsample,
         select,
-        bitsetf2,
+        bitvectorf2,
         rejectionsample,
         floydf2,
         hsel,

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-// Floyd's F2, as in floydf2.cpp, with a bitset of n bits as its set: each
+// Floyd's F2, as in floydf2.cpp, with a bit vector of n bits as its set: each
 // step tests and sets one bit, and sorted output comes from scanning the
-// bitset, with no sort.
+// bit vector, with no sort.
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -27,13 +27,13 @@
 
 #include "randbelow.h"
 
-using Bitset = std::unique_ptr<uint64_t[], decltype(&free)>;
+using BitVector = std::unique_ptr<uint64_t[], decltype(&free)>;
 
 // Aligned to a cache line, as SELECT's array is, and cleared explicitly, so
 // that clearing it is the only pass over it before the draws
-static Bitset new_bitset(size_t words) {
+static BitVector new_bit_vector(size_t words) {
     size_t size = (words * sizeof(uint64_t) + 63) & ~size_t{63};
-    Bitset bits(static_cast<uint64_t*>(aligned_alloc(64, size)), free);
+    BitVector bits(static_cast<uint64_t*>(aligned_alloc(64, size)), free);
     std::fill(bits.get(), bits.get() + words, 0);
     return bits;
 }
@@ -46,9 +46,9 @@ static inline bool test_and_set(uint64_t* bits, uint32_t x) {
     return was;
 }
 
-extern "C" void sorted_bitsetf2(uint32_t n, uint32_t k, uint32_t* result) {
+extern "C" void sorted_bitvectorf2(uint32_t n, uint32_t k, uint32_t* result) {
     size_t words = (size_t{n} + 63) / 64;
-    Bitset bits = new_bitset(words);
+    BitVector bits = new_bit_vector(words);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
@@ -66,8 +66,8 @@ extern "C" void sorted_bitsetf2(uint32_t n, uint32_t k, uint32_t* result) {
 
 // As random_floydf2: on a collision, m goes in a random earlier place, and
 // what was there goes at the end
-extern "C" void random_bitsetf2(uint32_t n, uint32_t k, uint32_t* result) {
-    Bitset bits = new_bitset((size_t{n} + 63) / 64);
+extern "C" void random_bitvectorf2(uint32_t n, uint32_t k, uint32_t* result) {
+    BitVector bits = new_bit_vector((size_t{n} + 63) / 64);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);

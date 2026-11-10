@@ -1,11 +1,11 @@
-//! Floyd's F2, as in floydf2.rs, with a bitset of length bits as its set:
+//! Floyd's F2, as in floydf2.rs, with a bit vector of length bits as its set:
 //! each step tests and sets one bit, and sorted output comes from scanning
-//! the bitset, with no sort.
+//! the bit vector, with no sort.
 
-/// Call f with a cleared bitset of length bits. It starts on a cache line, as
+/// Call f with a cleared bit vector of length bits. It starts on a cache line, as
 /// SELECT's array does: Vec can't ask for more alignment, so allocate 7 spare
 /// words and start at the first one on a 64-byte boundary.
-fn with_bitset<T>(length: u32, f: impl FnOnce(&mut [u64]) -> T) -> T {
+fn with_bit_vector<T>(length: u32, f: impl FnOnce(&mut [u64]) -> T) -> T {
     let words = (length as usize).div_ceil(64);
     let mut buf: Vec<u64> = Vec::with_capacity(words + 7);
     let start = buf.as_ptr().align_offset(64);
@@ -28,7 +28,7 @@ where
 {
     assert!(res.len() <= (length as usize));
     let amount = res.len() as u32;
-    with_bitset(length, |bits| {
+    with_bit_vector(length, |bits| {
         for i in 0..amount {
             let j = length - amount + i;
             let t = rng.random_range(0..j + 1);
@@ -55,7 +55,7 @@ where
 {
     assert!(res.len() <= (length as usize));
     let amount = res.len() as u32;
-    with_bitset(length, |bits| {
+    with_bit_vector(length, |bits| {
         for i in 0..amount {
             let j = length - amount + i;
             let t = rng.random_range(0..j + 1);
