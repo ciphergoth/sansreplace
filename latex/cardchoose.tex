@@ -591,8 +591,10 @@ physical core, so nothing shares the core a benchmark runs on:
     \item Cache: 48kiB L1 data and 1MiB L2 per core, 16MiB L3 shared
     \item Memory: 32GiB
     \item OS: NixOS 25.11, Linux 6.12
-    \item C++ compiler: clang 21.1 with libc++, \verb|-O3 -march=x86-64-v3|
-    \item Rust compiler: rustc 1.98, release profile, \verb|-C target-cpu=x86-64-v3|
+    \item C++ compiler: clang 21.1 with libstdc++ 15 and Boost 1.91,
+    \verb|-O3 -march=x86-64-v3|
+    \item Rust compiler: rustc 1.98, release profile with one codegen
+    unit and link-time optimisation, \verb|-C target-cpu=x86-64-v3|
 \end{itemize}
 
 We tested values of \(n\) and \(k\) that are Fibonacci numbers, with
@@ -614,12 +616,15 @@ subtracted. The same harness also times the operations the algorithms
 are built from, at \(n = 2^{32} - 1\): drawing \(k\) random numbers
 alone, and drawing them and then sorting them, shuffling them, or
 inserting them into a hash set, so that the difference is the cost of
-that operation (\autoref{componenttimes}). Every process seeds its random number generator with the
-same fixed value, and the C++ and Rust generators start in the same
-state, so running the same code again makes the same draws. Timing the
-same points on four separate boots of the machine, which may come back
-on a different host each time, every algorithm agreed to within about
-1\%. Both languages start every function on a 64-byte cache line:
+that operation (\autoref{componenttimes}). Every pass reseeds the random number generator
+from its point alone, with the C++ and Rust generators in the same
+state, so a pass at a given point makes the same draws in any run,
+whatever was timed before it; the hash tables in both languages hash
+with a fixed seed. We ran the whole benchmark three times, on separate
+boots of the machine hours apart, and report the fastest of the three
+times at each point: on some runs, the scan in the quadratic algorithms'
+inner loop stayed up to 1.6 times slower throughout, for reasons we
+have not pinned down. Both languages start every function on a 64-byte cache line:
 otherwise where a function starts depends on all the code linked before
 it, and that alone moved the time of some algorithms' inner loops by
 15\% or more, a kind of measurement bias that \textcite{mytkowicz}
@@ -636,27 +641,33 @@ repository.
 \subsection{The two languages}
 
 The C++ and Rust implementations are the same algorithms, written the
-same way, and apart from random number generation each uses only its
-own language's standard library, so the results show the performance
-available from standard components. Some of those components differ a
-great deal.
+same way, from widely used components: the Rust uses its standard
+library, with the foldhash crate's hasher for its hash tables, and the
+C++ takes its sort and hash tables from Boost, whose flat hash tables
+and pattern-defeating quicksort are faster than the standard library's
+node-based tables and introsort. Even so, some of these components
+differ a great deal.
 
-\paragraph{Hash tables.} The C++ uses libc++'s
-\mintinline{cpp}{std::unordered_set} and
-\mintinline{cpp}{std::unordered_map}, which are node-based: each entry
-is allocated separately and reached through a linked list. Rust's
-\mintinline{rust}{HashSet} and \mintinline{rust}{HashMap} are flat
-open-addressing tables based on SwissTable. The hash-based algorithms
-take about 0.3 times as long in Rust as in C++, and inserting into the
-set alone 0.10 to 0.27 times as long (\autoref{componenttimes}).
+\paragraph{Hash tables.} Boost's
+\mintinline{cpp}{boost::unordered_flat_set} and
+\mintinline{cpp}{boost::unordered_flat_map} and Rust's
+\mintinline{rust}{HashSet} and \mintinline{rust}{HashMap} are all flat
+open-addressing tables that probe a group of slots at once with vector
+instructions. Rust's tables by default hash with SipHash, which resists
+collision attacks; Boost's do not, and so that the two are comparable
+the Rust's hash with foldhash, with a fixed seed, which does not either. Inserting into
+the set takes 1.0 to 1.3 times as long in Rust as in C++
+(\autoref{componenttimes}), and with random output the hash-based
+algorithms take 1.03 to 1.15 times as long at the median.
 
-\paragraph{Sorting.} libc++'s \mintinline{cpp}{std::sort} is an
-introsort, and Rust's \mintinline{rust}{sort_unstable} is ipnsort.
-Sorting the same arrays of random numbers, \mintinline{cpp}{std::sort}
-takes 1.95 to 2.4 times as long (\autoref{componenttimes}), and Cardchoose
-takes about 0.5 times as long in Rust as in C++. RANKSB, Algorithm D
-and Hidden Shuffle need neither a hash table nor a sort, and take about
-the same time in both languages for sorted output.
+\paragraph{Sorting.} Boost's \mintinline{cpp}{pdqsort} is a
+pattern-defeating quicksort, and Rust's \mintinline{rust}{sort_unstable}
+is ipnsort, its successor. Sorting the same arrays of random numbers,
+\mintinline{cpp}{pdqsort} takes 1.96 to 2.4 times as long
+(\autoref{componenttimes}), and Cardchoose takes about 0.5 times as
+long in Rust as in C++. RANKSB, Algorithm D and Hidden Shuffle need
+neither a hash table nor a sort, and take about the same time in both
+languages for sorted output.
 
 \begin{table}
     \centering
@@ -675,19 +686,17 @@ multiplication. But the C++ uses its own code for this, which takes two
 \mintinline{rust}{rand} crate's \mintinline{rust}{random_range} uses a
 whole output for each. The shuffle that turns the sorted output of
 RANKSB, Algorithm D and Hidden Shuffle into random order is the same
-loop in both languages, but costs 1.3 to 1.5 times as much per number
+loop in both languages, but costs 1.3 to 1.6 times as much per number
 in Rust (\autoref{componenttimes}); so for random
-output, Algorithm D and Hidden Shuffle take 4--8\% longer in Rust at
+output, Algorithm D and Hidden Shuffle take 5--9\% longer in Rust at
 the median. The \mintinline{rust}{rand} crate's own
 \mintinline{rust}{SliceRandom::shuffle} is slower than our loop.
 
 \paragraph{Searching an array.} The quadratic algorithms search the
 output so far on every draw. The Rust uses
 \mintinline{rust}{slice::contains}, and the C++ a loop of its own that
-the compiler vectorises, since libc++'s
-\mintinline{cpp}{std::ranges::contains} calls \mintinline{c}{wmemchr},
-which is slower for the short arrays where these algorithms are worth
-using.
+checks every entry rather than stopping at the first match, so that the
+compiler vectorises it.
 
 \subsection{Results}
 
@@ -911,7 +920,7 @@ integer-only pair.
 If an implementation has only one algorithm, Cardchoose is a good
 choice. It is the best single algorithm in three of the four cases; in
 the fourth, C++ with sorted output, only the two floating-point
-algorithms beat it, because libc++'s \mintinline{cpp}{std::sort} is
+algorithms beat it, because Boost's \mintinline{cpp}{pdqsort} is
 slower than Rust's sort. Implemented alone, it is never more than 9 to 22\,ns per number
 slower than the best three algorithms together, in any case and at any
 \(k\). Its largest ratios to the floor are where calls are cheap: with
