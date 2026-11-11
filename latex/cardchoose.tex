@@ -93,7 +93,7 @@
     stars and bars bijection. It is a
     few lines of integer arithmetic and a call to a standard sort, needs
     no memory beyond the output array, and takes \(\bigO{k \log k}\)
-    time. We benchmark C++ and Rust implementations of it and eleven
+    time. We benchmark C++ and Rust implementations of it and twelve
     other algorithms over a wide range of \(n\) and \(k\), for both
     sorted and random order output. No algorithm is fastest for every
     \(n\), \(k\), language and output order, but Cardchoose is fastest
@@ -125,7 +125,7 @@ Some are fast only for certain values of \(k, n\), for example where
 hash-based data structure such as a set or dictionary for each value
 generated, which adds memory and a significant constant factor to the
 runtime. Some need extra memory proportional to \(n\), or
-floating-point arithmetic. We describe eleven such algorithms in
+floating-point arithmetic. We describe twelve such algorithms in
 \autoref{otheralgs}, and in \autoref{benchmarks} we compare the
 performance of C++ and Rust implementations of each. Along the way, in
 \autoref{quadraticf2}, we propose what appears to be a novel
@@ -360,7 +360,7 @@ through it for every value drawn is unlikely to beat one sort over a
 flat array.
 
 \section{Benchmarked algorithms}\label{otheralgs}
-We compare Cardchoose with eleven other algorithms. Every
+We compare Cardchoose with twelve other algorithms. Every
 implementation fills an array of \(k\)
 elements. Some applications require that the returned elements be in
 sorted order, while others need the order of the elements to be a fair
@@ -389,6 +389,7 @@ arithmetic.
     Set-based rejection sampling & \(k\) & Random & Set & \\
     Floyd's F2 & \(k\) & None & Set & \\
     Quadratic F2 & \(k^2\) & Random &  & \\
+    Bit-vector F2 & \(n\) & Sorted & \(n\)-bit vector & \\
     Iterative choosing & \(n\) & Sorted &  & \\
     Reservoir sampling & \(n\) & Random &  & \\
     SELECT & \(n\) & Random & \(n\)-element array & \\
@@ -464,6 +465,21 @@ the first publication of this way of keeping the order random that we
 know of. For sorted output,
 our implementations append \(m\) instead, since before the sort only
 the set matters, and then sort.
+
+\subsection{Bit-vector F2}
+\inputminted{Python}{code/bitvectorf2.py}
+Floyd's F2 with a bit vector of \(n\) bits as its set: the first of the
+ways to hold the set that Devroye \cite[Chapter XII \S 2]{devroye}
+compares, and the fastest. For sorted output, scan the bit vector
+afterwards and write out the position of every bit that is set, as in
+Bentley's bit-vector sort \cite[Column 1]{pearls}, so that no sort is
+needed. For random output, there is no scan, and the order is kept
+random as in Floyd's F2 above. The listing uses a byte for each bit,
+for clarity; our C++ and Rust implementations pack 64 bits into a word,
+and find the set bits in each word by counting trailing zeros. The draws
+take \(\bigO{k}\) time, but clearing the bit vector, and for sorted
+output scanning it, takes \(\bigO{n}\) time, though little for each
+value, since a word covers 64 of them.
 
 \subsection{Iterative choosing (Algorithm S)}
 \inputminted{Python}{code/iterativechoose.py}
@@ -815,7 +831,7 @@ tested. This says what it costs at worst, per number, for any \(n\)
 and any \(k\) in that range. The bands start at \(k = 10\), 100,
 1,000 and so on, the last running from \(10^7\) to the largest \(k\)
 tested; below 10, per-call overhead swamps everything. Each band also
-has a floor: the score of choosing the fastest of all twelve
+has a floor: the score of choosing the fastest of all thirteen
 algorithms separately at every point, which no algorithm or set of
 algorithms can beat. We give worst cases rather than averages, since
 any average depends on which values of \(n\) and \(k\) we chose to
@@ -892,7 +908,7 @@ order, the best set of one, two or three algorithms, if each point uses
 the fastest algorithm in the set. A set's score in a band is its worst
 time per number output there, as for a single algorithm, and the table
 gives the most that exceeds the band's floor, as a ratio, in the set's
-worst band: \(1.00\times\) means the set is as good as all twelve
+worst band: \(1.00\times\) means the set is as good as all thirteen
 algorithms together in every band. It also gives the most each set is
 slower than the best set of three, in time per number, in any band.
 Where the best set needs floating point, it also gives the best set
@@ -913,7 +929,7 @@ and \(n/k\).
 With sorted output, the best partner is iterative choosing, which wins
 where \(k\) is a large fraction of \(n\); with random output, it is
 quadratic F2, which wins at small \(k\). In C++, three algorithms
-including Hidden Shuffle are as good as all twelve together; in sorted
+including Hidden Shuffle are as good as all thirteen together; in sorted
 order, no third integer-only algorithm improves on the best
 integer-only pair.
 
