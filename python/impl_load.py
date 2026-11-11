@@ -19,6 +19,14 @@ import pathlib
 # runs of the same code make the same draws
 SEED = 324
 
+def point_seed(n, k):
+    """The seed each timing pass at (n, k) starts from. How many calls a pass
+    makes depends on how long earlier passes took, so seeding only once would
+    give each point different draws in every run; seeding each pass from the
+    point alone means that a pass makes the same draws in any run, whatever was
+    timed before it. Distinct for every (n, k)."""
+    return SEED ^ (n << 32 | k)
+
 def add_arguments(p):
     p.add_argument("--language", default="cpp", choices=["cpp", "rust", "python"])
     p.add_argument("--build-dir", type=pathlib.Path)

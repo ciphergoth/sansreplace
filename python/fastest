@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Combine several runs of bench into one, taking each point from the run that
+# timed it fastest. Interference only ever adds time, and some loops run at one
+# of two speeds depending on state in the processor that persists for minutes
+# (see measurement.md), so the fastest of several runs made hours apart is the
+# best estimate of each point's time. The runs must be of the same code with
+# the same options on the same setup. Reports each point whose slowest run took
+# more than --report times its fastest.
+
+import argparse
+import csv
+import pathlib
+
+import machine
+
+def read(fname):
+    "The config and info rows of a CSV, and its other rows by point"
+    config, info, points = {}, {}, {}
+    with fname.open(newline='') as f:
+        for row in csv.reader(f):
+            if row[0] == 'config':
+                config[row[1]] = row[2]
+            elif row[0] == 'info':
+                info[row[1]] = row[2]
+            else:
+                points.setdefault((int(row[2]), int(row[3])), []).append(row)
+    return config, info, points
+
+def point_time(rows):
+    "The time a point's rows record, or None if it was skipped"
+    [t] = [float(r[4]) for r in rows if r[0] == 'result'] or [None]
+    return t
+
+def combine(fnames, out, report):
+    runs = [read(f) for f in fnames]
+    config, info, _ = runs[0]
+    for c, i, _ in runs[1:]:
+        assert {**c, 'csv': None} == {**config, 'csv': None}, (fnames[0], c)
+        for key in ['version', *machine.KEYS]:
+            assert i.get(key) == info.get(key), (fnames[0], key, i.get(key), info.get(key))
+    order = list(dict.fromkeys(p for _, _, points in runs for p in points))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open('w', newline='') as f:
+        writer = csv.writer(f)
+        for k, v in {**config, 'csv': out}.items():
+            writer.writerow(['config', k, v])
+        # The info is the first run's, as is the state of memory it records
+        for k, v in {**info, 'fastest_of': [str(f) for f in fnames]}.items():
+            writer.writerow(['info', k, v])
+        for p in order:
+            have = [(i, points[p]) for i, (_, _, points) in enumerate(runs) if p in points]
+            timed = [(point_time(rows), i) for i, rows in have if point_time(rows) is not None]
+            if not timed:
+                # Skipped in every run that reached it
+                writer.writerows(have[0][1])
+                continue
+            fastest, i = min(timed)
+            rows = runs[i][2][p]
+            writer.writerows(rows)
+            writer.writerow(['run', rows[0][1], *p, i])
+            slowest = max(t for t, _ in timed)
+            if slowest > report * fastest:
+                print(f"{out}: n = {p[0]}, k = {p[1]}: slowest/fastest {slowest / fastest:.2f}",
+                    f"({', '.join(f'{t:.3g}' for t, _ in sorted(timed, key=lambda x: x[1]))})")
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", type=pathlib.Path, required=True)
+    parser.add_argument("--report", type=float, default=1.2)
+    parser.add_argument("runs", type=pathlib.Path, nargs="+")
+    args = parser.parse_args()
+    names = [sorted(f.relative_to(r) for f in r.glob("*/*.csv")) for r in args.runs]
+    for r, n in zip(args.runs[1:], names[1:]):
+        assert n == names[0], (args.runs[0], r)
+    for name in names[0]:
+        combine([r / name for r in args.runs], args.out / name, args.report)
+
+if __name__ == '__main__':
+    main()

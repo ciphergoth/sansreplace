@@ -45,9 +45,11 @@ algorithm's time, so the C++ uses its own: Xoshiro256++ with Lemire's method for
 bound, in [`cpp/randbelow.h`](cpp/randbelow.h). It is defined in the header so that it is inlined
 into each algorithm, and it takes two 32-bit numbers from each 64-bit output. The Rust uses the
 `rand` crate's `SmallRng`, which is the same generator, and its `random_range`, which takes a whole
-64-bit output for each 32-bit number. Both generators, and the
-Python's, start each process from the same fixed seed, so that running the same code again makes
-the same draws; the C++ and Rust generators start in the same state.
+64-bit output for each 32-bit number. Both generators, and the Python's, start each pass that times
+a point from a seed fixed by that point, so that a pass makes the same draws in any run, whatever
+was timed before it, and the C++ and Rust generators start each pass in the same state. Seeding
+each process once would not do this: how many calls a pass makes depends on how long earlier
+passes took, so each point would start at a different place in the sequence in every run.
 
 Both use the multiplication trick to turn a random 32-bit number into one below a bound, but they
 correct its slight bias differently. Lemire's method rejects the few inputs that cause it and draws

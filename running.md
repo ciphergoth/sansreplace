@@ -55,6 +55,15 @@ algorithms in every case:
 python/bench --run 'cpp/*/select' --run '*/*/quadraticreject' --run '*/*/quadraticf2' --out results/my-run
 ```
 
+Some points' times vary between runs by much more than the timer's noise (see
+[measurement](measurement.md)), so the published results take each point's fastest time over
+several runs of the same code, made hours apart. `python/fastest` combines runs that way, and
+reports each point whose slowest run took more than `--report` times its fastest, 1.2 by default:
+
+```
+python/fastest --out results/combined results/run1 results/run2 results/run3
+```
+
 The timer's settings, such as `--time-for` and `--time-limit`, are options too, each defaulting to
 what the published results use; see `--help`. On macOS it keeps the machine from idle-sleeping while
 it runs, so give one run everything you want timed, rather than running it several times in a row:
@@ -103,6 +112,9 @@ Each row of a results CSV starts with its kind:
   at a smaller or equal _k_ for the same _n_, or did so at the same _k_ for two different smaller
   _n_. Some algorithms are slow only near _k_ = _n_, so going over the limit once only skips
   larger _k_ for that _n_. Results from before these rows were added don't have them.
+* `run,ALG,N,K,INDEX`: in results that `python/fastest` combined, which of the runs that
+  `info,fastest_of` lists, counting from 0, the point's other rows come from. The other `info` rows
+  are the first run's.
 
 Recording the setup and memory works on macOS and Linux. On Linux, the machine recorded is the
 DMI product name, which on EC2 is the instance type, and the CPU model.

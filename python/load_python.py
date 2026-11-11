@@ -18,7 +18,7 @@ import random
 import time
 
 from algorithms import ALGORITHMS
-from impl_load import SEED
+from impl_load import SEED, point_seed
 
 class Timeable:
     def __init__(self, sorttype, alg, choose):
@@ -30,6 +30,7 @@ class Timeable:
         return self._choose(*params)
 
     def time(self, params, iters):
+        random.seed(point_seed(*params))
         gc.disable()
         start = time.perf_counter()
         for _ in range(iters):

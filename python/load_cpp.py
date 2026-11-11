@@ -18,7 +18,7 @@ import subprocess
 import cffi
 
 from algorithms import ALGORITHMS, COMPONENTS
-from impl_load import SEED
+from impl_load import SEED, point_seed
 
 
 def setup_module(cppdir, build_dir, functions):
@@ -68,6 +68,7 @@ class Timeable:
 
     def time(self, params, iters):
         n, k = params
+        self._lib.rand_init(point_seed(n, k))
         return self._lib.timefunc_s(self._fpointer, n, k, iters)
 
 def get_timeables(topdir, args):
