@@ -638,21 +638,93 @@ state, so a pass at a given point makes the same draws in any run,
 whatever was timed before it; the hash tables in both languages hash
 with a fixed seed. We ran the whole benchmark three times, on separate
 boots of the machine hours apart, and report the fastest of the three
-times at each point: on some runs, the scan in the quadratic algorithms'
-inner loop stayed up to 1.6 times slower throughout, for reasons we
-have not pinned down. Both languages start every function on a 64-byte cache line:
-otherwise where a function starts depends on all the code linked before
-it, and that alone moved the time of some algorithms' inner loops by
-15\% or more, a kind of measurement bias that \textcite{mytkowicz}
-describe in general. This makes the timings stable when unrelated code
-changes, but not optimal, since a loop's alignment still depends on the
-code before it in its own function; so differences of up to about 15\%
-between algorithms dominated by a tight inner loop should not be read
-as meaningful. We describe what we found and changed to make these timings
-trustworthy, such as aligning arrays that were otherwise slower to fill
-depending on where earlier allocations left them, in
-\href{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}{\texttt{measurement.md}} in the
-repository.
+times at each point, for reasons given below.
+
+\subsection{Pitfalls}\label{pitfalls}
+
+Again and again while preparing these results, an odd result, such as
+one algorithm faster than another in one language but slower in the
+other, or a point whose time changed between runs, came from how it was
+measured rather than from the algorithm. Each of the effects below
+moved some algorithm's time by 10\% or more while its source code stayed
+the same, which is more than many of the gaps between algorithms that
+we might otherwise have reported. We give a fuller account in
+\href{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}{\texttt{measurement.md}}
+in the repository.
+
+\paragraph{Where code lands.} Where a function starts within its
+64-byte cache line depends on all the code linked before it, and that
+alone moved the times of tight loops whose machine code had not
+changed: C++ iterative choosing took 15\% longer when a change to the
+standard library moved the code before it, and the Rust bit-vector F2's
+scan took up to 1.7 times as long when a change to how the Rust was
+built did. This is a kind of measurement bias that \textcite{mytkowicz}
+describe in general. Both languages now start every function on a cache
+line, which makes the timings stable when unrelated code changes, but
+not optimal, since a loop's alignment still depends on the code before
+it in its own function; so differences of up to about 15\% between
+algorithms dominated by a tight inner loop should not be read as
+meaningful.
+
+\paragraph{Where data lands.} \mintinline{c}{malloc} promises only
+16-byte alignment, so whether an array starts on a cache line depends on
+what was allocated before it, and a misaligned start makes about half
+the vector loads and stores that sweep it straddle two cache lines. In
+Rust, SELECT's fill of its \(n\)-element array took 1.5 times as long
+when the array started 16 bytes past a 32-byte boundary, which varied
+with where earlier allocations had left it; and C++ quadratic F2, which
+scans its own output on every draw, took 1,897\,ns per number at
+\(k = 121{,}393\) with the output array where \mintinline{c}{malloc}
+put it, and 1,290\,ns with it on a cache line. The arrays that SELECT
+and the bit-vector F2 sweep, and the output array, are now aligned to a
+cache line.
+
+\paragraph{What the compiler decides.} The \mintinline{rust}{rand}
+crate's \mintinline{rust}{random_range} is not marked
+\mintinline{rust}{#[inline]}, and once it had several callers, LLVM kept
+it out of line for inclusive ranges: sorted reservoir sampling took
+1.73\,ns per value of \(n\), against 0.90\,ns with the draw inlined and
+0.91\,ns in C++. By default, Rust's release builds split a crate into
+16 codegen units by heuristics over the whole crate, and LLVM inlines
+within each separately, so when we changed the hasher of Rust's hash
+tables, the standard library's sort, which uses no hash table, compiled
+differently and took 7--16\% longer; the Rust is now built as one unit,
+with link-time optimisation. And a scan that returns at the first match
+is not vectorised: in C++ quadratic rejection at \(k = 10{,}946\), it
+took 2,483\,ns per number, against 169\,ns for a scan that ORs every
+comparison together.
+
+\paragraph{Defaults.} On x86-64, both compilers target the original
+baseline, whose only vectors are SSE2, unless told otherwise; built
+that way, the quadratic algorithms, whose scans then use vectors half
+as wide, take 1.7 to 3.9 times as long from \(k = 610\)
+up. We build both languages for the AVX2 baseline. We also build
+without the hardening flags that Nix's compiler wrapper adds and the
+libstdc++ assertions that Meson turns on, as an ordinary optimised
+build would be, though neither changed any C++ time by more than 9\%.
+
+\paragraph{Libraries.} The C++ standard library's hash tables are
+node-based, and Boost's flat tables insert 4 to 16 times as fast; Rust's
+default hasher, SipHash, resists collision attacks that Boost's does
+not, and foldhash inserts about 1.6 times as fast. Switching the C++
+standard library from libstdc++ to libc++ made Cardchoose take about
+0.55 times as long, because the two \mintinline{cpp}{std::sort}s are
+different code. With each language's standard library alone, a
+comparison of the two languages would largely have compared their hash
+tables.
+
+\paragraph{The quadratic scan's slow state.} Rust quadratic rejection
+and sorted quadratic F2 search the output with
+\mintinline{rust}{slice::contains}, and at large \(k\) they sometimes
+take about 1.6 times as long at a run of points, with the same code,
+data and draws; which points are slow changes from run to run. The
+processor's performance counters show the scan's loop taking 2.3 cycles
+per iteration rather than 1.5, with the front end of the core, which
+supplies the operations, unable to keep the back end busy, but without
+extra cache misses, branch mispredictions or op cache misses. We have
+ruled out the host, the data, where the arrays start and moving between
+cores, but have not found the trigger, so we take each point's fastest
+time over three runs.
 
 \subsection{The two languages}
 
