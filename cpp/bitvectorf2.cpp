@@ -19,62 +19,40 @@
 // bit vector, with no sort.
 
 #include <stdint.h>
-#include <stdlib.h>
 
-#include <algorithm>
-#include <bit>
-#include <memory>
+#include <boost/dynamic_bitset.hpp>
 
 #include "randbelow.h"
 
-using BitVector = std::unique_ptr<uint64_t[], decltype(&free)>;
-
-// Aligned to a cache line, as SELECT's array is, and cleared explicitly, so
-// that clearing it is the only pass over it before the draws
-static BitVector new_bit_vector(size_t words) {
-    size_t size = (words * sizeof(uint64_t) + 63) & ~size_t{63};
-    BitVector bits(static_cast<uint64_t*>(aligned_alloc(64, size)), free);
-    std::fill(bits.get(), bits.get() + words, 0);
-    return bits;
-}
-
-// Set bit x, and say whether it was already set
-static inline bool test_and_set(uint64_t* bits, uint32_t x) {
-    uint64_t mask = uint64_t{1} << (x & 63);
-    bool was = bits[x >> 6] & mask;
-    bits[x >> 6] |= mask;
-    return was;
-}
+// test_set sets a bit, and says whether it was already set
+using BitVector = boost::dynamic_bitset<>;
 
 extern "C" void sorted_bitvectorf2(uint32_t n, uint32_t k, uint32_t* result) {
-    size_t words = (size_t{n} + 63) / 64;
-    BitVector bits = new_bit_vector(words);
+    BitVector bits(n);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
-        if (test_and_set(bits.get(), r)) {
-            test_and_set(bits.get(), m);
+        if (bits.test_set(r)) {
+            bits.set(m);
         }
     }
     uint32_t j = 0;
-    for (size_t w = 0; w < words; w++) {
-        for (uint64_t b = bits[w]; b != 0; b &= b - 1) {
-            result[j++] = static_cast<uint32_t>(w * 64) + std::countr_zero(b);
-        }
+    for (auto x = bits.find_first(); x != BitVector::npos; x = bits.find_next(x)) {
+        result[j++] = static_cast<uint32_t>(x);
     }
 }
 
 // As random_floydf2: on a collision, m goes in a random earlier place, and
 // what was there goes at the end
 extern "C" void random_bitvectorf2(uint32_t n, uint32_t k, uint32_t* result) {
-    BitVector bits = new_bit_vector((size_t{n} + 63) / 64);
+    BitVector bits(n);
     for (uint32_t i = 0; i < k; i++) {
         uint32_t m = n + i - k;
         uint32_t r = randbelow(m + 1);
-        if (!test_and_set(bits.get(), r)) {
+        if (!bits.test_set(r)) {
             result[i] = r;
         } else {
-            test_and_set(bits.get(), m);
+            bits.set(m);
             uint32_t ix = randbelow(i);
             result[i] = result[ix];
             result[ix] = m;

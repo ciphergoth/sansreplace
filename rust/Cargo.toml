@@ -24,6 +24,10 @@ lto = true
 # random_range is very slightly biased (at worst 1 in 2^96 for u32), but
 # the unbiased version adds a cost per sample, which would unfairly favour
 # algorithms that draw fewer samples.
+# The bit vector for the bit-vector F2
+[dependencies.fixedbitset]
+version = "0.5.7"
+
 # The hasher for the hash tables: see src/algorithms/mod.rs
 [dependencies.foldhash]
 version = "0.2.0"

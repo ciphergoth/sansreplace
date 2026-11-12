@@ -675,9 +675,8 @@ when the array started 16 bytes past a 32-byte boundary, which varied
 with where earlier allocations had left it; and C++ quadratic F2, which
 scans its own output on every draw, took 1,897\,ns per number at
 \(k = 121{,}393\) with the output array where \mintinline{c}{malloc}
-put it, and 1,290\,ns with it on a cache line. The arrays that SELECT
-and the bit-vector F2 sweep, and the output array, are now aligned to a
-cache line.
+put it, and 1,290\,ns with it on a cache line. The array that SELECT
+sweeps, and the output array, are now aligned to a cache line.
 
 \paragraph{What the compiler decides.} The \mintinline{rust}{rand}
 crate's \mintinline{rust}{random_range} is not marked

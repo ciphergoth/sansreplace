@@ -52,7 +52,7 @@ libsrc = [
     'hiddenshuffle.cpp',
     'cardchoose.cpp',
 ]
-# Header-only: pdqsort and the flat hash tables
+# Header-only: pdqsort, the flat hash tables and dynamic_bitset
 boost = dependency('boost')
 lib = shared_library('sansreplace',
                         libsrc,

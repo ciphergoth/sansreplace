@@ -80,7 +80,7 @@ stores, a misaligned start makes about half of them straddle two cache lines.
 
 - SELECT fills an array of all _n_ values on every call. In Rust, filling it took 1.5 times as long
   when it started 16 bytes past a 32-byte boundary. Both implementations now align it to a cache
-  line; see [SELECT](algorithms.md#select). The bit-vector F2's bit vector is aligned the same way.
+  line; see [SELECT](algorithms.md#select).
 - The quadratic algorithms scan their own output on every draw. C++ quadratic F2, random, at
   _k_ = 121,393, took 1,897 ns per number in every process, so its allocations were always
   misaligned in the same way. Both harnesses now align the output array they time each algorithm
