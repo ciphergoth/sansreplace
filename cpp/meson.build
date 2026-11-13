@@ -37,7 +37,6 @@ libsrc = [
     'donothing.cpp',
     'components.cpp',
     'randbelow.c',
-    'timing.cpp',
     'quadraticreject.cpp',
     'quadraticf2.cpp',
     'iterativechoose.cpp',
@@ -54,7 +53,9 @@ libsrc = [
 ]
 # Header-only: pdqsort, the flat hash tables and dynamic_bitset
 boost = dependency('boost')
-lib = shared_library('sansreplace',
-                        libsrc,
-                        dependencies : boost,
-                        install : false)
+# The command line
+cli11 = dependency('CLI11')
+executable('sansreplace',
+           libsrc + ['main.cpp', 'timing.cpp', 'stack.cpp', 'counters.cpp'],
+           dependencies : [boost, cli11],
+           install : false)

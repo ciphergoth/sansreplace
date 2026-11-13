@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Test every implementation for fairness: at a few small points, draw many
+samples from each algorithm in each order and language, and check that every
+possible sample turns up about equally often. Prints the ones that fail."""
+
+import argparse
+import math
+import pathlib
+import sys
+
+import impls
+from algorithms import ALGORITHMS
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+POINTS = [(5, 3), (6, 1), (4, 4), (5, 0), (7, 2)]
+
+def outcomes(order, n, k):
+    "How many samples are possible: sets if sorted, sequences if random"
+    sequences = math.perm(n, k)
+    return sequences // math.factorial(k) if order == "sorted" else sequences
+
+def unfair(samples, order, n, k):
+    "Why these samples don't look uniform, or None"
+    counts = {}
+    for sample in samples:
+        if len(sample) != k or len(set(sample)) != k or not all(0 <= x < n for x in sample):
+            return f"not a sample: {sample}"
+        if order == "sorted" and sample != sorted(sample):
+            return f"not sorted: {sample}"
+        counts[tuple(sample)] = 1 + counts.get(tuple(sample), 0)
+    cells = outcomes(order, n, k)
+    if cells == 1:
+        return None
+    expected = len(samples) / cells
+    # Pearson's statistic, which for a fair algorithm has mean cells - 1 and
+    # variance twice that; samples that never turned up count too
+    chi2 = (sum((c - expected) ** 2 for c in counts.values()) / expected
+        + (cells - len(counts)) * expected)
+    limit = cells - 1 + 6 * math.sqrt(2 * (cells - 1))
+    if chi2 > limit:
+        return f"chi-squared {chi2:.1f} over {limit:.1f}, {len(counts)} of {cells} outcomes"
+    return None
+
+def main():
+    p = argparse.ArgumentParser(allow_abbrev=False, description=__doc__)
+    p.add_argument("--language", action="append", choices=["cpp", "rust", "python"],
+        help="May be repeated (default: all three)")
+    p.add_argument("--num-tests", type=int, default=50000)
+    p.add_argument("--build-dir", type=pathlib.Path, help="C++ build directory")
+    args = p.parse_args()
+    failures = 0
+    for language in args.language or ["cpp", "rust", "python"]:
+        cmd = impls.command(topdir, language, args.build_dir)
+        for order in ["random", "sorted"]:
+            for alg in ALGORITHMS:
+                for n, k in POINTS:
+                    why = unfair(impls.sample(cmd, order, alg, n, k, args.num_tests), order, n, k)
+                    if why is not None:
+                        print(f"{language} {order} {alg} n = {n}, k = {k}: {why}")
+                        failures += 1
+    print(f"{failures} failures")
+    sys.exit(failures != 0)
+
+if __name__ == '__main__':
+    main()

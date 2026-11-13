@@ -19,21 +19,25 @@ need to read the source code to figure out what it does.
 ```
 python/bench --help
 python/test_choose --help
+python/test_all --help
 python/plot --help
 python/scatter --help
 ```
 
-Both the C++ and the Rust implementations are driven from Python: each is built as a library,
-which the tools build if needed and load. `python/bench` times them, and `python/test_choose` tests
-one for fairness, with `--language` choosing which, `cpp` by default; try eg
-`python/test_choose 5 3`.
+Both the C++ and the Rust implementations are driven from Python: each is built as a program,
+which the tools build if needed and run, and the two take the same command line; see
+[`cpp/main.cpp`](cpp/main.cpp) and [`rust/src/main.rs`](rust/src/main.rs).
+[`python/sansreplace`](python/sansreplace) does the same for the Python implementations.
+`python/bench` times them, and `python/test_choose` tests one for fairness, with `--language`
+choosing which, `cpp` by default; try eg `python/test_choose 5 3`. `python/test_all` tests every
+algorithm in every language at a few small points, and lists any that fail.
 
 `python/bench --run LANG/ORDER/ALGORITHM` times what it names, where any of the three parts may be
 `*` to mean all of them, and `LANG` is `cpp` or `rust`, or `python` for the Python
 implementations, which `*` leaves out; it may be repeated, and `--dry-run` lists what would be timed
-without timing it. Each algorithm is timed in a process of its own, so none inherits another's
-heap. With `--nk N K`, it times that point only, and compares the algorithms at each point at the
-end:
+without timing it. Each point is timed in a process of its own, so that its time doesn't depend on
+what was timed before it. With `--nk N K`, it times that point only, and compares the algorithms
+at each point at the end:
 
 ```
 python/bench --run 'rust/random/*' --nk 1000000 1000
@@ -64,7 +68,20 @@ reports each point whose slowest run took more than `--report` times its fastest
 python/fastest --out results/combined results/run1 results/run2 results/run3
 ```
 
-The timer's settings, such as `--time-for` and `--time-limit`, are options too, each defaulting to
+Each process warms up, then times batches of calls, each batch starting from the same seed, until
+it has timed at least `--min-batches` batches over at least `--min-time` seconds, and takes the
+fastest batch. It does that with its stack at each of `--positions` positions, 16 bytes apart, and
+`bench` takes the fastest position, because where the stack lies changes some algorithms' times; see
+[measurement](measurement.md). A point whose call takes `--min-time` or longer is timed at one
+position, and one whose first call takes `--once-above` seconds is timed by that call alone.
+
+On Linux, `bench` runs each process with address space randomisation off, and with an empty
+environment everywhere. `--cpu N` pins every process to one CPU, `--huge-pages` has the C library
+take memory in 2 MB pages, and `--counters` records performance counters with each point; the
+counters are those of the processor the published results are timed on, listed in
+[`python/bench`](python/bench).
+
+The timer's settings, such as `--min-time` and `--time-limit`, are options too, each defaulting to
 what the published results use; see `--help`. On macOS it keeps the machine from idle-sleeping while
 it runs, so give one run everything you want timed, rather than running it several times in a row:
 the machine can fall asleep between one run and the next. Closing the lid still sleeps it, but
@@ -103,11 +120,17 @@ Each row of a results CSV starts with its kind:
   (`pswpin`, `pswpout`, `pgmajfault` and `pgscan_direct`); servers often have no swap, and then
   memory pressure shows up as direct reclaim, which evicts pages that may have to be read back in
   through major faults.
-* `faults,ALG,N,K,MINOR_FAULTS,CALLS`: the minor page faults the timer itself took in the pass that
-  timed that point, and how many calls that pass made. A minor fault maps a page in without reading
-  anything from disk, as when memory that the allocator gave back to the kernel is used again; an
-  algorithm that allocates memory and frees it on every call may pay for this on every call,
-  depending on the allocator. Results from before these rows were added don't have them.
+* `position,ALG,N,K,OFFSET,CALLS,BATCHES,FASTEST,MEDIAN,MINOR_FAULTS,COUNTERS...`: the timing at
+  one stack position, `OFFSET` bytes below a page boundary: the calls in a batch, the number of
+  batches timed, the time of one call in the fastest batch and in the median one, the minor page
+  faults over all the batches, and with `--counters`, what each counter that `info,counters` names
+  counted in one call of the fastest batch. The point's `result` is the smallest `FASTEST`. A
+  minor fault maps a page in without reading anything from disk, as when memory that the allocator
+  gave back to the kernel is used again; an algorithm that allocates memory and frees it on every
+  call may pay for this on every call, depending on the allocator.
+* `faults,ALG,N,K,MINOR_FAULTS,CALLS`: in results from before each point was timed in a process of
+  its own, the minor page faults the timer took in the pass that timed that point, and how many
+  calls that pass made.
 * `skipped,ALG,N,K`: a point not timed because the algorithm took more than `--time-limit` seconds
   at a smaller or equal _k_ for the same _n_, or did so at the same _k_ for two different smaller
   _n_. Some algorithms are slow only near _k_ = _n_, so going over the limit once only skips

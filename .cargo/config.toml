@@ -1,5 +1,5 @@
 # Cargo reads this from the directory it runs in and its parents, so it applies
-# whether cargo runs at the top or, as python/load_rust.py runs it, in rust/.
+# whether cargo runs at the top or, as python/bench runs it, in rust/.
 #
 # Start every function on a cache line, as cpp/meson.build does for C++.
 # Otherwise where a function starts depends on everything the linker put before

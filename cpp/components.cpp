@@ -15,10 +15,10 @@
  */
 
 // Parts of the algorithms, timed on their own to compare the libraries the C++
-// and the Rust use. fill draws k random numbers below n into the output; each
-// of the others does the same and then one thing more, so its time less fill's
-// is what that thing costs on k random numbers. Each does that thing as the
-// algorithms do.
+// and the Rust use. fill draws k random numbers below n into the output;
+// fillsort, fillshuffle and hashinsert each do the same and then one thing
+// more, so its time less fill's is what that thing costs on k random numbers.
+// Each does that thing as the algorithms do.
 
 #include <stdint.h>
 
@@ -32,6 +32,15 @@
 static inline void fill(uint32_t n, uint32_t k, uint32_t* result) {
     for (uint32_t i = 0; i < k; i++) {
         result[i] = randbelow(n);
+    }
+}
+
+// Writes 0 to k - 1 into the output, as SELECT starts by doing: with no random
+// numbers, no branches that depend on data and no allocation, any change in
+// its time is the machine's. See measurement.md.
+extern "C" void component_count(uint32_t n, uint32_t k, uint32_t* result) {
+    for (uint32_t i = 0; i < k; i++) {
+        result[i] = i;
     }
 }
 

@@ -5,11 +5,6 @@ edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-# A library for python/load_rust.py to load, as python/load_cpp.py loads the
-# C++ one
-[lib]
-crate-type = ["cdylib"]
-
 # Compile the whole library as one unit. By default the release profile splits
 # a crate into 16 codegen units by heuristics over the whole crate, and inlines
 # within each separately, so that changing one algorithm could change how
@@ -20,17 +15,34 @@ crate-type = ["cdylib"]
 codegen-units = 1
 lto = true
 
-# We deliberately don't enable the "unbiased" feature. The default
-# random_range is very slightly biased (at worst 1 in 2^96 for u32), but
-# the unbiased version adds a cost per sample, which would unfairly favour
-# algorithms that draw fewer samples.
 # The bit vector for the bit-vector F2
 [dependencies.fixedbitset]
 version = "0.5.7"
 
+# We deliberately don't enable the "unbiased" feature. The default
+# random_range is very slightly biased (at worst 1 in 2^96 for u32), but
+# the unbiased version adds a cost per sample, which would unfairly favour
+# algorithms that draw fewer samples.
 # The hasher for the hash tables: see src/algorithms/mod.rs
 [dependencies.foldhash]
 version = "0.2.0"
 
 [dependencies.rand]
 version = "0.10.3"
+
+# The command line
+[dependencies.clap]
+version = "4.5"
+features = ["derive"]
+
+# getrusage, and reading the performance counters
+[dependencies.libc]
+version = "0.2"
+
+# Runs the timing on a stack of our own: see src/timing.rs
+[dependencies.psm]
+version = "0.1"
+
+# Performance counters, which only Linux lets an unprivileged process read
+[target.'cfg(target_os = "linux")'.dependencies.perf-event-open-sys]
+version = "5.0"

@@ -17,19 +17,18 @@
 
 import argparse
 import atexit
-import concurrent.futures
 import csv
 import datetime
-import importlib
-import multiprocessing
 import os
 import pathlib
-import resource
+import platform
+import shutil
 import subprocess
 import sys
 
 import asleep
 import gitstate
+import impls
 import machine
 import nkvalues
 import vmstat
@@ -41,6 +40,17 @@ topdir = pathlib.Path(__file__).resolve().parent.parent
 # the parts of the algorithms in cpp/components.cpp, can be named too
 LANGUAGES = ["cpp", "rust"]
 ORDERS = ["random", "sorted"]
+
+# What --counters counts. Counters in a group are counted together, exactly, so
+# long as the group is no bigger than the number of counters the processor
+# offers; the virtual machine the published results are timed on offers five.
+# Each is NAME=TYPE:CONFIG as cpp/counters.h describes. The first three are
+# the kernel's generic events; the others are AMD's codes for Zen 4, that
+# machine's processor: requests from the level 2 cache's prefetcher for lines
+# that cache already holds, and data cache misses that also miss the level 2
+# cache.
+COUNTERS = ["cycles=0:0", "instructions=0:1", "branch-misses=0:5", "l2-prefetches=4:ff70",
+    "l2-misses=4:0864"]
 
 def names_for(order):
     return COMPONENTS if order == "component" else ALGORITHMS
@@ -85,26 +95,38 @@ def fix_freq():
         governors.append((sg, old))
         sg.write_bytes(b"performance")
 
-def minor_faults():
-    return resource.getrusage(resource.RUSAGE_SELF).ru_minflt
+def launcher(args):
+    """What to run a program under, and its environment, which is empty so
+    that nothing in ours can change its timings"""
+    prefix = []
+    env = {}
+    if sys.platform == "linux":
+        # No address space randomisation
+        prefix = [shutil.which("setarch"), platform.machine(), "-R"]
+        if args.cpu is not None:
+            prefix += [shutil.which("taskset"), "-c", str(args.cpu)]
+        if args.huge_pages:
+            env["GLIBC_TUNABLES"] = "glibc.malloc.hugetlb=2"
+    return prefix, env
 
-def timefunc_for(time, params, timeable):
-    "Time per call, and the minor faults and calls of the pass it was timed over"
-    iters = 1
-    remaining = time
-    while True:
-        faults_before = minor_faults()
-        t = timeable.time(params, iters)
-        faults = minor_faults() - faults_before
-        remaining -= t
-        if t >= remaining:
-            return t / iters, faults, iters
-        elif t * 100 > remaining:
-            iters = int(iters * remaining / t)
-        elif t * 10000 > remaining:
-            iters = int(iters * remaining * 0.1 / t)
-        else:
-            iters *= 10
+def time_point(args, cmd, lang, order, alg, n, k):
+    """Time a point in a process of its own, and return a row for each stack
+    position it was timed at, as cpp/timing.h describes"""
+    prefix, env = launcher(args)
+    cmd = prefix + cmd + ["time", *impls.point_args(order, alg, n, k, impls.point_seed(n, k)),
+        "--min-time", str(args.min_time), "--min-batches", str(args.min_batches),
+        "--once-above", str(args.once_above)]
+    if lang != "python":
+        cmd += ["--positions", str(args.positions)]
+        if args.counters:
+            for c in COUNTERS:
+                cmd += ["--counter", c]
+    out = subprocess.run(cmd, env=env, check=True, stdout=subprocess.PIPE, text=True).stdout
+    return [line.split() for line in out.splitlines()]
+
+def fastest(positions):
+    "The time per call at the stack position where it was fastest"
+    return min(float(p[3]) for p in positions)
 
 def format_time(t):
     for unit, mul in [("ns", 1E9), ("μs", 1E6), ("ms", 1E3)]:
@@ -122,27 +144,28 @@ def values(args):
 
 def time_one(args, lang, order, alg, csvfile):
     """Time one algorithm at every point, writing its CSV if csvfile isn't None,
-    and return its time at each point it timed. Runs in a process of its own."""
+    and return its time at each point it timed."""
     if args.fix_freq:
         fix_freq()
-    timeables = importlib.import_module(f"load_{lang}").get_timeables(topdir, args)
-    tm = timeables[order][alg]
+    cmd = impls.command(topdir, lang, args.build_dir)
     writer = None
     if csvfile is not None:
         csvfile.parent.mkdir(parents=True, exist_ok=True)
         f = csvfile.open("w", newline="")
         writer = csv.writer(f)
-        config = {"algorithm": [alg], "build_dir": args.build_dir, "csv": csvfile,
-            "fix_freq": args.fix_freq, "language": lang, "max_k": args.max_k, "nk": args.nk,
-            "sorttype": order, "time_for": args.time_for, "time_limit": args.time_limit,
-            "values": args.values}
+        config = {"algorithm": [alg], "build_dir": args.build_dir, "counters": args.counters,
+            "cpu": args.cpu, "csv": csvfile, "fix_freq": args.fix_freq,
+            "huge_pages": args.huge_pages, "language": lang, "max_k": args.max_k,
+            "min_batches": args.min_batches, "min_time": args.min_time, "nk": args.nk,
+            "once_above": args.once_above, "positions": args.positions, "sorttype": order,
+            "time_limit": args.time_limit, "values": args.values}
         for k, v in config.items():
             writer.writerow(["config", k, v])
         info = {
             "version": gitstate.get(topdir),
-            "donothing_s": timefunc_for(args.time_for, (0, 0),
-                timeables["donothing"]["donothing"])[0],
+            "donothing_s": fastest(time_point(args, cmd, lang, "donothing", "donothing", 0, 0)),
             "algorithms": [alg],
+            "counters": " ".join(c.split("=")[0] for c in COUNTERS) if args.counters else "",
             **machine.get(),
             **vmstat.snapshot(),
         }
@@ -166,18 +189,19 @@ def time_one(args, lang, order, alg, csvfile):
         while True:
             asleep_before = asleep.total()
             before = vmstat.counters()
-            t, faults, calls = timefunc_for(args.time_for, (n, k), tm)
+            positions = time_point(args, cmd, lang, order, alg, n, k)
             if asleep.total() - asleep_before < asleep.THRESHOLD_S:
                 break
             print(f"slept while timing {alg}; timing again in {asleep.SETTLE_S}s", flush=True)
             asleep.settle()
-            timefunc_for(args.time_for, (n, k), tm)
         after = vmstat.counters()
+        t = fastest(positions)
         print(f"{descrip}: {format_time(t)}", flush=True)
         if writer is not None:
             writer.writerow(["result", alg, n, k, t])
             writer.writerow(["memory", alg, n, k, *(a - b for a, b in zip(after, before))])
-            writer.writerow(["faults", alg, n, k, faults, calls])
+            for p in positions:
+                writer.writerow(["position", alg, n, k, *p])
             f.flush()
         res[descrip] = t
         if t > args.time_limit:
@@ -191,7 +215,7 @@ def time_one(args, lang, order, alg, csvfile):
 
 def parse_args():
     p = argparse.ArgumentParser(allow_abbrev=False,
-        description="Time the C++ and Rust implementations, each algorithm in a process of "
+        description="Time the C++ and Rust implementations, each point in a process of "
             "its own, and with --out write OUT/LANG-ORDER/ALGORITHM.csv for each. Stops at "
             "the first failure. On macOS, keeps the machine from idle-sleeping while it runs.")
     p.add_argument("--run", action="append", type=run_spec, metavar="LANG/ORDER/ALGORITHM",
@@ -209,9 +233,19 @@ def parse_args():
     # F_40; larger k needs more memory than a 16GB machine has
     p.add_argument("--max-k", type=int, default=102334155,
         help="Skip n,k values with k larger than this (default: %(default)s)")
-    p.add_argument("--time-for", type=float, default=0.2,
-        help="How long to time each point for, in seconds; a point slower than this is "
-            "timed with one call (default: %(default)s)")
+    p.add_argument("--min-time", type=float, default=0.05,
+        help="How long to time each point for at each stack position, in seconds, after "
+            "warming up (default: %(default)s)")
+    p.add_argument("--min-batches", type=int, default=3,
+        help="How many batches of calls to time at least, at each stack position; the "
+            "result is the fastest batch (default: %(default)s)")
+    p.add_argument("--positions", type=int, default=4,
+        help="How many stack positions to time each point at, 16 bytes apart; the result "
+            "is the fastest. A point whose call takes --min-time or longer is timed at one "
+            "(default: %(default)s)")
+    p.add_argument("--once-above", type=float, default=1.0,
+        help="A point whose first call takes this long, in seconds, is timed by that call "
+            "alone (default: %(default)s)")
     # The hash algorithms take about 20s at the largest k on the r8a.xlarge
     # the published results come from, so a limit of 20s skipped them there
     p.add_argument("--time-limit", type=float, default=30.0,
@@ -220,10 +254,23 @@ def parse_args():
             "(default: %(default)s)")
     p.add_argument("--fix-freq", action="store_true",
         help="Set the CPU frequency governors to performance while timing (Linux, as root)")
+    p.add_argument("--cpu", type=int,
+        help="Run every point on this CPU, which should be one the kernel keeps other "
+            "work off (Linux)")
+    p.add_argument("--huge-pages", action="store_true",
+        help="Have the C library take memory in 2 MB pages, from a pool that must have "
+            "been reserved (Linux)")
+    p.add_argument("--counters", action="store_true",
+        help="Record performance counters with each point: " + ", ".join(COUNTERS)
+            + " (Linux, on that processor)")
     p.add_argument("--build-dir", type=pathlib.Path, help="C++ build directory")
     args = p.parse_args()
     if args.values is None and args.nk is None:
         args.values = ["small", "fib"]
+    if sys.platform != "linux":
+        for option in ["cpu", "huge_pages", "counters"]:
+            if getattr(args, option):
+                p.error(f"--{option.replace('_', '-')} needs Linux")
     for n, k in args.nk or []:
         if k > n:
             p.error(f"--nk {n} {k}: k must be at most n")
@@ -240,15 +287,12 @@ def main():
     # mid-run spoils the points timed across it
     if sys.platform == "darwin":
         subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
-    # A fresh process for each algorithm, so none inherits another's heap
-    pool = concurrent.futures.ProcessPoolExecutor(max_workers=1,
-        mp_context=multiprocessing.get_context("spawn"), max_tasks_per_child=1)
     results = {}
     for lang, order, alg in runs:
         case = f"{lang}-{order}"
         print(f"{datetime.datetime.now():%F %T} starting {case} {alg}", flush=True)
         csvfile = None if args.out is None else args.out / case / f"{alg}.csv"
-        results[(case, alg)] = pool.submit(time_one, args, lang, order, alg, csvfile).result()
+        results[(case, alg)] = time_one(args, lang, order, alg, csvfile)
         print(f"{datetime.datetime.now():%F %T} finished {case} {alg}", flush=True)
     # Compare the algorithms timed in each case, point by point
     by_point = {}

@@ -73,4 +73,11 @@ def get_linux():
     return {
         "machine": f"{product}, {cpu}",
         "os": platform.freedesktop_os_release()["PRETTY_NAME"] + " " + platform.release(),
+        # Not in KEYS: these say how the kernel was set up for timing, such as
+        # which CPUs it keeps other work off and whether it hands out huge
+        # pages unasked
+        "kernel_cmdline": pathlib.Path("/proc/cmdline").read_text().strip(),
+        "transparent_hugepage":
+            pathlib.Path("/sys/kernel/mm/transparent_hugepage/enabled").read_text().strip(),
+        "nr_hugepages": pathlib.Path("/proc/sys/vm/nr_hugepages").read_text().strip(),
     }

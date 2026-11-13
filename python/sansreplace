@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+# Copyright 2018 Google LLC
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""The Python implementations, with the command line of the C++ and Rust
+programs in cpp/main.cpp and rust/src/main.rs, less what only they can do:
+this times at one stack position, and reads no performance counters."""
+
+import argparse
+import gc
+import importlib
+import random
+import resource
+import statistics
+import time
+
+from algorithms import ALGORITHMS
+
+def table():
+    "{(order, name): function}"
+    res = {}
+    for alg in ["donothing"] + ALGORITHMS:
+        md = importlib.import_module(f"algorithms.{alg}")
+        for order in ["donothing", "random", "sorted"]:
+            f = getattr(md, f"{order}_choose", None)
+            if f is not None:
+                res[(order, alg)] = f
+    return res
+
+def minor_faults():
+    return resource.getrusage(resource.RUSAGE_SELF).ru_minflt
+
+def batch(args, f, iters):
+    "The time iters calls take, in seconds; every batch starts from the same seed"
+    random.seed(args.seed)
+    gc.disable()
+    start = time.perf_counter()
+    for _ in range(iters):
+        f(args.n, args.k)
+    finish = time.perf_counter()
+    gc.enable()
+    return finish - start
+
+def time_point(args, f):
+    "As time_point in cpp/timing.cpp"
+    faults = minor_faults()
+    t = batch(args, f, 1)
+    if t >= args.once_above:
+        print(0, 1, 1, t, t, minor_faults() - faults)
+        return
+    iters = 1
+    while t < args.min_time / 10:
+        iters *= 2
+        t = batch(args, f, iters)
+    faults = minor_faults()
+    times = []
+    while len(times) < args.min_batches or sum(times) < args.min_time:
+        times.append(batch(args, f, iters))
+    print(0, iters, len(times), min(times) / iters, statistics.median(times) / iters,
+        minor_faults() - faults)
+
+def parse_args():
+    p = argparse.ArgumentParser(allow_abbrev=False, description=__doc__)
+    sub = p.add_subparsers(dest="command", required=True)
+    sub.add_parser("list", help="Print the order and name of everything here")
+    sample = sub.add_parser("sample", help="Print samples, one to a line")
+    sample.add_argument("--count", type=int, required=True)
+    timer = sub.add_parser("time", help="Time a point")
+    timer.add_argument("--min-time", type=float, required=True)
+    timer.add_argument("--min-batches", type=int, required=True)
+    timer.add_argument("--once-above", type=float, required=True)
+    for s in [sample, timer]:
+        s.add_argument("--order", required=True)
+        s.add_argument("--algorithm", required=True)
+        s.add_argument("--n", type=int, required=True)
+        s.add_argument("--k", type=int, required=True)
+        s.add_argument("--seed", type=int, required=True)
+    args = p.parse_args()
+    if args.command != "list" and args.k > args.n:
+        p.error("k must be at most n")
+    return args
+
+def main():
+    args = parse_args()
+    if args.command == "list":
+        for order, alg in table():
+            print(order, alg)
+        return
+    f = table()[(args.order, args.algorithm)]
+    if args.command == "sample":
+        random.seed(args.seed)
+        for _ in range(args.count):
+            print(*f(args.n, args.k))
+    else:
+        time_point(args, f)
+
+if __name__ == '__main__':
+    main()

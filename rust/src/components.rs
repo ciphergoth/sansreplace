@@ -1,8 +1,8 @@
 //! Parts of the algorithms, timed on their own to compare the libraries the
-//! C++ and the Rust use, as in cpp/components.cpp: fill draws k random numbers below n
-//! into the output, and each of the others does the same and then one thing
-//! more, as the algorithms do it, so that its time less fill's is what that
-//! thing costs on k random numbers.
+//! C++ and the Rust use, as in cpp/components.cpp: fill draws k random numbers
+//! below n into the output, and fillsort, fillshuffle and hashinsert each do
+//! the same and then one thing more, as the algorithms do it, so that its time
+//! less fill's is what that thing costs on k random numbers.
 
 use crate::algorithms::{Algorithm, HashSet};
 
@@ -20,6 +20,18 @@ where
     R: rand::RngExt + ?Sized + 'static,
 {
     vec![
+        // Writes 0 to k - 1 into the output, as SELECT starts by doing: with
+        // no random numbers, no branches that depend on data and no
+        // allocation, any change in its time is the machine's. See
+        // measurement.md.
+        (
+            "count",
+            Box::new(|_: &mut R, _: u32, res: &mut [u32]| {
+                for (i, r) in res.iter_mut().enumerate() {
+                    *r = i as u32;
+                }
+            }),
+        ),
         ("fill", Box::new(|rng: &mut R, length: u32, res: &mut [u32]| fill(rng, length, res))),
         (
             "fillsort",

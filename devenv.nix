@@ -29,9 +29,10 @@ in
 {
   packages = with pkgs; [
     boost
+    cli11
     meson
     ninja
-    (python3.withPackages (ps: with ps; [ cffi matplotlib numpy ]))
+    (python3.withPackages (ps: with ps; [ matplotlib numpy ]))
     biber
     (texliveMedium.withPackages (
       ps: with ps; [

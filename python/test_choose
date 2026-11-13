@@ -17,7 +17,7 @@
 import argparse
 import pathlib
 
-import impl_load
+import impls
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
@@ -28,10 +28,10 @@ def binomial(n, k):
         r //= i + 1
     return r
 
-def test_choose(args, choose):
+def test_choose(args, samples):
     counts = {}
-    for _ in range(args.num_tests):
-        r = tuple(choose((args.n, args.k)))
+    for sample in samples:
+        r = tuple(sample)
         counts[r] = 1 + counts.get(r, 0)
     if len(counts) <= args.show_max:
         for k, v in sorted(counts.items()):
@@ -52,7 +52,8 @@ def parse_args():
         help="Algorithm variant to test")
     p.add_argument('--algorithm', default='cardchoose',
         help="Algorithm to test")
-    impl_load.add_arguments(p)
+    p.add_argument("--language", default="cpp", choices=["cpp", "rust", "python"])
+    p.add_argument("--build-dir", type=pathlib.Path, help="C++ build directory")
     args = p.parse_args()
     if args.k > args.n:
         p.error("k must be at most n")
@@ -65,8 +66,9 @@ def main():
     for k, v in sorted(vars(args).items()):
         print(f"{k}: {v}")
     print()
-    timeables = impl_load.get_timeables(args, topdir)
-    test_choose(args, timeables[args.sorttype][args.algorithm].call)
+    cmd = impls.command(topdir, args.language, args.build_dir)
+    test_choose(args, impls.sample(cmd, args.sorttype, args.algorithm, args.n, args.k,
+        args.num_tests))
 
 if __name__ == '__main__':
     main()
