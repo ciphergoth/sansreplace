@@ -13,16 +13,61 @@ The times quoted here are from the AWS r8a.xlarge that the published results wer
 
 The results are timed on an AWS r8a.xlarge, whose four vCPUs are each a whole core of an AMD EPYC
 9R45, so nothing else shares the core a benchmark runs on. It is stopped between runs, and may come
-back on a different host. The tools in [running.md](running.md) record the machine, OS, compilers,
-C++ standard library and Boost version in every CSV.
+back on a different host. One of the four cores is kept for the timing: the kernel is booted with
+`isolcpus=3 nohz_full=3 rcu_nocbs=3`, so that it schedules nothing else there, sends it no timer
+ticks while one process runs, and does its own housekeeping on the other cores, and `python/bench`
+pins every process it times to that core. Transparent huge pages are off. The tools in
+[running.md](running.md) record the machine, OS, kernel command line, compilers, C++ standard
+library and Boost version in every CSV.
 
-## Three runs, and the fastest of them
+It is a virtual machine, which limits what we can look at: it offers five performance counters at
+a time, and no way to turn the processor's prefetchers off.
 
-The published results are the fastest time at each point over three whole runs, on separate boots
-hours apart, combined by [`python/fastest`](python/fastest), which also reports the points where
-the runs disagree. Most points agree between runs to within a few percent; we take the fastest
-because of [one effect we have not pinned down](#the-quadratic-scans-slow-state), which slows some
-points of some runs by up to 1.6 times, and which only ever makes a point slower.
+## How a point is timed
+
+Each point, one algorithm at one _n_ and _k_, is timed in a process of its own, which
+`python/bench` starts afresh for it. In the earlier harness one process timed all of an algorithm's
+points in turn, and a point's time then depended on what had been timed before it: on where earlier
+points had left the heap, and on states of the processor that
+[outlasted the point that set them off](#the-quadratic-scans-slow-state). A fresh process starts
+every point from the same state, so a point timed alone gets the time it gets in a whole run.
+
+The process times batches of calls. It doubles the calls in a batch until a batch takes a tenth of
+`--min-time`, then times batches of that size until it has at least three, over at least
+`--min-time`, 0.05 seconds, and reports the time per call of the fastest batch. Every batch starts
+from the same seed, so every batch does the same work, and the fastest is the one the machine
+disturbed least. A point whose first call takes a second or more is timed by that call alone.
+
+It does this at up to four [positions of the stack](#where-the-stack-lands), and the point's time
+is the fastest of them. The CSVs keep every position's fastest and median batch, the minor page
+faults it took, and with `--counters`, five performance counters over the fastest batch: cycles,
+instructions, branch mispredictions, requests from the level-2 prefetcher and level-2 cache misses.
+The instruction count is the same to six figures from one run to the next, so when a time moves,
+the counters say whether the processor did the same work more slowly or did different work.
+
+## Where the stack lands
+
+Where a process's stack starts depends on things that have nothing to do with the program. The
+kernel randomises it, with the rest of the address space, on every launch; and the environment
+variables sit above it, so that its start moves with their total length. Mytkowicz et al., in
+[Producing wrong data without doing anything obviously
+wrong!](https://doi.org/10.1145/1508244.1508275), found the size of the environment changing which
+of two builds looked faster, and it does here too:
+
+- With the address space randomised as usual, 20 processes each timing C++ HSEL at _k_ = 1 spread
+  over a factor of 1.72, and only 11 of them came within 2% of the fastest. With randomisation off,
+  all 20 did.
+- With randomisation off, and the environment padded by 0 to 4,080 bytes in steps of 16, the same
+  point's time moved between 0% and 6% above its fastest in a pattern that repeats every 64 bytes,
+  so with the stack's position within a cache line; and at a few positions it took 1.3 to 1.7
+  times as long. An empty call took 8.4 times as long at one position of the 256.
+
+So `bench` starts every process with randomisation off, through `setarch -R`, and with an empty
+environment, and each process runs the timing on a stack it allocates itself, at a place it
+chooses: 0, 16, 32 and 48 bytes below a page boundary in turn, which covers the cycle. `bench`
+takes the fastest of the four. This gives every algorithm its best alignment rather than whichever
+one the launch happened to give it; a point whose single call takes `--min-time` or more is timed
+at the first position only, since at that size the others would cost more than they could tell us.
 
 ## The random number generator
 
@@ -31,13 +76,11 @@ algorithm's time, so the C++ uses its own: Xoshiro256++ with Lemire's method for
 bound, in [`cpp/randbelow.h`](cpp/randbelow.h). It is defined in the header so that it is inlined
 into each algorithm, and it takes two 32-bit numbers from each 64-bit output. The Rust uses the
 `rand` crate's `SmallRng`, which is the same generator, and its `random_range`, which takes a whole
-64-bit output for each 32-bit number. Both generators, and the Python's, start each pass that times
-a point from a seed fixed by that point, so that a pass makes the same draws in any run, whatever
-was timed before it, and the C++ and Rust generators start each pass in the same state. Seeding
-each process once would not do this: how many calls a pass makes depends on how long earlier
-passes took, so each point would start at a different place in the sequence in every run. The
-hash tables in both languages also hash with a fixed seed, so a pass at a given point does exactly
-the same work in every run.
+64-bit output for each 32-bit number. Both generators, and the Python's, start each batch that
+times a point from a seed fixed by that point, so that every batch makes the same draws, in any
+run, and the C++ and Rust generators start each batch in the same state. The hash tables in both
+languages also hash with a fixed seed, so a batch at a given point does exactly the same work
+every time.
 
 Both use the multiplication trick to turn a random 32-bit number into one below a bound, but they
 correct its slight bias differently. Lemire's method rejects the few inputs that cause it and draws
@@ -46,13 +89,6 @@ when the first is suspect and never loops, which leaves a bias of at most 1 in 2
 32-bit numbers. `rand` has an `unbiased` feature that makes it exact, at a cost on every draw; we
 don't enable it, since that cost would favour the algorithms that draw fewer numbers, and a bias
 that small can't be detected.
-
-## One process per algorithm
-
-`python/bench` times each algorithm in a fresh process, so that none inherits a heap shaped by
-another. Within a process, each algorithm still times many points in turn, so its allocations can
-land in different places from one point to the next; the data alignment fixes below remove the
-effects of that we found.
 
 ## Where code lands
 
@@ -68,9 +104,7 @@ Both languages now start every function on a cache line, with `-falign-functions
 [`cpp/meson.build`](cpp/meson.build) and `-align-all-functions=6` in
 [`.cargo/config.toml`](.cargo/config.toml), and both of these went back to their earlier times.
 This makes the timings stable when unrelated code changes, but not optimal: a loop's alignment
-still depends on the code before it in its own function. Mytkowicz et al., in [Producing wrong
-data without doing anything obviously wrong!](https://doi.org/10.1145/1508244.1508275), describe
-this kind of measurement bias in general.
+still depends on the code before it in its own function.
 
 ## Where data lands
 
@@ -83,7 +117,7 @@ stores, a misaligned start makes about half of them straddle two cache lines.
   line; see [SELECT](algorithms.md#select).
 - The quadratic algorithms scan their own output on every draw. C++ quadratic F2, random, at
   _k_ = 121,393, took 1,897 ns per number in every process, so its allocations were always
-  misaligned in the same way. Both harnesses now align the output array they time each algorithm
+  misaligned in the same way. Both programs now align the output array they time each algorithm
   with, and it takes 1,290 ns.
 
 ## What the compiler decides
@@ -100,10 +134,11 @@ against 0.90 ns inlined, and 0.91 ns in C++. The Rust now draws from `0..x + 1` 
 inlines everywhere; adding `#[inline]` to `random_range` in a patched copy of `rand` had the same
 effect.
 
-The same kind of thing showed up when the Rust moved from a timing binary of its own into the
-library that `python/bench` loads: rejection sampling, Floyd's F2 and HSEL got 14–23% faster. The
-old binary also hashed strings and pairs for its command line and CSVs, and with those extra
-callers, LLVM kept the hash function out of line; the library inlines it.
+The same kind of thing showed up in an early timing program for the Rust, which also hashed
+strings and pairs for its command line and CSVs: with those extra callers, LLVM kept the hash
+function out of line, and rejection sampling, Floyd's F2 and HSEL took 14–23% longer than they do
+now. Today's program uses no hash table outside the algorithms, so the hash function is inlined
+into them.
 
 ### Codegen units in Rust
 
@@ -186,20 +221,61 @@ above, and can decide which language looks faster.
   other sorted variants about 0.8 times. Rust's `sort_unstable`, ipnsort, still sorts in about half
   the time that `pdqsort` takes.
 
-## Large allocations on Linux
+## Memory from the kernel
 
 glibc's `malloc` serves blocks over 32 MB with a fresh `mmap` and unmaps them on `free`, so an
 algorithm that allocates a large array on every call faults in every page of it again on every
 call. Of the algorithms here, SELECT does, from _n_ ≈ 8 million, and the bit-vector F2 from
-_n_ ≈ 270 million; see [SELECT](algorithms.md#select). The `faults` rows in the results CSVs
+_n_ ≈ 270 million; see [SELECT](algorithms.md#select). The `position` rows in the results CSVs
 record the page faults each point took.
+
+The results are timed with ordinary 4 KB pages, which is what a program gets unless it asks for
+something else. `bench --huge-pages` has glibc take its memory in 2 MB pages instead, and we timed
+20 points both ways to see what that changes:
+
+- The algorithms whose time goes on cache misses in a large table get faster, since each miss
+  no longer also misses in the TLB: by 5% for Rust rank-select at _n_ = _k_ = 3,524,578, 11% for
+  Rust sorted rejection sampling at _k_ = 5,702,887 and 17% for the C++ bit-vector F2 at
+  _n_ = 165,580,141.
+- SELECT at _n_ = 14,930,352, which faults its array in on every call, takes 0.22 times as long,
+  since 14,600 faults a call become 29.
+- SELECT at _n_ = 1,346,269 takes twice as long. With 2 MB pages glibc maps even a 5 MB array
+  afresh on every call, and the kernel zeroes whole 2 MB pages for it.
+- Everything else we tried is within the noise.
+
+So the page size changes which algorithm is fastest at some points, in both directions, and we
+report the default.
+
+## The prefetcher's two speeds
+
+Filling 185 KB with the numbers from 0 to 46,367, a loop that executes exactly the same 16,209
+instructions every time, runs at two speeds 1.3 times apart: 3,370 cycles or 4,255. Nothing we can
+count differs between them in cache misses, TLB misses or branch mispredictions. What differs is
+the level-2 cache's prefetcher, which makes between one and two requests during a fast fill and
+about 1,160 during a slow one. The array fits in the level-2 cache and is already there, so the
+requests fetch nothing that helps, and the fill is slower while they are made. This is a
+correlation: the virtual machine gives us no way to turn the prefetcher off and see the slow speed
+go away.
+
+Which speed a process gets depends on where its memory lies. With 4 KB pages the fill is fast at
+some positions of the stack and slow at others, and occasionally a process finds no fast position
+among its four; with 2 MB pages it is always slow. We have not found the rule. The `count`
+component, which is this fill and nothing else, is timed with the others so that the results show
+it: SELECT, which begins with the same fill, runs at the slow speed at _n_ = 46,368 in both
+languages, in every process, with the same 1,250 or so prefetcher requests a call.
+
+This is the largest effect on this page that we can't remove, and it is a property of the
+processor rather than of our measurement: a program that calls SELECT on this machine will get one
+speed or the other for reasons it can't see. Where a point's positions differ by more than a few
+percent, the `position` rows in the CSV show both speeds.
 
 ## The quadratic scan's slow state
 
 Rust quadratic rejection sampling, and sorted quadratic F2, which both scan with
-`slice::contains`, run at two speeds. At large _k_, a whole row of points, or a stretch of one,
-sometimes takes about 1.6 times as long as in other runs, and which points are slow changes from
-run to run. The code, the data and the draws are the same in both: at _k_ = 6,765, the fast state
+`slice::contains`, run at two speeds. In the earlier harness, where one process timed all of an
+algorithm's points, a whole row of points at large _k_, or a stretch of one, sometimes took about
+1.6 times as long as in other runs, and which points were slow changed from run to run. The code,
+the data and the draws are the same in both: at _k_ = 6,765, the fast state
 takes 70.7 ns per number. Hardware performance counters show what differs:
 
 | | Fast | Slow |
@@ -217,21 +293,33 @@ mispredictions, cache misses or TLB misses in one than the other.
 We have ruled out the other core of an SMT pair (there is none), moving between cores, transparent
 huge pages, where the output array starts, the data, the host (another process timing the same
 point on another core at the same time stayed fast), and the passage of time (one point timed for
-six minutes stayed fast). The slow state appears only when a process sweeps through the points as
-the benchmark does, and how often it appears varies a great deal between runs. We have not found
-what triggers it, so we take the fastest of three runs, which only removes the slow state where at
-least one run escaped it.
+six minutes stayed fast). We have not found what triggers it, but where the process's memory lies
+has a part in it: of 20 fresh processes that each timed only the point at _k_ = 6,765, with the
+address space randomised, one was in the slow state, and of 20 with randomisation off, none was.
+Nor was any of the ten processes that have timed that point with today's harness, though one of
+20 was while we were developing it, with 2 MB pages. So timing each point in its own process has
+made the slow state rare, and has kept one slow point from slowing the points after it, but we
+can't say it is gone.
 
-## Running unattended
+## How far to trust a time
 
-The benchmark runs as a systemd unit on the machine, outside any login session. When the last SSH
-session ended, logind removed the bench user's IPC objects, including the semaphores that Python's
-process pool was using; the bench user now lingers, so logind leaves them alone.
+To see how much a time changes from one run of `bench` to the next, we timed 20 points five times
+each, among them every point above that had given trouble. With one exception, the five times of
+every point are within 3% of each other, and of half of them within 1%. The widest are C++ Floyd's
+F2 in random order at _n_ = _k_ = 1,346,269, at 3.0%, C++ HSEL at _k_ = 1, at 2.8%, and C++ SELECT
+at _n_ = 14,930,352, at 2.4%. The exception is `count` at _k_ = 46,368, for the
+[prefetcher's](#the-prefetchers-two-speeds) reasons: four processes in ten found only the slow
+speed.
+
+So we would not read anything into a difference of less than 5% between two algorithms at a point,
+and where an algorithm's time goes on sweeping an array of a few hundred kilobytes, the
+prefetcher's two speeds can move it by up to 1.3 times.
 
 ## How we checked
 
 - Every change to an algorithm is checked for fairness with `python/test_choose`, which counts how
-  often each possible output comes up.
+  often each possible output comes up, and `python/test_all` does the same for every algorithm in
+  both orders and every language at a few small points.
 - A time that changes unexpectedly is timed again, on a fresh boot, before we believe it.
 - To tell a real change from noise, the old and new code are built and timed alternately, on one
   boot, at the same points.
@@ -239,4 +327,6 @@ process pool was using; the bench user now lingers, so logind leaves them alone.
   machine the results are timed on, so that "the code is the same" is something we have checked
   rather than assumed.
 - Where the machine code is the same, we read the processor's performance counters to see where the
-  time goes.
+  time goes; `bench --counters` records five of them with every point.
+- A point that gives trouble is timed in many fresh processes, with one thing changed at a time,
+  such as the randomisation, the environment or the page size.
