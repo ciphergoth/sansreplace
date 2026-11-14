@@ -28,94 +28,95 @@ time limit from _k_ = 1.3×10<sup>6</sup>, can't win a band where they weren't t
 
 | _k_ from | Best | Best integer-only | `cardchoose` | Floor |
 |---|---|---|---|---|
-| 10 | `quadraticf2` 4.83ns |  | 16.4ns | 4.63ns |
-| 100 | `quadraticf2` 17.0ns |  | 18.8ns | 9.64ns |
-| 1,000 | `cardchoose` 20.9ns |  | 20.9ns | 10.0ns |
-| 10<sup>4</sup> | `cardchoose` 23.1ns ≈ `hiddenshuffle` 23.1ns | `cardchoose` 23.1ns | 23.1ns | 11.2ns |
-| 10<sup>5</sup> | `hiddenshuffle` 22.4ns | `cardchoose` 24.7ns | 24.7ns | 11.7ns |
-| 10<sup>6</sup> | `hiddenshuffle` 24.7ns | `bitvectorf2` 25.7ns | 29.4ns | 13.2ns |
-| 10<sup>7</sup> | `bitvectorf2` 23.0ns |  | 43.8ns | 19.7ns |
+| 10 | `quadraticf2` 4.89ns |  | 15.4ns | 4.70ns |
+| 100 | `hsel` 7.41ns |  | 18.0ns | 5.03ns |
+| 1,000 | `hsel` 7.22ns |  | 19.6ns | 5.09ns |
+| 10<sup>4</sup> | `hsel` 7.39ns |  | 21.5ns | 4.79ns |
+| 10<sup>5</sup> | `hsel` 8.33ns |  | 23.6ns | 6.80ns |
+| 10<sup>6</sup> | `hiddenshuffle` 24.6ns | `bitvectorf2` 26.7ns | 28.3ns | 13.6ns |
+| 10<sup>7</sup> | `bitvectorf2` 22.3ns |  | 42.3ns | 19.6ns |
 
 ### C++, sorted order
 
 | _k_ from | Best | Best integer-only | `cardchoose` | Floor |
 |---|---|---|---|---|
-| 10 | `cardchoose` 15.8ns |  | 15.8ns | 9.90ns |
-| 100 | `cardchoose` 17.9ns |  | 17.9ns | 9.60ns |
-| 1,000 | `cardchoose` 19.5ns |  | 19.5ns | 10.1ns |
-| 10<sup>4</sup> | `hiddenshuffle` 21.4ns ≈ `cardchoose` 21.5ns | `cardchoose` 21.5ns | 21.5ns | 10.3ns |
-| 10<sup>5</sup> | `hiddenshuffle` 21.5ns | `cardchoose` 23.4ns | 23.4ns | 10.4ns |
-| 10<sup>6</sup> | `hiddenshuffle` 21.7ns | `cardchoose` 26.8ns | 26.8ns | 11.4ns |
-| 10<sup>7</sup> | `bitvectorf2` 20.3ns |  | 33.8ns | 14.6ns |
+| 10 | `cardchoose` 14.4ns |  | 14.4ns | 9.91ns |
+| 100 | `cardchoose` 17.0ns |  | 17.0ns | 10.3ns |
+| 1,000 | `cardchoose` 18.6ns |  | 18.6ns | 10.4ns |
+| 10<sup>4</sup> | `cardchoose` 20.4ns |  | 20.4ns | 10.4ns |
+| 10<sup>5</sup> | `hiddenshuffle` 21.8ns ≈ `cardchoose` 22.4ns | `cardchoose` 22.4ns | 22.4ns | 10.4ns |
+| 10<sup>6</sup> | `hiddenshuffle` 21.7ns | `cardchoose` 25.4ns | 25.4ns | 11.3ns |
+| 10<sup>7</sup> | `hiddenshuffle` 21.8ns | `bitvectorf2` 22.7ns | 33.0ns | 14.5ns |
 
 ### Rust, random order
 
 | _k_ from | Best | Best integer-only | `cardchoose` | Floor |
 |---|---|---|---|---|
-| 10 | `quadraticf2` 5.21ns |  | 11.8ns | 4.55ns |
-| 100 | `hsel` 10.0ns |  | 11.2ns | 8.24ns |
-| 1,000 | `hsel` 9.77ns |  | 12.1ns | 8.84ns |
-| 10<sup>4</sup> | `hsel` 10.4ns |  | 13.2ns | 9.55ns |
-| 10<sup>5</sup> | `hsel` 13.5ns |  | 14.9ns | 12.5ns |
-| 10<sup>6</sup> | `cardchoose` 20.0ns |  | 20.0ns | 15.6ns |
-| 10<sup>7</sup> | `bitvectorf2` 30.8ns |  | 38.1ns | 25.3ns |
+| 10 | `quadraticf2` 5.11ns |  | 11.3ns | 4.52ns |
+| 100 | `hsel` 7.36ns |  | 11.0ns | 5.09ns |
+| 1,000 | `hsel` 7.30ns |  | 11.8ns | 5.20ns |
+| 10<sup>4</sup> | `hsel` 7.58ns |  | 13.0ns | 5.73ns |
+| 10<sup>5</sup> | `hsel` 8.67ns |  | 14.5ns | 6.39ns |
+| 10<sup>6</sup> | `cardchoose` 18.6ns |  | 18.6ns | 15.6ns |
+| 10<sup>7</sup> | `bitvectorf2` 31.0ns |  | 37.2ns | 25.3ns |
 
 ### Rust, sorted order
 
 | _k_ from | Best | Best integer-only | `cardchoose` | Floor |
 |---|---|---|---|---|
-| 10 | `cardchoose` 11.1ns |  | 11.1ns | 9.87ns |
-| 100 | `cardchoose` 10.1ns |  | 10.1ns | 8.81ns |
-| 1,000 | `cardchoose` 11.1ns |  | 11.1ns | 9.15ns |
-| 10<sup>4</sup> | `cardchoose` 12.2ns |  | 12.2ns | 10.7ns |
-| 10<sup>5</sup> | `cardchoose` 13.3ns |  | 13.3ns | 11.1ns |
-| 10<sup>6</sup> | `cardchoose` 17.2ns |  | 17.2ns | 12.6ns |
-| 10<sup>7</sup> | `hiddenshuffle` 22.5ns ≈ `bitvectorf2` 23.0ns | `bitvectorf2` 23.0ns | 24.8ns | 15.9ns |
+| 10 | `cardchoose` 10.5ns |  | 10.5ns | 9.40ns |
+| 100 | `cardchoose` 9.92ns |  | 9.92ns | 8.67ns |
+| 1,000 | `cardchoose` 10.8ns |  | 10.8ns | 9.03ns |
+| 10<sup>4</sup> | `cardchoose` 11.9ns |  | 11.9ns | 10.6ns |
+| 10<sup>5</sup> | `cardchoose` 13.1ns |  | 13.1ns | 10.9ns |
+| 10<sup>6</sup> | `cardchoose` 15.4ns |  | 15.4ns | 11.6ns |
+| 10<sup>7</sup> | `bitvectorf2` 21.8ns |  | 24.4ns | 16.0ns |
 
 Three algorithms are never far from the fastest per number output at any _k_: `hiddenshuffle`,
-`vitterd` and `cardchoose` are never worse than 44 ns per number in any case, while every other
-algorithm is worse than 100 ns per number somewhere it was timed. `cardchoose` is the simplest of
-the three: it is a few lines of integer arithmetic, while the other two need floating point and are
-considerably more involved. `vitterd` switches to Algorithm A once _n_ ≤ 13 _k_, and
-`hiddenshuffle` runs three stages in turn, the last of them Algorithm A.
+`vitterd` and `cardchoose` are never worse than 43 ns per number in any case. `hsel` is never worse
+than 72 ns, and every other algorithm is worse than 100 ns per number somewhere it was timed.
+`cardchoose` is the simplest of the three: it is a few lines of integer arithmetic, while the
+other two need floating point and are considerably more involved. `vitterd` switches to Algorithm
+A once _n_ ≤ 13 _k_, and `hiddenshuffle` runs three stages in turn, the last of them Algorithm A.
 
 With sorted output, `cardchoose` is the best algorithm at every _k_ below 10<sup>7</sup> in Rust,
-and `hiddenshuffle` above that; in C++, `cardchoose` is the best below 10<sup>4</sup>, tied with
-`hiddenshuffle` from 10<sup>4</sup>, and `hiddenshuffle` is the best from 10<sup>5</sup>. `cardchoose` loses its lead in
-C++ because libc++'s `std::sort` is slower than Rust's unstable sort; `hiddenshuffle` takes about
-the same time in both. With random output, `quadraticf2` is the best for small _k_, below 1,000
-in C++ and 100 in Rust, where it needs neither a sort nor a shuffle; in Rust, with its fast hash
-tables, `hsel` is the best from there to 10<sup>6</sup>. Wherever the best algorithm needs floating
-point, the best one that doesn't is `cardchoose`.
+and `bitvectorf2` above that; in C++, `cardchoose` is the best below 10<sup>5</sup>, tied with
+`hiddenshuffle` from 10<sup>5</sup>, and `hiddenshuffle` is the best from 10<sup>6</sup>.
+`cardchoose` loses its lead in C++ because Boost's `pdqsort` is slower than Rust's unstable sort;
+`hiddenshuffle` takes about the same time in both. With random output, the two languages agree:
+`quadraticf2` is the best below 100, where it needs neither a sort nor a shuffle, `hsel` from
+there to 10<sup>6</sup>, and `bitvectorf2` from 10<sup>7</sup>. In between, the best is
+`hiddenshuffle` in C++ and `cardchoose` in Rust.
 
 ## Dominated algorithms
 
 An algorithm is dominated by bands if another scores no worse in any band and better in at least
-one. Eight algorithms are dominated by bands in every case: `cardchoose` dominates seven of them in
-every case, and `hiddenshuffle` dominates the eighth, `vitterd`. Because a band's score is the worst over every _n_, that doesn't make them useless:
+one. Eight algorithms are dominated by bands in every case: `cardchoose` dominates six of them in
+every case, `hsel` dominates `floydf2`, and `hiddenshuffle` dominates `vitterd`. Because a band's score is the worst over every _n_, that doesn't make them useless:
 `iterativechoose`, `reservoirsample` and `select` are among the fastest where _n_/_k_ is small,
 and `iterativechoose` belongs to the best sets for sorted output below.
 
 | Dominated by bands in every case | By, in every case |
 |---|---|
-| `quadraticreject` | `quadraticf2`, `ranksb`, `vitterd`, `hiddenshuffle`, `cardchoose` |
-| `iterativechoose` | `select`, `bitvectorf2`, `vitterd`, `hiddenshuffle`, `cardchoose` |
-| `reservoirsample` | `select`, `bitvectorf2`, `vitterd`, `hiddenshuffle`, `cardchoose` |
+| `quadraticreject` | `quadraticf2`, `rejectionsample`, `floydf2`, `hsel`, `ranksb`, `vitterd`, `hiddenshuffle`, `cardchoose` |
+| `iterativechoose` | `select`, `bitvectorf2`, `hsel`, `vitterd`, `hiddenshuffle`, `cardchoose` |
+| `reservoirsample` | `select`, `bitvectorf2`, `hsel`, `vitterd`, `hiddenshuffle`, `cardchoose` |
 | `select` | `bitvectorf2`, `vitterd`, `hiddenshuffle`, `cardchoose` |
-| `rejectionsample` | `floydf2`, `hsel`, `ranksb`, `vitterd`, `hiddenshuffle`, `cardchoose` |
-| `floydf2` | `cardchoose` |
-| `ranksb` | `cardchoose` |
+| `rejectionsample` | `floydf2`, `hsel`, `cardchoose` |
+| `floydf2` | `hsel` |
+| `ranksb` | `floydf2`, `hsel`, `cardchoose` |
 | `vitterd` | `hiddenshuffle` |
 
 An algorithm is dominated at every point if another was at least as fast at every point timed. No
-algorithm is dominated at every point in every case, but in each case `cardchoose` dominates some
-of the others this way: in Rust with sorted output, six of the other twelve. Generated by
+algorithm is dominated at every point in every case, and with random output in C++ none is at
+all; but with sorted output `cardchoose` dominates several of the others this way: in Rust, six of
+the other twelve. Generated by
 [`python/cover`](python/cover) `--dominated`.
 
 | | Dominated at every point |
 |---|---|
-| C++, random order | `rejectionsample` by `cardchoose`<br>`floydf2` by `cardchoose` |
-| C++, sorted order | `quadraticreject` by `cardchoose`<br>`select` by `bitvectorf2`<br>`rejectionsample` by `ranksb`, `vitterd`, `hiddenshuffle`, `cardchoose`<br>`floydf2` by `vitterd`, `hiddenshuffle`, `cardchoose`<br>`hsel` by `vitterd`, `cardchoose` |
+| C++, random order |  |
+| C++, sorted order | `quadraticreject` by `cardchoose`<br>`select` by `bitvectorf2`<br>`rejectionsample` by `cardchoose`<br>`floydf2` by `cardchoose`<br>`hsel` by `cardchoose` |
 | Rust, random order | `ranksb` by `cardchoose` |
 | Rust, sorted order | `quadraticreject` by `cardchoose`<br>`quadraticf2` by `cardchoose`<br>`rejectionsample` by `cardchoose`<br>`floydf2` by `cardchoose`<br>`hsel` by `cardchoose`<br>`ranksb` by `cardchoose` |
 
@@ -136,30 +137,34 @@ choose by a rule, such as thresholds on _k_ and _n_/_k_, and the region claims i
 
 | | Best one | Best two | Best three | `cardchoose` alone |
 |---|---|---|---|---|
-| C++, random order | `cardchoose` 3.53×, +22.8ns | `quadraticf2` + `cardchoose` 2.22×, +22.8ns | `quadraticf2` + `bitvectorf2` + `hiddenshuffle` 1.07×<br>_integer only:_ `quadraticf2` + `bitvectorf2` + `ranksb` 1.76×, +7.36ns | `cardchoose` 3.53×, +22.8ns |
-| C++, sorted order | `hiddenshuffle` 2.25×, +12.3ns<br>_integer only:_ `cardchoose` 2.35×, +18.7ns | `bitvectorf2` + `hiddenshuffle` 1.05×, +0.49ns<br>_integer only:_ `bitvectorf2` + `ranksb` 2.06×, +10.9ns | `bitvectorf2` + `hiddenshuffle` + `cardchoose` 1.03×<br>_integer only:_ `bitvectorf2` + `ranksb` + `cardchoose` 1.96×, +10.9ns | `cardchoose` 2.35×, +18.7ns |
-| Rust, random order | `cardchoose` 2.58×, +9.98ns | `quadraticf2` + `cardchoose` 1.51×, +9.98ns | `quadraticreject` + `select` + `cardchoose` 1.27× | `cardchoose` 2.58×, +9.98ns |
-| Rust, sorted order | `cardchoose` 1.56×, +8.36ns | `bitvectorf2` + `hiddenshuffle` 1.18×, +1.66ns<br>_integer only:_ `iterativechoose` + `cardchoose` 1.21×, +2.67ns | `bitvectorf2` + `hiddenshuffle` + `cardchoose` 1.04×<br>_integer only:_ `iterativechoose` + `bitvectorf2` + `cardchoose` 1.16×, +2.02ns | `cardchoose` 1.56×, +8.36ns |
+| C++, random order | `hsel` 2.51×, +26.6ns | `bitvectorf2` + `rejectionsample` 1.51×, +2.22ns | `quadraticf2` + `bitvectorf2` + `rejectionsample` 1.34× | `cardchoose` 4.49×, +20.0ns |
+| C++, sorted order | `hiddenshuffle` 2.25×, +12.2ns<br>_integer only:_ `cardchoose` 2.28×, +18.5ns | `bitvectorf2` + `hiddenshuffle` 1.12×, +1.78ns<br>_integer only:_ `bitvectorf2` + `cardchoose` 2.09×, +12.3ns | `iterativechoose` + `bitvectorf2` + `hiddenshuffle` 1.01×<br>_integer only:_ no better than 2 | `cardchoose` 2.28×, +18.5ns |
+| Rust, random order | `hsel` 2.14×, +14.9ns | `bitvectorf2` + `rejectionsample` 1.86×, +4.61ns | `quadraticf2` + `hsel` + `cardchoose` 1.47× | `cardchoose` 2.49×, +6.16ns |
+| Rust, sorted order | `cardchoose` 1.53×, +8.43ns | `iterativechoose` + `cardchoose` 1.15×, +2.13ns | `bitvectorf2` + `hiddenshuffle` + `cardchoose` 1.00×<br>_integer only:_ no better than 2 | `cardchoose` 1.53×, +8.43ns |
 
-With sorted output, the best partner is `iterativechoose`, which wins where _k_ is a large fraction
-of _n_; with random output, it is `quadraticf2`, which wins at small _k_. In C++, three algorithms
-including `hiddenshuffle` are as good as all thirteen together; in sorted order, no third integer-only
-algorithm improves on the best integer-only pair.
+`bitvectorf2` belongs to the best pair in three of the four cases, since it wins a region of
+moderate _n_/_k_ that none of the algorithms that run in time proportional to _k_ does, and with
+random output its best partner is `rejectionsample`, which wins where _n_/_k_ is large. In Rust
+with sorted output, the best pair is `cardchoose` with `iterativechoose`, which wins where _k_ is a
+large fraction of _n_. For sorted output, three algorithms are as good as all thirteen together, or
+within 1% of it; for random output, no three come within 30%.
 
 ## Implementing only Cardchoose
 
-If you implement only one algorithm, `cardchoose` is a good choice. It is the best single
-algorithm in three of the four cases; in the fourth, C++ with sorted output, only the two
-floating-point algorithms beat it, because libc++'s `std::sort` is slower than Rust's. It is the
-best integer-only algorithm in every case. Implemented alone, it is never more than 9–22 ns per
-number slower than the best three algorithms together, in any case and at any _k_: 22 ns in C++
-with random output, 19.0 ns in C++ with sorted output, 10.0 ns in Rust with random output and 8.9
-ns in Rust with sorted output.
+If you implement only one algorithm, `cardchoose` is a good choice. By ratio to the floor it is
+the best single algorithm for sorted output in Rust, and within 0.03 of `hiddenshuffle` for sorted
+output in C++, where only the two floating-point algorithms beat it. For random output `hsel` has
+the better worst ratio: 2.51 against 4.49 in C++, and 2.14 against 2.49 in Rust. But those ratios
+are at their largest where calls are cheap. In time per number, `cardchoose` alone is never more
+than 6–20 ns slower than the best three algorithms together, in any case and at any _k_: 20 ns in
+C++ with random output, 18.5 ns in C++ with sorted output, 6.2 ns in Rust with random output and
+8.4 ns in Rust with sorted output. `hsel` alone is up to 27 ns slower in C++ and 15 ns in Rust, at
+large _k_, where its dictionary no longer fits in cache.
 
-Its largest ratios to the floor are where calls are cheap. With random output, it is 3.53× the floor
-in C++ and 2.58× in Rust for _k_ below 100, where `quadraticf2` needs neither a sort nor a shuffle,
-but no call to `cardchoose` there takes more than 1.5 µs. With sorted output, it is 2.29× the floor
-in C++ and 1.56× in Rust for _k_ ≥ 10<sup>7</sup>, where `hiddenshuffle` wins. In every case it is at least
-as fast as some of the others at every point timed, and in Rust with sorted output, as fast as six
-of the other twelve. It needs no storage beyond the output, and it is a few lines of integer
-arithmetic.
+Its largest ratios to the floor with random output are 4.49× in C++, for _k_ from 10<sup>4</sup> to
+10<sup>5</sup>, where the hash-based algorithms are at their best, and 2.49× in Rust, for _k_
+below 100, where `quadraticf2` needs neither a sort nor a shuffle and no call to `cardchoose` takes
+more than 1.4 µs. With sorted output, it is 2.28× the floor in C++ and 1.53× in Rust, both for
+_k_ ≥ 10<sup>7</sup>. With sorted output it is at least as fast as some of the others at every
+point timed, in Rust as fast as six of the other twelve. It needs no storage beyond the output,
+and it is a few lines of integer arithmetic.

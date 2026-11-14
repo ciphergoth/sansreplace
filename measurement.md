@@ -320,9 +320,42 @@ at _n_ = 14,930,352, at 2.4%. The exception is `count` at _k_ = 46,368, for the
 [prefetcher's](#the-prefetchers-two-speeds) reasons: four processes in ten found only the slow
 speed.
 
+The whole grid agrees less well than those 20 points do. The published results are the fastest
+time at each point over three whole runs, on separate boots, combined by
+[`python/fastest`](python/fastest), and [`python/agree`](python/agree) compares the runs. Of the
+52,561 points timed in all three:
+
+| Over | Slowest run over fastest | Second fastest over fastest |
+|---|---|---|
+| 3% | 7,702 | 1,999 |
+| 5% | 4,989 | 1,082 |
+| 10% | 2,152 | 379 |
+| 20% | 623 | 92 |
+| 50% | 53 | 3 |
+
+So all three runs are within 5% of each other at nine points in ten, and the fastest of three
+was reached by a second run to within 5% at 97.9% of points, and to within 10% at 99.3%. In every
+large disagreement we looked at, the runs executed the same instructions, and one took more cycles
+over them. There are three kinds:
+
+- **The prefetcher.** Of the 92 points whose two fastest runs differ by more than 20%, 51 are
+  SELECT's and 17 the bit-vector F2's, which also sweeps an array whose size goes with _n_. Rust
+  sorted SELECT at _n_ = 196,418, timed in 180 processes on one boot, took more than 1.2 times its
+  fastest time in 124 of them, with anything from 45 to 7,200 prefetcher requests a call. Three
+  runs don't settle a point like that, and more wouldn't either.
+- **Large tables.** 23 of the others have _k_ ≥ 500,000, where the time goes on cache misses in a
+  large table. One of the three boots was up to 2.2 times slower than the others at some of these
+  points, with the same level-2 cache misses, so the time went beyond that cache: perhaps on a
+  level-3 cache shared with other tenants' cores, or on a slower host, but the virtual machine
+  doesn't let us count level-3 misses to find out. Timed in 180 processes on one boot, seven such
+  points didn't drift over the hour, but the typical process was 4% to 13% above the fastest.
+- **Passing disturbances.** At small points, a process is now and then 1.5 to 2 times slower at
+  every stack position while its neighbours are not. In 180 processes each at six such points,
+  it happened twice, both in the same few seconds. Three runs clear nearly all of these.
+
 So we would not read anything into a difference of less than 5% between two algorithms at a point,
-and where an algorithm's time goes on sweeping an array of a few hundred kilobytes, the
-prefetcher's two speeds can move it by up to 1.3 times.
+nor less than 10% where _k_ is in the millions; and SELECT's times, and the bit-vector F2's where
+its time goes on its sweep, can be out by up to 1.6 times for the prefetcher's reasons.
 
 ## How we checked
 
