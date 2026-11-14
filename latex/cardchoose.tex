@@ -21,11 +21,8 @@
 \usepackage{fontspec}
 \usepackage{polyglossia}
 \setdefaultlanguage[variant=british,ordinalmonthday=false]{english}
-\usepackage[hmargin=4cm,vmargin=3cm,nohead]{geometry}
-\usepackage{parskip}
-\usepackage[style]{abstract}
-\usepackage{titling}
-\usepackage{sectsty}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
 \usepackage{floatrow}
 \usepackage[svgnames]{xcolor}
 \usepackage[breaklinks,colorlinks,urlcolor=DarkBlue,linkcolor=DarkRed,citecolor=DarkGreen]{hyperref}
@@ -65,19 +62,13 @@
   \repo{cpp/#1.cpp}{C++} and \repo{rust/src/algorithms/#1.rs}{Rust}}
 
 \addbibresource{bib.bib}
-
-\setmainfont{TeX Gyre Pagella}
-\setsansfont{TeX Gyre Heros}
-\setmathrm{Latin Modern Roman}
-\defaultfontfeatures{}
-\setmonofont{TeX Gyre Cursor}[Ligatures={NoCommon,NoRequired,NoContextual},Scale=0.9]
-
-\pretitle{\begin{center}\LARGE\bfseries\sffamily} % sf title
-\renewcommand{\abstitlestyle}{\sffamily\bfseries\centering} % sf abstract
-\allsectionsfont{\sffamily} % sf sections
-
-\raggedright
-\raggedbottom
+% Let URLs in the bibliography break after letters, so that they don't
+% overrun the margin
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+% Let a line with code in it, which can't be hyphenated, stretch a little
+% rather than overrun the margin
+\emergencystretch=1em
 
 \title{Cardchoose: simple, fast sampling without replacement}
 \author{Paul~Crowley}
