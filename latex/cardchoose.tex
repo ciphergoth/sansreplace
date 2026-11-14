@@ -1,4 +1,5 @@
 % Copyright 2018 Google LLC
+% Copyright 2026 Paul Crowley
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -696,7 +697,7 @@ languages for sorted output.
 
 \begin{table}
     \centering
-    \footnotesize
+    \small
     \input{generated/components.tex}
     \caption{Time per number, in ns, to sort, shuffle and insert into a
     hash set \(k\) random numbers below \(2^{32} - 1\), measured as each
@@ -881,28 +882,28 @@ call took more than 30 seconds; only the quadratic algorithms reached
 that, from \(k = 1.3 \times 10^6\).
 
 \begin{table}
-    \footnotesize
+    \small
     \input{generated/bands-cpp-random.tex}
     \caption{C++, random order: the best algorithms by worst time per
     number output in each band of \(k\)}\label{bandscpprandom}
 \end{table}
 
 \begin{table}
-    \footnotesize
+    \small
     \input{generated/bands-cpp-sorted.tex}
     \caption{C++, sorted order: the best algorithms by worst time per
     number output in each band of \(k\)}\label{bandscppsorted}
 \end{table}
 
 \begin{table}
-    \footnotesize
+    \small
     \input{generated/bands-rust-random.tex}
     \caption{Rust, random order: the best algorithms by worst time per
     number output in each band of \(k\)}\label{bandsrustrandom}
 \end{table}
 
 \begin{table}
-    \footnotesize
+    \small
     \input{generated/bands-rust-sorted.tex}
     \caption{Rust, sorted order: the best algorithms by worst time per
     number output in each band of \(k\)}\label{bandsrustsorted}
@@ -962,7 +963,7 @@ implementation has to choose by a rule, such as thresholds on \(k\)
 and \(n/k\).
 
 \begin{table}
-    \footnotesize
+    \small
     \input{generated/cover.tex}
     \caption{The best sets of up to three algorithms, by how far their
     worst time per number output in a band of \(k\) exceeds the band's
@@ -1095,7 +1096,7 @@ scans are short, so we kept our loop. In ns per number, for C++
 quadratic rejection in random order at \(n = 1{,}346{,}269\):
 
 \begin{center}
-    \footnotesize
+    \small
     \begin{tabular}{r|r|r|r}
     \(k\) & Returning early & ORing together &
     \mintinline{cpp}{std::ranges::contains} \\
@@ -1196,7 +1197,7 @@ three runs, the number at which one run took more than a given amount
 longer than the fastest is:
 
 \begin{center}
-    \footnotesize
+    \small
     \begin{tabular}{r|r|r}
     Longer by more than & The slowest run & The second fastest run \\
     \hline
@@ -1230,7 +1231,11 @@ while its neighbours are not; in 180 processes at each of six such
 points this happened twice, seconds apart, and three runs clear nearly
 all of these. We would not read anything into a difference of less than
 5\% between two algorithms at a point, nor less than 10\% where \(k\)
-is in the millions.
+is in the millions. The three runs are in \texttt{runs.tar.xz}, attached
+to the
+\href{https://github.com/ciphergoth/sansreplace/releases/tag/arxiv_01}{release}
+of the repository that this paper describes, and \texttt{python/agree}
+computes the table above from them.
 
 \paragraph{How we checked.} Every change to an algorithm is checked for
 fairness, by counting how often each possible output comes up at a few

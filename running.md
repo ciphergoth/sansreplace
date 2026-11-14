@@ -70,12 +70,16 @@ python/fastest --out results/combined results/run1 results/run2 results/run3
 
 `python/agree` says how well runs of the same code agree: how many points' slowest run took more
 than 1.03, 1.05 and so on times their fastest, overall and by algorithm, and the points that agree
-worst, with the counters each run recorded there. `python/stability` runs `bench` several times on
+worst, with the counters each run recorded there; with `--rank 2` it compares each point's
+second fastest run with its fastest, which says where a second run reached the time that
+`fastest` took. `python/pack_runs` packs whole runs into one archive, to publish alongside the
+results made from them. `python/stability` runs `bench` several times on
 a few points and reports how far apart the runs are; it is where
 the figures in [measurement](measurement.md#how-far-to-trust-a-time) come from, and needs Linux.
 
 ```
 python/agree results/run1 results/run2 --row rust-random/hsel 1346269
+python/pack_runs --out runs.tar.xz results/run1 results/run2 results/run3
 python/stability --out results/stability --cpu 3
 ```
 
@@ -209,3 +213,9 @@ This generates the paper's figures and tables from the CSVs in `results/latest` 
 On every push to `master` that changes the paper, the results or the build, the Pages workflow
 builds the paper the same way and publishes it alongside the explorer, at
 <https://ciphergoth.github.io/sansreplace/cardchoose.pdf>.
+
+`latex/make_arxiv` makes the tarball of the paper's source to upload to arXiv, as
+`latex/build/cardchoose-arxiv.tar.gz`. arXiv compiles with XeLaTeX alone, so the tarball carries
+the bibliography that biber made and the highlighted listings that Pygments made, and
+`make_arxiv` compiles it the same way to check that it gives the same paper.
+[`latex/abstract.txt`](latex/abstract.txt) is the abstract as plain text, for arXiv's form.

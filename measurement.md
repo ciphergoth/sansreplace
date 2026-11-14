@@ -323,7 +323,11 @@ speed.
 
 The whole grid agrees less well than those 20 points do. The published results are the fastest
 time at each point over three whole runs, on separate boots, combined by
-[`python/fastest`](python/fastest), and [`python/agree`](python/agree) compares the runs. Of the
+[`python/fastest`](python/fastest), and [`python/agree`](python/agree) compares the runs. The
+three runs themselves are in `runs.tar.xz`, attached to the
+[release](https://github.com/ciphergoth/sansreplace/releases/tag/arxiv_01) that the paper
+describes; unpacked, `python/agree runs/native1/main runs/native2/main runs/native3/main` gives
+the first column of this table, and with `--rank 2` the second. Of the
 52,561 points timed in all three:
 
 | Over | Slowest run over fastest | Second fastest over fastest |
