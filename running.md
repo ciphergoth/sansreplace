@@ -71,7 +71,7 @@ python/fastest --out results/combined results/run1 results/run2 results/run3
 `python/agree` says how well runs of the same code agree: how many points' slowest run took more
 than 1.03, 1.05 and so on times their fastest, overall and by algorithm, and the points that agree
 worst, with the counters each run recorded there. `python/stability` runs `bench` several times on
-a few points, with 4 KB pages and 2 MB ones, and reports how far apart the runs are; it is where
+a few points and reports how far apart the runs are; it is where
 the figures in [measurement](measurement.md#how-far-to-trust-a-time) come from, and needs Linux.
 
 ```
@@ -87,10 +87,12 @@ fastest batch. It does that with its stack at each of `--positions` positions, 1
 position, and one whose first call takes `--once-above` seconds is timed by that call alone.
 
 On Linux, `bench` runs each process with address space randomisation off, and with an empty
-environment everywhere. `--cpu N` pins every process to one CPU, `--huge-pages` has the C library
-take memory in 2 MB pages, and `--counters` records performance counters with each point; the
-counters are those of the processor the published results are timed on, listed in
-[`python/bench`](python/bench).
+environment everywhere. `--cpu N` pins every process to one CPU, `--pages 2M` has the C library
+take memory in 2 MB pages rather than the usual 4 KB ones, and `--counters` records performance
+counters with each point. The counters it knows by name are those of the processor the published
+results are timed on, listed in [`python/bench`](python/bench), and it counts them all unless
+given a list, as in `--counters cycles,instructions,l2-misses`; a list can also name any other
+counter by its code, as `NAME=TYPE:CONFIG`.
 
 The timer's settings, such as `--min-time` and `--time-limit`, are options too, each defaulting to
 what the published results use; see `--help`. On macOS it keeps the machine from idle-sleeping while

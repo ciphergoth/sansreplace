@@ -41,16 +41,32 @@ topdir = pathlib.Path(__file__).resolve().parent.parent
 LANGUAGES = ["cpp", "rust"]
 ORDERS = ["random", "sorted"]
 
-# What --counters counts. Counters in a group are counted together, exactly, so
-# long as the group is no bigger than the number of counters the processor
-# offers; the virtual machine the published results are timed on offers five.
-# Each is NAME=TYPE:CONFIG as cpp/counters.h describes. The first three are
-# the kernel's generic events; the others are AMD's codes for Zen 4, that
-# machine's processor: requests from the level 2 cache's prefetcher for lines
-# that cache already holds, and data cache misses that also miss the level 2
-# cache.
-COUNTERS = ["cycles=0:0", "instructions=0:1", "branch-misses=0:5", "l2-prefetches=4:ff70",
-    "l2-misses=4:0864"]
+# The counters --counters knows by name, each as the TYPE:CONFIG that
+# cpp/counters.h describes, and all of which a bare --counters counts.
+# Counters are counted together, exactly, so long as there are no more of them
+# than the processor offers; the virtual machine the published results are
+# timed on offers five. The first three are the kernel's generic events; the
+# others are AMD's codes for Zen 4, that machine's processor: requests from
+# the level 2 cache's prefetcher for lines that cache already holds, and data
+# cache misses that also miss the level 2 cache.
+COUNTERS = {"cycles": "0:0", "instructions": "0:1", "branch-misses": "0:5",
+    "l2-prefetches": "4:ff70", "l2-misses": "4:0864"}
+
+def counter_list(arg):
+    "Parse NAME[=TYPE:CONFIG],... into a list of NAME=TYPE:CONFIG"
+    res = []
+    for c in arg.split(","):
+        if "=" in c:
+            res.append(c)
+        elif c in COUNTERS:
+            res.append(f"{c}={COUNTERS[c]}")
+        else:
+            raise argparse.ArgumentTypeError(
+                f"{c!r} is not NAME=TYPE:CONFIG or one of {', '.join(COUNTERS)}")
+    return res
+
+# What --pages has the C library do, through GLIBC_TUNABLES
+PAGES = {"4k": None, "2M": "glibc.malloc.hugetlb=2"}
 
 def names_for(order):
     return COMPONENTS if order == "component" else ALGORITHMS
@@ -105,8 +121,8 @@ def launcher(args):
         prefix = [shutil.which("setarch"), platform.machine(), "-R"]
         if args.cpu is not None:
             prefix += [shutil.which("taskset"), "-c", str(args.cpu)]
-        if args.huge_pages:
-            env["GLIBC_TUNABLES"] = "glibc.malloc.hugetlb=2"
+        if PAGES[args.pages] is not None:
+            env["GLIBC_TUNABLES"] = PAGES[args.pages]
     return prefix, env
 
 def time_point(args, cmd, lang, order, alg, n, k):
@@ -118,9 +134,8 @@ def time_point(args, cmd, lang, order, alg, n, k):
         "--once-above", str(args.once_above)]
     if lang != "python":
         cmd += ["--positions", str(args.positions)]
-        if args.counters:
-            for c in COUNTERS:
-                cmd += ["--counter", c]
+        for c in args.counters:
+            cmd += ["--counter", c]
     out = subprocess.run(cmd, env=env, check=True, stdout=subprocess.PIPE, text=True).stdout
     return [line.split() for line in out.splitlines()]
 
@@ -153,19 +168,19 @@ def time_one(args, lang, order, alg, csvfile):
         csvfile.parent.mkdir(parents=True, exist_ok=True)
         f = csvfile.open("w", newline="")
         writer = csv.writer(f)
-        config = {"algorithm": [alg], "build_dir": args.build_dir, "counters": args.counters,
-            "cpu": args.cpu, "csv": csvfile, "fix_freq": args.fix_freq,
-            "huge_pages": args.huge_pages, "language": lang, "max_k": args.max_k,
+        config = {"algorithm": [alg], "build_dir": args.build_dir,
+            "counters": ",".join(args.counters), "cpu": args.cpu, "csv": csvfile,
+            "fix_freq": args.fix_freq, "language": lang, "max_k": args.max_k,
             "min_batches": args.min_batches, "min_time": args.min_time, "nk": args.nk,
-            "once_above": args.once_above, "positions": args.positions, "sorttype": order,
-            "time_limit": args.time_limit, "values": args.values}
+            "once_above": args.once_above, "pages": args.pages, "positions": args.positions,
+            "sorttype": order, "time_limit": args.time_limit, "values": args.values}
         for k, v in config.items():
             writer.writerow(["config", k, v])
         info = {
             "version": gitstate.get(topdir),
             "donothing_s": fastest(time_point(args, cmd, lang, "donothing", "donothing", 0, 0)),
             "algorithms": [alg],
-            "counters": " ".join(c.split("=")[0] for c in COUNTERS) if args.counters else "",
+            "counters": " ".join(c.split("=")[0] for c in args.counters),
             **machine.get(),
             **vmstat.snapshot(),
         }
@@ -257,20 +272,22 @@ def parse_args():
     p.add_argument("--cpu", type=int,
         help="Run every point on this CPU, which should be one the kernel keeps other "
             "work off (Linux)")
-    p.add_argument("--huge-pages", action="store_true",
-        help="Have the C library take memory in 2 MB pages, from a pool that must have "
-            "been reserved (Linux)")
-    p.add_argument("--counters", action="store_true",
-        help="Record performance counters with each point: " + ", ".join(COUNTERS)
-            + " (Linux, on that processor)")
+    p.add_argument("--pages", choices=list(PAGES), default="4k",
+        help="The size of page the C library takes memory in; 2M pages come from a pool that "
+            "must have been reserved, and need Linux (default: %(default)s)")
+    p.add_argument("--counters", nargs="?", type=counter_list, default=[],
+        const=counter_list(",".join(COUNTERS)), metavar="NAME[=TYPE:CONFIG],...",
+        help="Record these performance counters with each point: any of "
+            + ", ".join(COUNTERS) + ", which are for the processor the published results are "
+            "timed on, or others given as NAME=TYPE:CONFIG, up to the number the processor "
+            "counts at once. With no list, all of those (Linux)")
     p.add_argument("--build-dir", type=pathlib.Path, help="C++ build directory")
     args = p.parse_args()
     if args.values is None and args.nk is None:
         args.values = ["small", "fib"]
     if sys.platform != "linux":
-        for option in ["cpu", "huge_pages", "counters"]:
-            if getattr(args, option):
-                p.error(f"--{option.replace('_', '-')} needs Linux")
+        if args.cpu is not None or args.counters or args.pages != "4k":
+            p.error("--cpu, --counters and --pages 2M need Linux")
     for n, k in args.nk or []:
         if k > n:
             p.error(f"--nk {n} {k}: k must be at most n")

@@ -14,17 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# How much does a point's time vary from one run of bench to the next, with
-# 4 KB pages and with 2 MB ones? Runs bench on each of a few points several
-# times each way, interleaved, with the counters on, and prints for each point
-# and way: the fastest time of each run, how far the runs are apart, how far
-# the stack positions are apart within a run, the median batch over the
-# fastest, and the range of each counter per call over the runs.
+# How much does a point's time vary from one run of bench to the next? Runs
+# bench on each of a few points several times, with the counters on, and
+# prints for each point: the fastest time of each run, how far the runs are
+# apart, how far the stack positions are apart within a run, the median batch
+# over the fastest, and the range of each counter per call over the runs. With
+# several sizes of page, it does all this for each, interleaved.
 #
 # The default points are those that measurement.md's figures are for: ones
 # that gave trouble while we were making the timings stable, and a few that
-# never did. Linux only, since it uses bench's --cpu, --counters and
-# --huge-pages.
+# never did. Linux only, since it uses bench's --cpu and --counters.
 
 import argparse
 import csv
@@ -46,13 +45,12 @@ POINTS = [
     ("rust/component/count", 46368, 46368), ("cpp/component/count", 1346269, 1346269),
     ("cpp/sorted/cardchoose", 1346269, 6765), ("rust/sorted/cardchoose", 10, 3),
 ]
-WAYS = {"4 KB pages": [], "2 MB pages": ["--huge-pages"]}
-
-def bench(out, cpu, extra, point):
+def bench(out, args, pages, point):
     "The position rows of one run of bench on one point: offset, calls, batches, fastest, median, faults, counters"
     spec, n, k = point
     subprocess.run([topdir / "python/bench", "--run", spec, "--nk", str(n), str(k), "--out", out,
-        "--cpu", str(cpu), "--counters"] + extra, stdout=subprocess.DEVNULL, check=True)
+        "--cpu", str(args.cpu), "--pages", pages] + args.counters,
+        stdout=subprocess.DEVNULL, check=True)
     lang, order, alg = spec.split("/")
     counters = []
     positions = []
@@ -69,31 +67,36 @@ def main():
     parser.add_argument("--out", type=pathlib.Path, required=True,
         help="Directory for the CSVs of every run")
     parser.add_argument("--cpu", type=int, required=True, help="The CPU to pin every process to")
-    parser.add_argument("--reps", type=int, default=5, help="Runs of each point each way")
+    parser.add_argument("--reps", type=int, default=5,
+        help="Runs of each point with each size of page (default: %(default)s)")
     parser.add_argument("--point", action="append", nargs=3, metavar=("LANG/ORDER/ALGORITHM", "N", "K"),
         help="A point to time instead of the default ones; may be repeated")
+    parser.add_argument("--pages", type=lambda arg: arg.split(","), default=["4k"], metavar="SIZE,...",
+        help="The sizes of page to time with, as bench's --pages takes them, eg 4k,2M (default: 4k)")
+    parser.add_argument("--counters", metavar="NAME[=TYPE:CONFIG],...",
+        help="The counters to record, as bench's --counters takes them (default: bench's)")
     args = parser.parse_args()
+    args.counters = ["--counters"] + ([args.counters] if args.counters else [])
     points = [(spec, int(n), int(k)) for spec, n, k in args.point] if args.point else POINTS
 
     start = time.time()
     runs = {}
     for rep in range(args.reps):
-        for way, extra in WAYS.items():
+        for pages in args.pages:
             for point in points:
-                out = args.out / f"{way.replace(' ', '')}-{rep}"
-                counters, positions = bench(out, args.cpu, extra, point)
-                runs.setdefault((point, way), []).append(positions)
+                counters, positions = bench(args.out / f"{pages}-{rep}", args, pages, point)
+                runs.setdefault((point, pages), []).append(positions)
         print(f"rep {rep} done, {time.time() - start:.0f}s", flush=True)
 
     for point in points:
         print("\n" + " ".join(map(str, point)))
-        for way in WAYS:
-            rs = runs[(point, way)]
+        for pages in args.pages:
+            rs = runs[(point, pages)]
             fast = [min(p[3] for p in r) for r in rs]
             lo = min(fast)
             # The position each run's time came from
             best = [min(r, key=lambda p: p[3]) for r in rs]
-            print(f"  {way}: fastest {lo:.4g}  runs/fastest " + " ".join(f"{t / lo:.3f}" for t in fast))
+            print(f"  {pages} pages: fastest {lo:.4g}  runs/fastest " + " ".join(f"{t / lo:.3f}" for t in fast))
             print("    positions max/min in a run: "
                 + " ".join(f"{max(p[3] for p in r) / min(p[3] for p in r):.3f}" for r in rs)
                 + "   median/fastest batch: " + " ".join(f"{p[4] / p[3]:.3f}" for p in best))
