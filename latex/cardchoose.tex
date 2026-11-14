@@ -617,25 +617,37 @@ We tested values of \(n\) and \(k\) that are Fibonacci numbers, with
 
 \subsection{Method}
 
-A Python harness times each algorithm in a process of its own, calling
-the C++ and Rust implementations through a C interface. At each point,
-it times passes of more and more calls, until a pass takes up what is
-left of 0.2 seconds, and records the mean time per call over that last
-pass; a point where one call takes longer than that is timed with a
-single call. The loop over calls runs in C++ or Rust, and every call
-writes to the same output array, allocated outside the timing, aligned
-to a 64-byte cache line and zeroed. The overhead of a call, measured by
-timing a function that does nothing, is about 1.1\,ns, and is not
-subtracted. The same harness also times the operations the algorithms
-are built from, at \(n = 2^{32} - 1\): drawing \(k\) random numbers
-alone, and drawing them and then sorting them, shuffling them, or
-inserting them into a hash set, so that the difference is the cost of
-that operation (\autoref{componenttimes}). Every pass reseeds the random number generator
-from its point alone, with the C++ and Rust generators in the same
-state, so a pass at a given point makes the same draws in any run,
-whatever was timed before it; the hash tables in both languages hash
-with a fixed seed. We ran the whole benchmark three times, on separate
-boots of the machine hours apart, and report the fastest of the three
+A Python harness times each point, one algorithm at one \(n\) and
+\(k\), in a process of its own: a C++ or Rust program that it starts
+afresh for that point, so that a point's time does not depend on what
+was timed before it. The process times batches of calls. It doubles the
+calls in a batch until a batch takes 5\,ms, then times batches of that
+size until it has timed at least three, over at least 0.05 seconds, and
+takes the time per call of the fastest batch. It does this with its
+stack at each of four positions, for reasons given below, and the
+point's time is the fastest of the four; a point where one call takes
+0.05 seconds or more is timed at one position, and one where a call
+takes a second or more by that call alone. Every batch reseeds the
+random number generator from its point alone, with the C++ and Rust
+generators in the same state, so every batch at a point makes the same
+draws, in any run; the hash tables in both languages hash with a fixed
+seed. Every call writes to the same output array, allocated outside the
+timing, aligned to a 64-byte cache line and zeroed. Each process runs
+with address space randomisation off and an empty environment, pinned
+to a core that the kernel keeps other work off. The overhead of a call,
+measured by timing a function that does nothing, is about 1.1\,ns, and
+is not subtracted. With each point the harness records five of the
+processor's performance counters, among them the instructions executed,
+which do not change from run to run; so when a time does, the counters
+say whether the processor did different work or the same work more
+slowly.
+
+The same harness also times the operations the algorithms are built
+from, at \(n = 2^{32} - 1\): drawing \(k\) random numbers alone, and
+drawing them and then sorting them, shuffling them, or inserting them
+into a hash set, so that the difference is the cost of that operation
+(\autoref{componenttimes}). We ran the whole benchmark three times, on
+separate boots of the machine, and report the fastest of the three
 times at each point, for reasons given below.
 
 \subsection{Pitfalls}\label{pitfalls}
@@ -676,6 +688,19 @@ scans its own output on every draw, took 1,897\,ns per number at
 put it, and 1,290\,ns with it on a cache line. The array that SELECT
 sweeps, and the output array, are now aligned to a cache line.
 
+\paragraph{Where the stack lands.} Where a process's stack starts
+depends on the kernel's randomisation of its address space and on the
+total length of its environment variables, which sit above it;
+\textcite{mytkowicz} found the size of the environment changing which
+of two builds looked faster. Here, 20 processes that each timed C++ HSEL
+at \(k = 1\) spread over a factor of 1.72 with randomisation on, and
+all came within 2\% of the fastest with it off. With it off, padding
+the environment moved the same point's time by up to 6\% in a pattern
+that repeats every 64 bytes, and at a few sizes by 1.3 to 1.7 times. So
+each process runs with randomisation off and an empty environment, and
+times on a stack of its own at four positions 16 bytes apart, of which
+we take the fastest.
+
 \paragraph{What the compiler decides.} The \mintinline{rust}{rand}
 crate's \mintinline{rust}{random_range} is not marked
 \mintinline{rust}{#[inline]}, and once it had several callers, LLVM kept
@@ -710,18 +735,44 @@ different code. With each language's standard library alone, a
 comparison of the two languages would largely have compared their hash
 tables.
 
-\paragraph{The quadratic scan's slow state.} Rust quadratic rejection
-and sorted quadratic F2 search the output with
-\mintinline{rust}{slice::contains}, and at large \(k\) they sometimes
-take about 1.6 times as long at a run of points, with the same code,
-data and draws; which points are slow changes from run to run. The
-processor's performance counters show the scan's loop taking 2.3 cycles
-per iteration rather than 1.5, with the front end of the core, which
-supplies the operations, unable to keep the back end busy, but without
-extra cache misses, branch mispredictions or op cache misses. We have
-ruled out the host, the data, where the arrays start and moving between
-cores, but have not found the trigger, so we take each point's fastest
-time over three runs.
+\paragraph{One process for many points.} An earlier harness timed all
+of an algorithm's points in one process, and a point's time then
+depended on the points before it. Rust quadratic rejection and sorted
+quadratic F2, which search the output with
+\mintinline{rust}{slice::contains}, sometimes took about 1.6 times as
+long at a whole run of points, with the same code, data and draws, and
+which points were slow changed from run to run. The counters show the
+scan's loop taking 2.3 cycles per iteration rather than 1.5, with the
+front end of the core unable to keep the back end supplied with
+operations, but no more cache misses or branch mispredictions. We have
+not found the trigger, but with each point in a process of its own the
+slow state is rare, and cannot outlast the point that met it.
+
+\paragraph{The prefetcher.} Filling a 185\,kB array with consecutive
+numbers, as SELECT begins by doing, runs at two speeds 1.3 times apart
+while executing exactly the same instructions. What differs is the
+level-2 cache's prefetcher, which makes one or two requests during a
+fast fill and over a thousand during a slow one, for lines that cache
+already holds. Which speed a process gets depends on where its memory
+lies, in a way we have not been able to predict, and the virtual machine
+gives us no way to turn the prefetcher off. This is a property of the
+processor rather than of the measurement, and a program that calls
+SELECT will meet it too; it makes SELECT's times the least certain of
+those we report.
+
+\paragraph{How well the runs agree.} At 97.9\% of the 52,561 points
+timed in all three runs, the fastest two runs are within 5\% of each
+other, and at 99.3\% within 10\%, so nearly every time we report was
+reached twice. Of the 92 points where they differ by more than 20\%,
+51 are SELECT's and 17 the bit-vector F2's, which also sweeps an array
+whose size goes with \(n\), and 23 of the others have
+\(k \geq 500{,}000\), where the time goes on cache misses in a large
+table: one of the three boots was up to 2.2 times slower than the
+others at some such points, with the same instructions and the same
+level-2 cache misses, and timed repeatedly on one boot they vary by
+about 10\%. We would not read anything into a
+difference of less than 5\% between two algorithms at a point, nor
+less than 10\% at the largest \(k\).
 
 \subsection{The two languages}
 
@@ -743,7 +794,7 @@ collision attacks; Boost's do not, and so that the two are comparable
 the Rust's hash with foldhash, with a fixed seed, which does not either. Inserting into
 the set takes 1.0 to 1.3 times as long in Rust as in C++
 (\autoref{componenttimes}), and with random output the hash-based
-algorithms take 1.03 to 1.15 times as long at the median.
+algorithms take 1.08 to 1.14 times as long at the median.
 
 \paragraph{Sorting.} Boost's \mintinline{cpp}{pdqsort} is a
 pattern-defeating quicksort, and Rust's \mintinline{rust}{sort_unstable}
@@ -771,9 +822,9 @@ multiplication. But the C++ uses its own code for this, which takes two
 \mintinline{rust}{rand} crate's \mintinline{rust}{random_range} uses a
 whole output for each. The shuffle that turns the sorted output of
 RANKSB, Algorithm D and Hidden Shuffle into random order is the same
-loop in both languages, but costs 1.3 to 1.6 times as much per number
+loop in both languages, but costs 1.3 to 1.5 times as much per number
 in Rust (\autoref{componenttimes}); so for random
-output, Algorithm D and Hidden Shuffle take 5--9\% longer in Rust at
+output, Algorithm D and Hidden Shuffle take 5--8\% longer in Rust at
 the median. The \mintinline{rust}{rand} crate's own
 \mintinline{rust}{SliceRandom::shuffle} is slower than our loop.
 
@@ -782,6 +833,16 @@ output so far on every draw. The Rust uses
 \mintinline{rust}{slice::contains}, and the C++ a loop of its own that
 checks every entry rather than stopping at the first match, so that the
 compiler vectorises it.
+
+\paragraph{Bit vectors.} The bit-vector F2 takes its bit vector from
+Boost's \mintinline{cpp}{dynamic_bitset} in C++ and the
+\mintinline{rust}{fixedbitset} crate in Rust. Setting a bit costs about
+the same in both, but the sorted variant reads its output off the
+vector, and Boost's \mintinline{cpp}{find_next} starts again from the
+position it is given for every number, where
+\mintinline{rust}{fixedbitset} works through each word in turn. At
+\(n = k = 1{,}346{,}269\), the C++ sorted variant takes 3.8\,ns per
+number, against 2.2\,ns with a loop of our own that did the same.
 
 \subsection{Results}
 
@@ -838,58 +899,68 @@ language.
 \end{figure}
 
 No algorithm is the fastest for all \(n, k\). Quadratic rejection
-and quadratic F2 are the fastest for small \(k\), and SELECT,
-reservoir sampling and iterative choosing for small \(n/k\), but each
-of these is very slow elsewhere. The other algorithms run in
-\(\bigO{k}\) or \(\bigO{k \log k}\) time, and differ by smaller
-factors.
+and quadratic F2 are the fastest for small \(k\), SELECT, reservoir
+sampling and iterative choosing for small \(n/k\), and the bit-vector
+F2 for moderate \(n/k\), but each of these is very slow elsewhere. The
+other algorithms run in \(\bigO{k}\) or \(\bigO{k \log k}\) time, and
+differ by smaller factors.
 
-For sorted output in C++, Hidden Shuffle is the fastest algorithm
-wherever \(n \geq 16k\) and \(k \geq 1000\); there, Cardchoose takes
-up to 2.4 times as long. In Rust, Cardchoose and Hidden Shuffle divide
-the range by \(k\): wherever \(k < 1000\) and \(n \geq 2k\),
-Cardchoose is the fastest algorithm or within 24\% of it, and Hidden
-Shuffle takes up to 3.7 times as long, while for larger \(k\) they
-trade places: wherever \(k \geq 10^5\) and \(n \geq 16k\), each is
-within 27\% of the fastest, and Hidden Shuffle is the fastest wherever
-\(k \geq 10^7\) and \(n \geq 16k\). Hidden Shuffle takes about the
-same time in both languages, so the difference is in Cardchoose, most
-likely in its sort. Hidden Shuffle is also faster than RANKSB wherever
-\(n \geq 16k\) and \(k \geq 1000\) in both languages, with RANKSB
-taking 1.1 to 2.7 times as long. As \(k\) approaches \(n\), RANKSB
-slows down, taking up to 530 times as long as the fastest algorithm at
-\(k = n\) in C++, and 870 times in Rust; \cite{nijenhuiswilf} pairs
-it with iterative choosing (which Nijenhuis and Wilf refer to as RKS2)
-for \(k \geq n/2\). Vitter's Algorithm D, with its fallback to
-Algorithm A, has the smallest worst case of any single algorithm for
-sorted output in Rust, and in C++ only Hidden Shuffle's is smaller.
-Where \(n \geq 4k\), it takes 0.59 to 2.5 times as long as Cardchoose
-in C++ and 0.92 to 5.0 times as long in Rust; where \(n < 2k\) and
+For sorted output, the bit-vector F2 is the fastest algorithm in both
+languages wherever \(2k \leq n < 16k\) and \(k < 10^7\). For larger
+\(n/k\) the languages differ. In C++, Hidden Shuffle is the fastest
+wherever \(n \geq 256k\) and \(k \geq 100\), and wherever
+\(n \geq 16k\) and \(k \geq 1000\), Cardchoose takes 1.3 to 2.3 times
+as long as Hidden Shuffle. In Rust, Cardchoose is the fastest wherever
+\(n \geq 256k\) and \(k < 1000\), and the fastest or within 14\% of it
+wherever \(n \geq 256k\); wherever \(n \geq 16k\) and \(k \geq 1000\),
+it takes 0.63 to 1.27 times as long as Hidden Shuffle, which is the
+faster of the two only for the largest \(k\). Hidden Shuffle takes
+about the same time in both languages, so the difference is in
+Cardchoose, and in its sort (\autoref{componenttimes}). Hidden Shuffle
+is also faster than RANKSB wherever \(n \geq 16k\) and \(k \geq 1000\)
+in both languages, with RANKSB taking 1.1 to 2.7 times as long. As
+\(k\) approaches \(n\), RANKSB slows down, taking up to 490 times as
+long as the fastest algorithm at \(k = n\) in C++, and 940 times in
+Rust; \cite{nijenhuiswilf} pairs it with iterative choosing (which
+Nijenhuis and Wilf refer to as RKS2) for \(k \geq n/2\). Vitter's
+Algorithm D, with its fallback to Algorithm A, takes 0.38 to 2.0 times
+as long as Hidden Shuffle at every point with \(k \geq 10\). Where
+\(n \geq 4k\), it takes 0.63 to 2.8 times as long as Cardchoose in C++
+and 0.91 to 5.2 times as long in Rust; where \(n < 2k\) and
 \(k \geq 10^5\), it is faster than Cardchoose in both.
 
-For random output, the hash-based algorithms are competitive only with
-a fast hash table. With C++ standard library hash tables, Cardchoose is
-faster than set-based rejection sampling, Floyd's F2 and HSEL at every
-point with \(k \leq n/2\), where they take 1.10 to 8.9 times as long,
-though Hidden Shuffle followed by a shuffle is faster still wherever
-\(n \geq 16k\) and \(k \geq 1000\). With Rust's flat hash tables, HSEL
-is faster than Cardchoose wherever \(1000 \leq k < 10^5\) and
-\(n \geq 2k\), and Cardchoose is faster wherever \(k \geq 10^7\) and
-\(n \geq 2k\); it is never more than 1.38 times slower than the fastest
-of these four for \(k \leq n/2\). In both languages, SELECT is the
-fastest algorithm wherever \(2k \leq n < 16k\) and \(n\) is under 8
-million; for larger \(n\), its array is large enough that glibc's
-\mintinline{c}{malloc} maps it afresh on every call, and faulting its
-pages in again makes it up to 2.1 times slower than the fastest. The hash-based
-algorithms slow down at large \(k\), once the hash table no longer fits
-in cache, and as \(k\) approaches \(n\). In theory, their
-\(\bigO{k}\) time should eventually beat Cardchoose's
-\(\bigO{k \log k}\), but not at any \(k\) we tested: in Rust, wherever
-\(k \geq 10^7\) and \(n \geq 2k\), Cardchoose takes 0.23 to 0.39 times
-as long as each of them. For very large \(k\), a parallel
-algorithm \cite{rajan, sandersetal} should generally be used; that of
-Sanders et al.\ calls a sequential algorithm at the leaves of the
-parallel tree it builds.
+For random output, the two languages agree, now that both have a fast
+hash table. SELECT is the fastest algorithm wherever \(2k \leq n < 16k\)
+and \(k < 10^5\). From \(n\) of about 8 million, its array is large
+enough that glibc's \mintinline{c}{malloc} maps it afresh on every
+call, and faulting its pages in again makes it up to 7.9 times slower
+than the bit-vector F2, which is the fastest at most of the points
+with larger \(k\) there, and at most of those with
+\(16k \leq n < 256k\): 151 of 177 in C++, and 134 in Rust. For larger
+\(n/k\), quadratic rejection is the fastest or within 5\% of it
+wherever \(k < 100\) and \(n \geq 65{,}536k\); and where
+\(k \geq 100\) and \(n \geq 256k\), set-based rejection sampling is the
+fastest at 145 of the 231 points in C++ and 143 in Rust, and the
+bit-vector F2 at most of the rest. Floyd's F2 takes at most 1.23 times
+as long as set-based rejection there, and HSEL up to 2.5 times; but
+set-based rejection slows down as \(k\) approaches \(n\), and HSEL does
+not.
+
+The hash-based algorithms are faster than Cardchoose until their tables
+no longer fit in cache. Wherever \(100 \leq k < 10^6\) and
+\(n \geq 2k\), set-based rejection, Floyd's F2 and HSEL each take 0.17
+to 0.47 times as long as Cardchoose in C++, and 0.35 to 0.89 times as
+long in Rust, where Cardchoose's sort is faster. Wherever
+\(k \geq 10^7\) and \(n \geq 2k\), Cardchoose is the faster: they take
+1.05 to 1.7 times as long in C++, and 1.3 to 2.6 times as long in Rust.
+So although in theory their \(\bigO{k}\) time should eventually beat
+Cardchoose's \(\bigO{k \log k}\), at the sizes we tested the opposite
+happens. In C++, Hidden Shuffle followed by a shuffle takes 0.48 to
+0.78 times as long as Cardchoose wherever \(n \geq 16k\) and
+\(k \geq 1000\); in Rust, 0.90 to 1.52 times. For very large \(k\), a
+parallel algorithm \cite{rajan, sandersetal} should generally be used;
+that of Sanders et al.\ calls a sequential algorithm at the leaves of
+the parallel tree it builds.
 
 \section{Choosing algorithms}\label{choosing}
 
@@ -946,27 +1017,26 @@ that, from \(k = 1.3 \times 10^6\).
 
 Three algorithms are never far from the fastest per number output at
 any \(k\): Cardchoose, Hidden Shuffle and Algorithm D are never worse
-than 44\,ns per number in any case, while every other algorithm is
-worse than 100\,ns per number somewhere it was tested. Cardchoose is
-the simplest of the three; the other two need floating point and are
-considerably more involved.
+than 43\,ns per number in any case. HSEL is never worse than 72\,ns,
+and every other algorithm is worse than 100\,ns per number somewhere it
+was tested. Cardchoose is the simplest of the three; the other two need
+floating point and are considerably more involved.
 
 With sorted output, Cardchoose is the best algorithm at every \(k\)
-below \(10^7\) in Rust, and Hidden Shuffle above that; in C++,
-Cardchoose is the best below \(10^4\), tied with Hidden Shuffle from
-\(10^4\), and Hidden Shuffle is the best from \(10^5\). With random output,
-quadratic F2 is the best for small \(k\), below 1,000 in C++ and 100
-in Rust, where it needs neither a sort nor a shuffle; in Rust, with its
-fast hash tables, HSEL is the best from there to \(10^6\). Wherever
-the best algorithm needs floating point, the best one that does not is
-Cardchoose.
+below \(10^7\) in Rust, and the bit-vector F2 above that; in C++,
+Cardchoose is the best below \(10^5\), tied with Hidden Shuffle from
+\(10^5\), and Hidden Shuffle is the best from \(10^6\). With random
+output, the two languages agree: quadratic F2 is the best below 100,
+where it needs neither a sort nor a shuffle, HSEL from there to
+\(10^6\), and the bit-vector F2 from \(10^7\). In between, the best is
+Hidden Shuffle in C++ and Cardchoose in Rust.
 
 An algorithm is dominated by bands if another scores no worse in any
 band and better in at least one. Eight algorithms are dominated by
-bands in every case: Cardchoose dominates seven of them in every case,
-quadratic rejection, set-based rejection, RANKSB, Floyd's F2, iterative
-choosing, reservoir sampling and SELECT, and Hidden Shuffle dominates
-the eighth, Algorithm D. Because a band's score is
+bands in every case: Cardchoose dominates six of them in every case,
+quadratic rejection, set-based rejection, RANKSB, iterative choosing,
+reservoir sampling and SELECT, HSEL dominates Floyd's F2, and Hidden
+Shuffle dominates Algorithm D. Because a band's score is
 the worst over every \(n\), that does not make them useless: iterative
 choosing, reservoir sampling and SELECT are among the fastest where
 \(n/k\) is small, and iterative choosing belongs to the best sets for
@@ -995,25 +1065,31 @@ and \(n/k\).
     best three in any band}\label{cover}
 \end{table}
 
-With sorted output, the best partner is iterative choosing, which wins
-where \(k\) is a large fraction of \(n\); with random output, it is
-quadratic F2, which wins at small \(k\). In C++, three algorithms
-including Hidden Shuffle are as good as all thirteen together; in sorted
-order, no third integer-only algorithm improves on the best
-integer-only pair.
+The bit-vector F2 belongs to the best pair in three of the four cases,
+since it wins a region of moderate \(n/k\) that no \(\bigO{k}\)
+algorithm does, and with random output its best partner is set-based
+rejection sampling, which wins where \(n/k\) is large. In Rust with
+sorted output, the best pair is Cardchoose with iterative choosing,
+which wins where \(k\) is a large fraction of \(n\). For sorted output,
+three algorithms are as good as all thirteen together, or within 1\% of
+it; for random output, no three come within 30\%.
 
 If an implementation has only one algorithm, Cardchoose is a good
-choice. It is the best single algorithm in three of the four cases; in
-the fourth, C++ with sorted output, only the two floating-point
-algorithms beat it, because Boost's \mintinline{cpp}{pdqsort} is
-slower than Rust's sort. Implemented alone, it is never more than 9 to 22\,ns per number
-slower than the best three algorithms together, in any case and at any
-\(k\). Its largest ratios to the floor are where calls are cheap: with
-random output, it is 3.53 times the floor in C++ and 2.58 times in Rust
-for \(k < 100\), where quadratic F2 needs neither a sort nor a
-shuffle, but no call to Cardchoose there takes more than 1.5\,\textmu
-s. With sorted output, it is 2.29 times the floor in C++ and 1.56 times
-in Rust for \(k \geq 10^7\), where Hidden Shuffle wins.
+choice. By ratio to the floor it is the best single algorithm for
+sorted output in Rust, and within 0.03 of Hidden Shuffle for sorted
+output in C++; for random output HSEL has the better worst ratio, 2.51
+against 4.49 in C++ and 2.14 against 2.49 in Rust. But those ratios are
+at their largest where calls are cheap. In time per number, Cardchoose
+alone is never more than 6 to 20\,ns slower than the best three
+algorithms together, in any case and at any \(k\), where HSEL alone is
+up to 27\,ns slower in C++ and 15\,ns in Rust, at large \(k\); and
+Cardchoose needs no memory beyond its output. Its largest ratios to the
+floor are 4.49 in C++ with random output, for \(10^4 \leq k < 10^5\),
+where the hash-based algorithms are at their best, and 2.49 in Rust,
+for \(k < 100\), where quadratic F2 needs neither a sort nor a shuffle
+and no call to Cardchoose takes more than 1.4\,\textmu s. With sorted
+output, they are 2.28 in C++ and 1.53 in Rust, both for
+\(k \geq 10^7\).
 
 % Flush the remaining figures before the bibliography
 \clearpage
