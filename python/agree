@@ -19,7 +19,9 @@
 # the points where that is over each of a few thresholds: overall, by the
 # size of the time, by k, and by algorithm. Then lists the points that agree
 # worst, with what each run recorded at each stack position, so that the
-# counters can say what the slower run did differently.
+# counters can say what the slower run did differently. --rank 2 takes the
+# second fastest time over the fastest instead: where those two agree, the
+# fastest of the runs is a time that two runs reached.
 #
 # --row and --in-order show where one algorithm's disagreements lie: along a
 # row of the grid, or at points timed one after another.
@@ -61,6 +63,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("runs", type=pathlib.Path, nargs="+",
         help="Directories that bench --out wrote")
+    parser.add_argument("--rank", type=int, metavar="N",
+        help="Compare each point's Nth fastest run with its fastest (default: its slowest)")
     parser.add_argument("--worst", type=int, default=20,
         help="How many of the points that agree worst to list")
     parser.add_argument("--row", action="append", nargs=2, default=[], metavar=("CASE/ALGORITHM", "K"),
@@ -75,6 +79,7 @@ def main():
     for r, n in zip(args.runs[1:], names[1:]):
         assert n == names[0], (args.runs[0], r)
 
+    rank = args.rank or len(args.runs)
     points, by_name = [], {}
     for name in names[0]:
         runs = [read(r / name) for r in args.runs]
@@ -86,11 +91,13 @@ def main():
                 continue
             times = [times[nk] for times, _, _ in runs]
             here.append({'name': label, 'n': nk[0], 'k': nk[1], 'times': times,
-                'ratio': max(times) / min(times), 'counters': runs[0][2],
+                'ratio': sorted(times)[rank - 1] / min(times),
+                'counters': runs[0][2],
                 'positions': [positions[nk] for _, positions, _ in runs]})
         points += here
 
-    print(f"{len(points)} points timed in every run; slowest run over fastest is over:")
+    print(f"{len(points)} points timed in every run; "
+        f"the {'slowest' if rank == len(args.runs) else f'fastest but {rank - 1}'} over the fastest is over:")
     print(f"{'':32} " + "  ".join(f"{t:6}" for t in THRESHOLDS))
     print(f"{'all':32} {counts(points)}")
     print()
