@@ -1,14 +1,20 @@
 "use strict";
 
 // Explore results/latest: pick a point (n, k) on a triangle of log n against
-// log k, and see each algorithm's time/k there as a bar. The data comes from
-// python/export_web.
+// log k, and see each algorithm's time/k there as a bar. Two checkboxes rule
+// out the algorithms that need memory beyond their output, or floating point:
+// those are greyed out, and the fastest is found among the rest. The data
+// comes from python/export_web.
 
 const SVGNS = "http://www.w3.org/2000/svg";
 const YMAXES = [5, 10, 20, 50, 100, 200, 500, 1000];
 const SUPERSCRIPTS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+// What an algorithm may need that a checkbox can rule out: each is the id of
+// its checkbox, its key in the state and in the data, and its name in the
+// address.
+const NEEDS = ["memory", "floats"];
 
-const state = { caseIndex: 0, n: 1e7, k: 1e5, ymax: 50 };
+const state = { caseIndex: 0, n: 1e7, k: 1e5, ymax: 50, memory: true, floats: true };
 let data, algs, groups, cases;
 
 function el(name, attrs, parent) {
@@ -39,17 +45,24 @@ function short(x) {
   return x.toPrecision(3);
 }
 
-// Per case: the points, each algorithm's times, and the fastest at each point.
-function prepare(c) {
-  const fastest = c.points.map((_, i) => {
+// Whether the checkboxes allow this algorithm.
+function allowed(alg) {
+  return (state.memory || !alg.memory) && (state.floats || !alg.floats);
+}
+
+// The fastest allowed algorithm at each of a case's points, kept for each
+// setting of the checkboxes.
+function fastestOf(c) {
+  const key = `${state.memory},${state.floats}`;
+  c.fastest[key] ??= c.points.map((_, i) => {
     let best = null;
     for (const [a, alg] of algs.entries()) {
       const t = c.times[alg.name]?.[i];
-      if (t != null && (best === null || t < c.times[algs[best].name][i])) best = a;
+      if (allowed(alg) && t != null && (best === null || t < c.times[algs[best].name][i])) best = a;
     }
     return best;
   });
-  return { ...c, fastest };
+  return c.fastest[key];
 }
 
 function nearest(c, n, k) {
@@ -110,8 +123,9 @@ function drawTriangle() {
   text(axis, T.l + (T.w - T.l - T.r) / 2, T.t + tri.ph + 36, "n", { "text-anchor": "middle", "font-style": "italic" });
   text(axis, 14, T.t + tri.ph / 2, "k", { "text-anchor": "middle", "font-style": "italic" });
   const dots = el("g", {}, svg);
+  const fastest = fastestOf(c);
   c.points.forEach(([n, k], i) => {
-    const f = c.fastest[i];
+    const f = fastest[i];
     el("circle", {
       cx: tri.x(n), cy: tri.y(k), r: 3.2,
       fill: f === null ? "#ccc" : algs[f].colour,
@@ -180,7 +194,7 @@ function drawBars() {
 
   const unit = pw / (algs.length + 0.6 * (groups - 1));
   const bw = unit * 0.72;
-  const f = c.fastest[i];
+  const f = fastestOf(c)[i];
   const best = f === null ? null : c.times[algs[f].name][i];
   el("defs", {}, svg).innerHTML =
     `<pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -189,22 +203,30 @@ function drawBars() {
     const cx = B.l + unit * (a + 0.6 * alg.family + 0.5);
     const t = c.times[alg.name]?.[i];
     const base = B.t + ph;
+    const g = el("g", allowed(alg) ? {} : { class: "excluded" }, svg);
     if (t == null) {
       // An algorithm is timed only until a call takes too long, so one not
       // timed here would have been off the top: draw it that way.
-      el("rect", { x: cx - bw / 2, y: B.t, width: bw, height: base - B.t, fill: "url(#hatch)", stroke: "#999" }, svg);
-      breakBar(svg, cx, bw);
-      text(svg, cx, base - 6, "not timed", {
+      el("rect", {
+        class: "untimed", x: cx - bw / 2, y: B.t, width: bw, height: base - B.t, fill: "url(#hatch)", stroke: "#999",
+      }, g);
+      breakBar(g, cx, bw);
+      text(g, cx, base - 6, "not timed", {
         class: "ratio halo", "text-anchor": "start", transform: `rotate(-90 ${cx} ${base - 6})`, dy: "0.35em",
       });
     } else {
       const top = y(t);
-      el("rect", { x: cx - bw / 2, y: top, width: bw, height: base - top, fill: alg.colour }, svg);
-      if (t > state.ymax) breakBar(svg, cx, bw);
-      text(svg, cx, top - 4, short(t), { class: "value", "text-anchor": "middle" });
-      text(svg, cx, top - 18, "×" + short(t / best), { class: "ratio", "text-anchor": "middle" });
+      el("rect", { class: "bar", x: cx - bw / 2, y: top, width: bw, height: base - top, fill: alg.colour }, g);
+      if (t > state.ymax) breakBar(g, cx, bw);
+      text(g, cx, top - 4, short(t), { class: "value", "text-anchor": "middle" });
+      // An algorithm that is ruled out may be faster than the fastest allowed;
+      // two digits keep such a ratio as narrow as the others
+      const ratio = t / best;
+      text(g, cx, top - 18, "×" + (ratio < 1 ? ratio.toPrecision(2) : short(ratio)), {
+        class: "ratio", "text-anchor": "middle",
+      });
     }
-    text(svg, cx + 4, base + 10, alg.name, {
+    text(g, cx + 4, base + 10, alg.name, {
       class: "label", "text-anchor": "end", transform: `rotate(-45 ${cx + 4} ${base + 10})`,
       "font-weight": a === f ? "bold" : "normal",
     });
@@ -227,10 +249,11 @@ function breakBar(svg, cx, bw) {
 function drawReadout() {
   const { c, i } = selected();
   const [n, k] = c.points[i];
-  const f = c.fastest[i];
+  const f = fastestOf(c)[i];
   const fmt = x => x.toLocaleString("en");
+  const which = state.memory && state.floats ? "Fastest" : "Fastest allowed";
   const fastest = f === null ? "" :
-    `Fastest (dashed line): <b>${algs[f].name}</b>, ${short(c.times[algs[f].name][i])} ns per output`;
+    `${which} (dashed line): <b>${algs[f].name}</b>, ${short(c.times[algs[f].name][i])} ns per output`;
   document.getElementById("readout").innerHTML =
     `<i>n</i> = ${fmt(n)}, <i>k</i> = ${fmt(k)}, <i>k</i>/<i>n</i> = ${(k / n).toPrecision(3)}<br>${fastest}`;
 }
@@ -247,12 +270,15 @@ function draw() {
   for (const [j, b] of document.querySelectorAll("#cases button").entries())
     b.setAttribute("aria-checked", j === state.caseIndex);
   document.getElementById("ymax").value = state.ymax;
+  for (const need of NEEDS) document.getElementById(need).checked = state[need];
   drawTriangle();
   drawBars();
   drawReadout();
   const { c, i } = selected();
   const [n, k] = c.points[i];
-  history.replaceState(null, "", `#case=${c.name}&n=${n}&k=${k}&ymax=${state.ymax}`);
+  // The checkboxes go in the address only when they rule something out
+  const ruledOut = NEEDS.filter(need => !state[need]).map(need => `&${need}=0`).join("");
+  history.replaceState(null, "", `#case=${c.name}&n=${n}&k=${k}&ymax=${state.ymax}${ruledOut}`);
 }
 
 function readHash() {
@@ -262,6 +288,7 @@ function readHash() {
   if (+h.get("n") > 0) state.n = +h.get("n");
   if (+h.get("k") > 0) state.k = +h.get("k");
   if (YMAXES.includes(+h.get("ymax"))) state.ymax = +h.get("ymax");
+  for (const need of NEEDS) state[need] = h.get(need) !== "0";
 }
 
 async function main() {
@@ -271,8 +298,11 @@ async function main() {
   const families = data.families.map(fam => fam.filter(([name]) => name !== "cardchoose"));
   families.push(data.families.flat().filter(([name]) => name === "cardchoose"));
   groups = families.length;
-  algs = families.flatMap((fam, family) => fam.map(([name, colour]) => ({ name, colour, family })));
-  cases = data.cases.map(prepare);
+  algs = families.flatMap((fam, family) => fam.map(([name, colour]) => ({
+    name, colour, family,
+    memory: data.needs.memory.includes(name), floats: data.needs.floats.includes(name),
+  })));
+  cases = data.cases.map(c => ({ ...c, fastest: {} }));
   tri = triangleGeometry();
   readHash();
 
@@ -291,6 +321,10 @@ async function main() {
     ymax.appendChild(o);
   }
   ymax.addEventListener("change", () => { state.ymax = +ymax.value; draw(); });
+  for (const need of NEEDS) {
+    const box = document.getElementById(need);
+    box.addEventListener("change", () => { state[need] = box.checked; draw(); });
+  }
 
   const svg = document.getElementById("triangle");
   svg.addEventListener("pointerdown", e => { svg.setPointerCapture(e.pointerId); svg.focus(); pickAt(e); });

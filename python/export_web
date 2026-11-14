@@ -16,7 +16,8 @@
 
 # Write the results the web explorer shows as one JSON file: for each case,
 # the (n, k) points with k > 0 that any algorithm was timed at, and each
-# algorithm's time/k in ns at each, or null where it was not timed.
+# algorithm's time/k in ns at each, or null where it was not timed. Also which
+# algorithms need memory beyond their output, and which need floating point.
 
 import argparse
 import json
@@ -24,6 +25,7 @@ import pathlib
 
 import matplotlib.colors
 
+import bands
 import read_results
 from cases import CASES
 from plot_anim import FAMILIES
@@ -52,6 +54,7 @@ def main():
     data = {
         "families": [[[alg, matplotlib.colors.to_hex(colour)]
             for alg, colour in colours.items()] for _, colours in FAMILIES],
+        "needs": {"memory": sorted(bands.EXTRA_MEMORY), "floats": sorted(bands.FLOATING_POINT)},
         "cases": [{"name": name, "title": title, **export_case(args.results / name)}
             for name, title in CASES],
     }

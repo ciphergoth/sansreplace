@@ -57,3 +57,7 @@ svg { width: 100%; height: auto; display: block; font-size: 12px; }
 .ratio { fill: var(--muted); font-size: 11px; }
 .halo { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
 .fastest { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 4 3; }
+/* An algorithm that the checkboxes rule out */
+.excluded .bar { fill: #d8d8d8; }
+.excluded .untimed { opacity: 0.4; }
+.excluded .label, .excluded .value { fill: var(--muted); }

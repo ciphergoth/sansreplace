@@ -38,6 +38,9 @@ TIE = 1.03
 # The algorithms that need floating point
 FLOATING_POINT = {"vitterd", "hiddenshuffle"}
 
+# The algorithms that need memory beyond the array they write their output to
+EXTRA_MEMORY = {"select", "bitvectorf2", "rejectionsample", "floydf2", "hsel"}
+
 LATEX_NAMES = {
     "quadraticreject": "quadratic rejection",
     "rejectionsample": "set-based rejection",

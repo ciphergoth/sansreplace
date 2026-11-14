@@ -11,11 +11,14 @@
 <header>
   <h1>Sampling without replacement: time per output</h1>
   <p>Pick a point (<i>n</i>, <i>k</i>) on the triangle to see each algorithm's time/<i>k</i> there.
-    Each point is coloured by its fastest algorithm. Arrow keys move between points.
+    Each point is coloured by its fastest algorithm, among those the boxes below allow. Arrow keys
+    move between points.
     <a href="https://github.com/ciphergoth/sansreplace">Source and write-up</a>.</p>
   <div class="controls">
     <div id="cases" role="radiogroup" aria-label="Case"></div>
     <label>Scale top <select id="ymax"></select> ns</label>
+    <label><input type="checkbox" id="memory" checked> Allow extra memory use</label>
+    <label><input type="checkbox" id="floats" checked> Allow floating point</label>
   </div>
 </header>
 <main>
