@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# How much does a point's time vary from one run of bench to the next, with
+# 4 KB pages and with 2 MB ones? Runs bench on each of a few points several
+# times each way, interleaved, with the counters on, and prints for each point
+# and way: the fastest time of each run, how far the runs are apart, how far
+# the stack positions are apart within a run, the median batch over the
+# fastest, and the range of each counter per call over the runs.
+#
+# The default points are those that measurement.md's figures are for: ones
+# that gave trouble while we were making the timings stable, and a few that
+# never did. Linux only, since it uses bench's --cpu, --counters and
+# --huge-pages.
+
+import argparse
+import csv
+import pathlib
+import subprocess
+import time
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+
+POINTS = [
+    ("cpp/random/hsel", 1346269, 1), ("rust/sorted/floydf2", 46368, 34),
+    ("rust/random/quadraticreject", 46368, 34), ("cpp/random/select", 46368, 34),
+    ("rust/random/select", 46368, 34), ("rust/random/hsel", 1346269, 6765),
+    ("rust/random/quadraticreject", 1346269, 6765), ("cpp/random/select", 1346269, 0),
+    ("cpp/random/select", 1346269, 6765), ("cpp/random/select", 14930352, 34),
+    ("cpp/sorted/reservoirsample", 1346269, 6765), ("cpp/random/floydf2", 1346269, 1346269),
+    ("rust/random/ranksb", 3524578, 3524578), ("rust/sorted/rejectionsample", 14930352, 5702887),
+    ("cpp/random/bitvectorf2", 165580141, 24157817), ("cpp/component/count", 46368, 46368),
+    ("rust/component/count", 46368, 46368), ("cpp/component/count", 1346269, 1346269),
+    ("cpp/sorted/cardchoose", 1346269, 6765), ("rust/sorted/cardchoose", 10, 3),
+]
+WAYS = {"4 KB pages": [], "2 MB pages": ["--huge-pages"]}
+
+def bench(out, cpu, extra, point):
+    "The position rows of one run of bench on one point: offset, calls, batches, fastest, median, faults, counters"
+    spec, n, k = point
+    subprocess.run([topdir / "python/bench", "--run", spec, "--nk", str(n), str(k), "--out", out,
+        "--cpu", str(cpu), "--counters"] + extra, stdout=subprocess.DEVNULL, check=True)
+    lang, order, alg = spec.split("/")
+    counters = []
+    positions = []
+    with (out / f"{lang}-{order}" / f"{alg}.csv").open(newline='') as f:
+        for row in csv.reader(f):
+            if row[0] == 'info' and row[1] == 'counters':
+                counters = row[2].split()
+            elif row[0] == 'position':
+                positions.append([float(x) for x in row[4:]])
+    return counters, positions
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", type=pathlib.Path, required=True,
+        help="Directory for the CSVs of every run")
+    parser.add_argument("--cpu", type=int, required=True, help="The CPU to pin every process to")
+    parser.add_argument("--reps", type=int, default=5, help="Runs of each point each way")
+    parser.add_argument("--point", action="append", nargs=3, metavar=("LANG/ORDER/ALGORITHM", "N", "K"),
+        help="A point to time instead of the default ones; may be repeated")
+    args = parser.parse_args()
+    points = [(spec, int(n), int(k)) for spec, n, k in args.point] if args.point else POINTS
+
+    start = time.time()
+    runs = {}
+    for rep in range(args.reps):
+        for way, extra in WAYS.items():
+            for point in points:
+                out = args.out / f"{way.replace(' ', '')}-{rep}"
+                counters, positions = bench(out, args.cpu, extra, point)
+                runs.setdefault((point, way), []).append(positions)
+        print(f"rep {rep} done, {time.time() - start:.0f}s", flush=True)
+
+    for point in points:
+        print("\n" + " ".join(map(str, point)))
+        for way in WAYS:
+            rs = runs[(point, way)]
+            fast = [min(p[3] for p in r) for r in rs]
+            lo = min(fast)
+            # The position each run's time came from
+            best = [min(r, key=lambda p: p[3]) for r in rs]
+            print(f"  {way}: fastest {lo:.4g}  runs/fastest " + " ".join(f"{t / lo:.3f}" for t in fast))
+            print("    positions max/min in a run: "
+                + " ".join(f"{max(p[3] for p in r) / min(p[3] for p in r):.3f}" for r in rs)
+                + "   median/fastest batch: " + " ".join(f"{p[4] / p[3]:.3f}" for p in best))
+            print(f"    calls {best[0][1]:.0f} batches {best[0][2]:.0f} "
+                f"faults/call {best[0][5] / (best[0][1] * best[0][2]):.3g}  "
+                + "  ".join(f"{name} {min(p[6 + i] for p in best):.6g}..{max(p[6 + i] for p in best):.6g}"
+                    for i, name in enumerate(counters)))
+
+if __name__ == '__main__':
+    main()

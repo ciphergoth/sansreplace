@@ -68,6 +68,17 @@ reports each point whose slowest run took more than `--report` times its fastest
 python/fastest --out results/combined results/run1 results/run2 results/run3
 ```
 
+`python/agree` says how well runs of the same code agree: how many points' slowest run took more
+than 1.03, 1.05 and so on times their fastest, overall and by algorithm, and the points that agree
+worst, with the counters each run recorded there. `python/stability` runs `bench` several times on
+a few points, with 4 KB pages and 2 MB ones, and reports how far apart the runs are; it is where
+the figures in [measurement](measurement.md#how-far-to-trust-a-time) come from, and needs Linux.
+
+```
+python/agree results/run1 results/run2 --row rust-random/hsel 1346269
+python/stability --out results/stability --cpu 3
+```
+
 Each process warms up, then times batches of calls, each batch starting from the same seed, until
 it has timed at least `--min-batches` batches over at least `--min-time` seconds, and takes the
 fastest batch. It does that with its stack at each of `--positions` positions, 16 bytes apart, and
