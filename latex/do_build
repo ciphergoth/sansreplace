@@ -16,6 +16,7 @@
 
 import argparse
 import pathlib
+import shutil
 import subprocess
 import sys
 
@@ -27,9 +28,12 @@ def parse_args():
     return p.parse_args()
 
 def generate():
-    "Generate the figures and tables from the results, into generated/"
+    """Generate the figures and tables from the results, into generated/,
+    which afterwards holds those and nothing left from an earlier build"""
     generated = scriptdir / "generated"
-    generated.mkdir(exist_ok=True)
+    if generated.exists():
+        shutil.rmtree(generated)
+    generated.mkdir()
     for cmd in [
         ["make_plots", "--pgf", generated],
         ["summarise", "--latex", generated],
