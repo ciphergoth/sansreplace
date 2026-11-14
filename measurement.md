@@ -60,7 +60,8 @@ of two builds looked faster, and it does here too:
 - With randomisation off, and the environment padded by 0 to 4,080 bytes in steps of 16, the same
   point's time moved between 0% and 6% above its fastest in a pattern that repeats every 64 bytes,
   so with the stack's position within a cache line; and at a few positions it took 1.3 to 1.7
-  times as long. An empty call took 8.4 times as long at one position of the 256.
+  times as long. HSEL with _k_ = 0, which returns at once, took 8.4 times as long at one position of
+  the 256.
 
 So `bench` starts every process with randomisation off, through `setarch -R`, and with an empty
 environment, and each process runs the timing on a stack it allocates itself, at a place it

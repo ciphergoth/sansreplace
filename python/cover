@@ -97,10 +97,11 @@ def markdown(results):
 def latex(results, out):
     out.write("\\begin{tabular}{ llrr }\n"
         "Set & Algorithms & " + bands.latex_stack(["Against", "floor"]) + " & "
-        + bands.latex_stack(["Most over", "best three"]) + " \\\\\n"
-        "\\hline\n")
+        + bands.latex_stack(["Most over", "best three"]) + " \\\\\n")
     for name, title in CASES:
-        out.write(f"\\multicolumn{{4}}{{l}}{{\\emph{{{title}}}}} \\\\\n")
+        # A rule above each case, to set it apart from the one before, and a
+        # strut to keep the title clear of the rule
+        out.write(f"\\hline\n\\multicolumn{{4}}{{l}}{{\\rule{{0pt}}{{2.8ex}}\\emph{{{title}}}}} \\\\\n")
         for row in table(bands.read_times(results / name)):
             label = "Cardchoose alone" if row.size is None else (
                 bands.latex_stack([f"best {row.size}", "integer only"]) if row.integer

@@ -383,8 +383,8 @@ arithmetic.
     \begin{tabular}{l|l|l|l|l}
     Algorithm & Time & Order & Extra memory & Floats \\
     \hline
-    Quadratic rejection sampling & \(k^2\) & Random &  & \\
-    Set-based rejection sampling & \(k\) & Random & Set & \\
+    Quadratic rejection sampling & \(k^2\)* & Random &  & \\
+    Set-based rejection sampling & \(k\)* & Random & Set & \\
     Floyd's F2 & \(k\) & None & Set & \\
     Quadratic F2 & \(k^2\) & Random &  & \\
     Bit-vector F2 & \(n\) & Sorted & \(n\)-bit vector & \\
@@ -392,15 +392,16 @@ arithmetic.
     Reservoir sampling & \(n\) & Random &  & \\
     SELECT & \(n\) & Random & \(n\)-element array & \\
     HSEL & \(k\) & Random & Dictionary & \\
-    RANKSB & \(k\) & Sorted &  & \\
+    RANKSB & \(k\)* & Sorted &  & \\
     Vitter's Algorithm D & \(k\) & Sorted &  & Yes \\
     Hidden Shuffle & \(k\) & Sorted &  & Yes \\
     Cardchoose & \(k \log k\) & Sorted &  &
     \end{tabular}
 \end{center}
 
-The times are expected times for \(k \leq n/2\); the algorithms that
-reject draws slow down as \(k\) approaches \(n\).
+The times are expected times. Algorithms marked with a * take an extra
+factor of \(\log k\) as \(k\) approaches \(n\), since they draw by
+rejection.
 
 \subsection{Quadratic rejection sampling}
 \inputminted{Python}{code/quadraticreject.py}
@@ -650,130 +651,6 @@ into a hash set, so that the difference is the cost of that operation
 separate boots of the machine, and report the fastest of the three
 times at each point, for reasons given below.
 
-\subsection{Pitfalls}\label{pitfalls}
-
-Again and again while preparing these results, an odd result, such as
-one algorithm faster than another in one language but slower in the
-other, or a point whose time changed between runs, came from how it was
-measured rather than from the algorithm. Each of the effects below
-moved some algorithm's time by 10\% or more while its source code stayed
-the same, which is more than many of the gaps between algorithms that
-we might otherwise have reported. We give a fuller account in
-\href{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}{\texttt{measurement.md}}
-in the repository.
-
-\paragraph{Where code lands.} Where a function starts within its
-64-byte cache line depends on all the code linked before it, and that
-alone moved the times of tight loops whose machine code had not
-changed: C++ iterative choosing took 15\% longer when a change to the
-standard library moved the code before it, and the Rust bit-vector F2's
-scan took up to 1.7 times as long when a change to how the Rust was
-built did. This is a kind of measurement bias that \textcite{mytkowicz}
-describe in general. Both languages now start every function on a cache
-line, which makes the timings stable when unrelated code changes, but
-not optimal, since a loop's alignment still depends on the code before
-it in its own function; so differences of up to about 15\% between
-algorithms dominated by a tight inner loop should not be read as
-meaningful.
-
-\paragraph{Where data lands.} \mintinline{c}{malloc} promises only
-16-byte alignment, so whether an array starts on a cache line depends on
-what was allocated before it, and a misaligned start makes about half
-the vector loads and stores that sweep it straddle two cache lines. In
-Rust, SELECT's fill of its \(n\)-element array took 1.5 times as long
-when the array started 16 bytes past a 32-byte boundary, which varied
-with where earlier allocations had left it; and C++ quadratic F2, which
-scans its own output on every draw, took 1,897\,ns per number at
-\(k = 121{,}393\) with the output array where \mintinline{c}{malloc}
-put it, and 1,290\,ns with it on a cache line. The array that SELECT
-sweeps, and the output array, are now aligned to a cache line.
-
-\paragraph{Where the stack lands.} Where a process's stack starts
-depends on the kernel's randomisation of its address space and on the
-total length of its environment variables, which sit above it;
-\textcite{mytkowicz} found the size of the environment changing which
-of two builds looked faster. Here, 20 processes that each timed C++ HSEL
-at \(k = 1\) spread over a factor of 1.72 with randomisation on, and
-all came within 2\% of the fastest with it off. With it off, padding
-the environment moved the same point's time by up to 6\% in a pattern
-that repeats every 64 bytes, and at a few sizes by 1.3 to 1.7 times. So
-each process runs with randomisation off and an empty environment, and
-times on a stack of its own at four positions 16 bytes apart, of which
-we take the fastest.
-
-\paragraph{What the compiler decides.} The \mintinline{rust}{rand}
-crate's \mintinline{rust}{random_range} is not marked
-\mintinline{rust}{#[inline]}, and once it had several callers, LLVM kept
-it out of line for inclusive ranges: sorted reservoir sampling took
-1.73\,ns per value of \(n\), against 0.90\,ns with the draw inlined and
-0.91\,ns in C++. By default, Rust's release builds split a crate into
-16 codegen units by heuristics over the whole crate, and LLVM inlines
-within each separately, so when we changed the hasher of Rust's hash
-tables, the standard library's sort, which uses no hash table, compiled
-differently and took 7--16\% longer; the Rust is now built as one unit,
-with link-time optimisation. And a scan that returns at the first match
-is not vectorised: in C++ quadratic rejection at \(k = 10{,}946\), it
-took 2,483\,ns per number, against 169\,ns for a scan that ORs every
-comparison together.
-
-\paragraph{Defaults.} On x86-64, both compilers target the original
-baseline, whose only vectors are SSE2, unless told otherwise; built
-that way, the quadratic algorithms, whose scans then use vectors half
-as wide, take 1.7 to 3.9 times as long from \(k = 610\)
-up. We build both languages for the AVX2 baseline. We also build
-without the hardening flags that Nix's compiler wrapper adds and the
-libstdc++ assertions that Meson turns on, as an ordinary optimised
-build would be, though neither changed any C++ time by more than 9\%.
-
-\paragraph{Libraries.} The C++ standard library's hash tables are
-node-based, and Boost's flat tables insert 4 to 16 times as fast; Rust's
-default hasher, SipHash, resists collision attacks that Boost's does
-not, and foldhash inserts about 1.6 times as fast. Switching the C++
-standard library from libstdc++ to libc++ made Cardchoose take about
-0.55 times as long, because the two \mintinline{cpp}{std::sort}s are
-different code. With each language's standard library alone, a
-comparison of the two languages would largely have compared their hash
-tables.
-
-\paragraph{One process for many points.} An earlier harness timed all
-of an algorithm's points in one process, and a point's time then
-depended on the points before it. Rust quadratic rejection and sorted
-quadratic F2, which search the output with
-\mintinline{rust}{slice::contains}, sometimes took about 1.6 times as
-long at a whole run of points, with the same code, data and draws, and
-which points were slow changed from run to run. The counters show the
-scan's loop taking 2.3 cycles per iteration rather than 1.5, with the
-front end of the core unable to keep the back end supplied with
-operations, but no more cache misses or branch mispredictions. We have
-not found the trigger, but with each point in a process of its own the
-slow state is rare, and cannot outlast the point that met it.
-
-\paragraph{The prefetcher.} Filling a 185\,kB array with consecutive
-numbers, as SELECT begins by doing, runs at two speeds 1.3 times apart
-while executing exactly the same instructions. What differs is the
-level-2 cache's prefetcher, which makes one or two requests during a
-fast fill and over a thousand during a slow one, for lines that cache
-already holds. Which speed a process gets depends on where its memory
-lies, in a way we have not been able to predict, and the virtual machine
-gives us no way to turn the prefetcher off. This is a property of the
-processor rather than of the measurement, and a program that calls
-SELECT will meet it too; it makes SELECT's times the least certain of
-those we report.
-
-\paragraph{How well the runs agree.} At 97.9\% of the 52,561 points
-timed in all three runs, the fastest two runs are within 5\% of each
-other, and at 99.3\% within 10\%, so nearly every time we report was
-reached twice. Of the 92 points where they differ by more than 20\%,
-51 are SELECT's and 17 the bit-vector F2's, which also sweeps an array
-whose size goes with \(n\), and 23 of the others have
-\(k \geq 500{,}000\), where the time goes on cache misses in a large
-table: one of the three boots was up to 2.2 times slower than the
-others at some such points, with the same instructions and the same
-level-2 cache misses, and timed repeatedly on one boot they vary by
-about 10\%. We would not read anything into a
-difference of less than 5\% between two algorithms at a point, nor
-less than 10\% at the largest \(k\).
-
 \subsection{The two languages}
 
 The C++ and Rust implementations are the same algorithms, written the
@@ -820,7 +697,11 @@ both turn its output into a number below a bound with a
 multiplication. But the C++ uses its own code for this, which takes two
 32-bit numbers from each 64-bit output, while the
 \mintinline{rust}{rand} crate's \mintinline{rust}{random_range} uses a
-whole output for each. The shuffle that turns the sorted output of
+whole output for each. Both correct the multiplication's slight bias,
+differently: the C++ uses Lemire's method, which rejects the few draws
+that cause it and so is exact, and \mintinline{rust}{random_range}
+Canon's method, which never rejects and leaves a bias of at most 1 in
+\(2^{96}\), too small to detect. The shuffle that turns the sorted output of
 RANKSB, Algorithm D and Hidden Shuffle into random order is the same
 loop in both languages, but costs 1.3 to 1.5 times as much per number
 in Rust (\autoref{componenttimes}); so for random
@@ -843,6 +724,248 @@ position it is given for every number, where
 \mintinline{rust}{fixedbitset} works through each word in turn. At
 \(n = k = 1{,}346{,}269\), the C++ sorted variant takes 3.8\,ns per
 number, against 2.2\,ns with a loop of our own that did the same.
+
+\subsection{Pitfalls}\label{pitfalls}
+
+Again and again while preparing these results, an odd result, such as
+one algorithm faster than another in one language but slower in the
+other, or a point whose time changed between runs, came from how it was
+measured rather than from the algorithm. Each of the effects below
+moved some algorithm's time by 10\% or more while its source code stayed
+the same, which is more than many of the gaps between algorithms that
+we might otherwise have reported. We describe them at some length,
+since a reader comparing algorithms of their own is likely to meet the
+same ones;
+\href{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}{\texttt{measurement.md}}
+in the repository has the remaining detail.
+
+\paragraph{The machine.} One of the machine's four cores is kept for
+the timing: the kernel is booted with
+\verb|isolcpus=3 nohz_full=3 rcu_nocbs=3|, so that it schedules nothing
+else there, sends it no timer ticks while one process runs, and does
+its own housekeeping on the other cores. Transparent huge pages are
+off. The machine is stopped between runs, and may come back on a
+different host. It is a virtual machine, which limits what we can look
+at: it offers five performance counters at a time, none of them for the
+level-3 cache, and no way to turn the processor's prefetchers off.
+
+\paragraph{Where code lands.} Where a function starts within its
+64-byte cache line depends on all the code linked before it, and that
+alone moved the times of tight loops whose machine code had not
+changed: C++ iterative choosing took 15\% longer when a change to the
+standard library moved the code before it, and the Rust bit-vector F2's
+scan took up to 1.7 times as long when a change to how the Rust was
+built did. This is a kind of measurement bias that \textcite{mytkowicz}
+describe in general. Both languages now start every function on a cache
+line, which makes the timings stable when unrelated code changes, but
+not optimal, since a loop's alignment still depends on the code before
+it in its own function; so differences of up to about 15\% between
+algorithms dominated by a tight inner loop should not be read as
+meaningful.
+
+\paragraph{Where data lands.} \mintinline{c}{malloc} promises only
+16-byte alignment, so whether an array starts on a cache line depends on
+what was allocated before it, and a misaligned start makes about half
+the vector loads and stores that sweep it straddle two cache lines. In
+Rust, SELECT's fill of its \(n\)-element array took 1.5 times as long
+when the array started 16 bytes past a 32-byte boundary, which varied
+with where earlier allocations had left it; and C++ quadratic F2, which
+scans its own output on every draw, took 1,897\,ns per number at
+\(k = 121{,}393\) with the output array where \mintinline{c}{malloc}
+put it, and 1,290\,ns with it on a cache line. The array that SELECT
+sweeps, and the output array, are now aligned to a cache line.
+
+\paragraph{Where the stack lands.} Where a process's stack starts
+depends on the kernel's randomisation of its address space and on the
+total length of its environment variables, which sit above it;
+\textcite{mytkowicz} found the size of the environment changing which
+of two builds looked faster. Here, 20 processes that each timed C++ HSEL
+at \(k = 1\) spread over a factor of 1.72 with randomisation on, and
+all came within 2\% of the fastest with it off. With it off, padding
+the environment by 0 to 4,080 bytes in steps of 16 moved the same
+point's time by up to 6\% in a pattern that repeats every 64 bytes, so
+with the stack's position within a cache line; at a few sizes it took
+1.3 to 1.7 times as long, and at one of the 256, HSEL with \(k = 0\),
+which returns at once, took 8.4 times as long. So each process runs with randomisation
+off and an empty environment, and times on a stack of its own at four
+positions 16 bytes apart, which covers the pattern, and we take the
+fastest. This gives every algorithm its best alignment, rather than
+whichever one a launch happened to give it.
+
+\paragraph{What the compiler decides.} The \mintinline{rust}{rand}
+crate's \mintinline{rust}{random_range} is not marked
+\mintinline{rust}{#[inline]}, and once it had several callers, LLVM kept
+it out of line for inclusive ranges: sorted reservoir sampling took
+1.73\,ns per value of \(n\), against 0.90\,ns with the draw inlined and
+0.91\,ns in C++. An early timing program for the Rust hashed strings
+for its own purposes, and with those extra callers LLVM kept the hash
+function out of line in the algorithms too: set-based rejection,
+Floyd's F2 and HSEL took 14--23\% longer than they do now. By default,
+Rust's release builds split a crate into 16 codegen units by heuristics
+over the whole crate, and LLVM inlines within each separately, so when
+we changed the hasher of Rust's hash tables, the standard library's
+sort, which uses no hash table, compiled differently and took 7--16\%
+longer; the Rust is now built as one unit, with link-time optimisation.
+
+\paragraph{Searching an array.} The quadratic algorithms ask on every
+draw whether a number is already in the output. A C++ loop that returns
+at the first match is not vectorised, because of the early exit; one
+that ORs every comparison together is. With libc++ we also tried
+\mintinline{cpp}{std::ranges::contains}, which on long arrays scans
+almost twice as fast as our loop, but for 4-byte integers is a call to
+glibc's \mintinline{c}{wmemchr}, and the call costs more than a short
+scan does. The quadratic algorithms are only worth having where the
+scans are short, so we kept our loop. In ns per number, for C++
+quadratic rejection in random order at \(n = 1{,}346{,}269\):
+
+\begin{center}
+    \footnotesize
+    \begin{tabular}{r|r|r|r}
+    \(k\) & Returning early & ORing together &
+    \mintinline{cpp}{std::ranges::contains} \\
+    \hline
+    8 & 2.48 & 1.86 & 5.04 \\
+    34 & 8.35 & 2.65 & 5.24 \\
+    144 & 38.3 & 3.96 & 5.28 \\
+    610 & 153 & 10.2 & 7.39 \\
+    10,946 & 2,483 & 169 & 91.7
+    \end{tabular}
+\end{center}
+
+\paragraph{Defaults.} On x86-64, both compilers target the original
+baseline, whose only vectors are SSE2, unless told otherwise. Built
+that way, the quadratic algorithms, whose scans then use vectors half
+as wide, take 1.7 to 3.9 times as long from \(k = 610\) up; SELECT's
+fill takes up to 1.2 times as long; and the C++ sorted bit-vector F2
+takes 1.4 to 1.8 times as long at small \(k\), where its time goes on
+scanning for set bits. We build both languages for the AVX2 baseline,
+x86-64-v3. We also build without the hardening flags that Nix's
+compiler wrapper adds and the libstdc++ assertions that Meson turns on,
+as an ordinary optimised build would be, though neither changed any C++
+time by more than 9\%; and we build the C++ with clang rather than
+Nix's default of GCC, so that the two languages differ in their
+libraries and not their compilers.
+
+\paragraph{Libraries.} Which library provides a hash table or a sort
+changes the results more than most of the effects here. The C++
+standard library's hash tables are node-based, and Boost's flat tables
+insert 4 to 16 times as fast; with them, the C++ Floyd's F2, HSEL and
+set-based rejection take about 0.2 times as long in random order.
+Rust's default hasher, SipHash, resists collision attacks that Boost's
+does not, and foldhash inserts about 1.6 times as fast. Switching the
+C++ standard library from libstdc++ to libc++ made Cardchoose take
+about 0.55 times as long, because the two
+\mintinline{cpp}{std::sort}s are different code. With each language's
+standard library alone, a comparison of the two languages would largely
+have compared their hash tables.
+
+\paragraph{Memory from the kernel.} glibc's \mintinline{c}{malloc}
+serves blocks over 32\,MB with a fresh \mintinline{c}{mmap} and unmaps
+them when freed, so an algorithm that allocates a large array on every
+call faults in every page of it again on every call: SELECT from \(n\)
+of about 8 million, and the bit-vector F2 from about 270 million. The
+results are timed with ordinary 4\,kB pages, which is what a program
+gets unless it asks for something else, but we also timed 20 points
+with glibc taking its memory in 2\,MB pages. The algorithms whose time
+goes on cache misses in a large table get faster, since each miss no
+longer also misses in the TLB: by 5\% for Rust RANKSB at
+\(n = k = 3{,}524{,}578\), and 17\% for the C++ bit-vector F2 at
+\(n = 165{,}580{,}141\). SELECT at \(n = 14{,}930{,}352\) takes 0.22
+times as long, since 14,600 page faults a call become 29; but at
+\(n = 1{,}346{,}269\) it takes twice as long, since glibc then maps
+even a 5\,MB array afresh on every call. So the page size changes which
+algorithm is fastest at some points, in both directions.
+
+\paragraph{One process for many points.} An earlier harness timed all
+of an algorithm's points in one process, and a point's time then
+depended on the points before it. Rust quadratic rejection and sorted
+quadratic F2, which search the output with
+\mintinline{rust}{slice::contains}, sometimes took about 1.6 times as
+long at a whole run of points, with the same code, data and draws, and
+which points were slow changed from run to run. The counters show the
+scan's loop taking 2.3 cycles per iteration rather than 1.5, and
+retiring 3.0 operations per cycle rather than 4.5: of the eight slots
+in which the core can dispatch operations each cycle, 4.8 rather than
+2.1 are empty because the front end has none to offer. Every operation
+still comes from the op cache, and there are no more cache misses, TLB
+misses or branch mispredictions. We ruled out the host, the data,
+where the output array starts, moving between cores, transparent huge
+pages and the passage of time, and have not found the trigger; but
+where the process's memory lies has a part in it, since of 20 fresh
+processes that each timed one such point, one was in the slow state
+with the address space randomised, and none with randomisation off.
+With each point in a process of its own the slow state is rare, and
+cannot outlast the point that met it.
+
+\paragraph{The prefetcher.} Filling a 185\,kB array with consecutive
+numbers, as SELECT begins by doing, runs at two speeds 1.3 times apart:
+the same 16,209 instructions take 3,370 cycles or 4,255. Nothing we can
+count differs in cache misses, TLB misses or branch mispredictions. What
+differs is the level-2 cache's prefetcher, which makes one or two
+requests during a fast fill and about 1,160 during a slow one, for
+lines that cache already holds. This is a correlation: the virtual
+machine gives us no way to turn the prefetcher off and see the slow
+speed go away. Which speed a process gets depends on where its memory
+lies, in a way we have not been able to predict; with 2\,MB pages it is
+always the slow one. We time this fill alone alongside the algorithms,
+so that the results show which speed it took. SELECT at
+\(n = 46{,}368\) runs at the slow speed in both languages, in every
+process, with the same 1,250 or so requests a call. This is a property
+of the processor rather than of the measurement, and a program that
+calls SELECT will meet it too; it makes SELECT's times the least
+certain of those we report.
+
+\paragraph{How well the runs agree.} Of the 52,561 points timed in all
+three runs, the number at which one run took more than a given amount
+longer than the fastest is:
+
+\begin{center}
+    \footnotesize
+    \begin{tabular}{r|r|r}
+    Longer by more than & The slowest run & The second fastest run \\
+    \hline
+    3\% & 7,702 & 1,999 \\
+    5\% & 4,989 & 1,082 \\
+    10\% & 2,152 & 379 \\
+    20\% & 623 & 92 \\
+    50\% & 53 & 3
+    \end{tabular}
+\end{center}
+
+So all three runs are within 5\% of each other at nine points in ten,
+and at 97.9\% of points the time we report was reached by a second run
+to within 5\%, and at 99.3\% to within 10\%. In every large
+disagreement we looked at, the runs executed the same instructions, and
+one took more cycles over them. Of the 92 points whose two fastest runs
+differ by more than 20\%, 51 are SELECT's and 17 the bit-vector F2's,
+which also sweeps an array whose size goes with \(n\); these are the
+prefetcher's doing, and more runs would not settle them. Rust sorted
+SELECT at \(n = 196{,}418\), timed in 180 processes on one boot, took
+more than 1.2 times its fastest time in 124 of them. Of the others, 23
+have \(k \geq 500{,}000\), where the time goes on cache misses in a
+large table: one of the three boots was up to 2.2 times slower than the
+others at some such points, with the same level-2 cache misses, so the
+time went beyond that cache, perhaps on a level-3 cache shared with
+other tenants or on a slower host. Seven such points, each timed in 180
+processes on one boot, did not drift over the hour, but the typical
+process was 4\% to 13\% above the fastest. Lastly, at small points a
+process is now and then 1.5 to 2 times slower at every stack position
+while its neighbours are not; in 180 processes at each of six such
+points this happened twice, seconds apart, and three runs clear nearly
+all of these. We would not read anything into a difference of less than
+5\% between two algorithms at a point, nor less than 10\% where \(k\)
+is in the millions.
+
+\paragraph{How we checked.} Every change to an algorithm is checked for
+fairness, by counting how often each possible output comes up at a few
+small points. A time that changes unexpectedly is timed again on a
+fresh boot before we believe it; to tell a real change from noise, the
+old and new code are built and timed alternately, on one boot, at the
+same points. When a time changes but the source has not, we compare the
+machine code of both builds, on the machine the results are timed on,
+so that ``the code is the same'' is something we have checked rather
+than assumed; and where it is the same, we read the performance
+counters to see where the time goes.
 
 \subsection{Results}
 
@@ -929,8 +1052,8 @@ as long as Hidden Shuffle at every point with \(k \geq 10\). Where
 and 0.91 to 5.2 times as long in Rust; where \(n < 2k\) and
 \(k \geq 10^5\), it is faster than Cardchoose in both.
 
-For random output, the two languages agree, now that both have a fast
-hash table. SELECT is the fastest algorithm wherever \(2k \leq n < 16k\)
+For random output, the same algorithms win the same regions in both
+languages. SELECT is the fastest algorithm wherever \(2k \leq n < 16k\)
 and \(k < 10^5\). From \(n\) of about 8 million, its array is large
 enough that glibc's \mintinline{c}{malloc} maps it afresh on every
 call, and faulting its pages in again makes it up to 7.9 times slower
