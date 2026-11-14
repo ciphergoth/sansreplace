@@ -57,8 +57,9 @@
 
 \newcommand*{\defeq}{\stackrel{\text{def}}{=}}
 
-% A link to a file in the repository
-\newcommand{\repo}[2]{\href{https://github.com/ciphergoth/sansreplace/blob/master/#1}{#2}}
+% A link to a file in the repository, as it was when this version of the
+% paper was tagged
+\newcommand{\repo}[2]{\href{https://github.com/ciphergoth/sansreplace/blob/arxiv_01/#1}{#2}}
 % Links to an algorithm's Python, C++ and Rust implementations
 \newcommand{\impls}[1]{\repo{python/algorithms/#1.py}{Python},
   \repo{cpp/#1.cpp}{C++} and \repo{rust/src/algorithms/#1.rs}{Rust}}
@@ -94,9 +95,11 @@
     time. We benchmark C++ and Rust implementations of it and twelve
     other algorithms over a wide range of \(n\) and \(k\), for both
     sorted and random order output. No algorithm is fastest for every
-    \(n\), \(k\), language and output order, but Cardchoose is fastest
-    or close to it in many cases, and is by far the simplest algorithm
-    to perform acceptably across the whole range tested.
+    \(n\), \(k\), language and output order. Cardchoose is among the
+    fastest for sorted output; for random output, algorithms that use a
+    hash table are faster until the table outgrows the cache. It is by
+    far the simplest algorithm to perform acceptably across the whole
+    range tested.
 \end{abstract}
 
 \section{Introduction}
@@ -135,8 +138,8 @@ libraries such as Python's and Rust's implement several algorithms and
 choose between them based on \(n\) and \(k\). In \autoref{choosing},
 we find the small sets of algorithms that between them minimise the
 worst time per number output. Three algorithms need no extra memory
-and always perform reasonably, and of these Cardchoose is the fastest
-in many cases, and by far the simplest.
+and always perform reasonably, and of these Cardchoose is by far the
+simplest, and with a fast sort the fastest over most of the range.
 
 \section{Cardchoose}\label{cardchoose}
 
@@ -749,10 +752,10 @@ results interactively. The
 \href{https://ciphergoth.github.io/sansreplace/}{explorer} on the
 project's website plots every algorithm for any \(n\) and \(k\)
 tested, and the animated graphs in
-\href{https://github.com/ciphergoth/sansreplace/blob/master/results.md}{\texttt{results.md}}
+\repo{results.md}{\texttt{results.md}}
 in the repository sweep through many values of \(n\). The complete
 benchmark data is in
-\href{https://github.com/ciphergoth/sansreplace/blob/master/results/latest}{\texttt{results/latest}}.
+\href{https://github.com/ciphergoth/sansreplace/tree/arxiv_01/results/latest}{\texttt{results/latest}}.
 
 Here, \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} graph
 time/\(k\) in ns against \(k\) for two values of \(n\) for random
@@ -1004,7 +1007,7 @@ the same, which is more than many of the gaps between algorithms that
 we might otherwise have reported. We describe them at some length,
 since a reader comparing algorithms of their own is likely to meet the
 same ones;
-\href{https://github.com/ciphergoth/sansreplace/blob/master/measurement.md}{\texttt{measurement.md}}
+\repo{measurement.md}{\texttt{measurement.md}}
 in the repository has the remaining detail.
 
 \paragraph{The machine.} One of the machine's four cores is kept for

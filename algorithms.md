@@ -157,8 +157,8 @@ implementations align the array to a 64-byte cache line: `malloc` only promises 
 x86-64, filling the array took 1.5 times as long in Rust when it started 16 bytes past a 32-byte
 boundary, which depended on where earlier allocations happened to leave it. On Linux, glibc's
 `malloc` serves blocks over 32 MB with a fresh `mmap` and unmaps them on `free`, so from _n_ ≈ 8
-million every call faults in every page of the array again; this makes filling it about ten times
-slower than on macOS, where nothing like this shows until the largest _n_ timed.
+million every call faults in every page of the array again: with _k_ = 34, a call takes 0.034 ns
+for each element of the array at _n_ = 5,702,887, and 0.63 ns at _n_ = 9,227,465.
 
 ## HSEL
 

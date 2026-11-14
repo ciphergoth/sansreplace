@@ -19,10 +19,10 @@
 #include <stdint.h>
 
 // Scanning every entry without returning early lets the compiler vectorise
-// this loop. std::ranges::contains scans long arrays faster, but libc++ makes
-// it a call to wmemchr, which makes it slower for the short arrays that the
-// quadratic algorithms are for: inside quadratic rejection, at k = 34 it took
-// 5.2 ns per number against this loop's 2.7.
+// this loop. Built with libc++, std::ranges::contains scanned long arrays
+// faster, but there it is a call to wmemchr, which made it slower for the
+// short arrays that the quadratic algorithms are for: inside quadratic
+// rejection, at k = 34 it took 5.2 ns per number against this loop's 2.7.
 static inline bool contains(uint32_t needle, uint32_t size, const uint32_t* haystack) {
     bool found = false;
     for (uint32_t i = 0; i < size; i++) {
