@@ -220,6 +220,15 @@ above, and can decide which language looks faster.
   code: switching from libstdc++ to libc++ made Cardchoose take about 0.55 times as long, and the
   other sorted variants about 0.8 times. Rust's `sort_unstable`, ipnsort, still sorts in about half
   the time that `pdqsort` takes.
+- **Bit vectors.** The bit-vector F2 takes its bit vector from Boost's `dynamic_bitset` in C++ and
+  the `fixedbitset` crate in Rust. An earlier version used a bit vector of its own, and in C++ the
+  sorted variant took 2.2 ns per number at _n_ = _k_ = 1,346,269 where it now takes 3.8 ns; over
+  all the points it is 1.1 to 1.4 times slower with Boost, and most where the sample is dense.
+  Setting bits costs the same, so the random-order variant is no slower: the difference is in
+  reading the sorted output off the vector. Our loop took each word and cleared its lowest set
+  bit to reach the next. Boost's `find_next` starts again from the position it is given: it finds
+  the word, shifts it, counts the trailing zeros and adds, and the next call can't start until
+  that is done. `fixedbitset`'s `ones` works word by word as our loop did.
 
 ## Memory from the kernel
 
@@ -230,7 +239,7 @@ _n_ ≈ 270 million; see [SELECT](algorithms.md#select). The `position` rows in 
 record the page faults each point took.
 
 The results are timed with ordinary 4 KB pages, which is what a program gets unless it asks for
-something else. `bench --huge-pages` has glibc take its memory in 2 MB pages instead, and we timed
+something else. `bench --pages 2M` has glibc take its memory in 2 MB pages instead, and we timed
 20 points both ways to see what that changes:
 
 - The algorithms whose time goes on cache misses in a large table get faster, since each miss
