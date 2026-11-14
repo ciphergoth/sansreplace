@@ -88,6 +88,15 @@ and `bitvectorf2` above that; in C++, `cardchoose` is the best below 10<sup>5</s
 there to 10<sup>6</sup>, and `bitvectorf2` from 10<sup>7</sup>. In between, the best is
 `hiddenshuffle` in C++ and `cardchoose` in Rust.
 
+Eight of the algorithms need no memory beyond the output array: `quadraticreject`, `quadraticf2`,
+`iterativechoose`, `reservoirsample`, `ranksb`, `vitterd`, `hiddenshuffle` and `cardchoose`. Among
+these, `cardchoose` is the best in 18 of the 28 bands of the four cases: in Rust, every band from
+100 with random output and every band below 10<sup>7</sup> with sorted output, and in C++, every
+band below 10<sup>5</sup> with sorted output and those from 1,000 to 10<sup>5</sup> with random
+output. `quadraticf2` is the best in three bands of random output at small _k_, and
+`hiddenshuffle` in the other seven, at large _k_. Among those of the eight that also need no
+floating point, `cardchoose` is the best in every band but those three.
+
 ## Dominated algorithms
 
 An algorithm is dominated by bands if another scores no worse in any band and better in at least

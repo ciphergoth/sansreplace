@@ -97,9 +97,11 @@
     sorted and random order output. No algorithm is fastest for every
     \(n\), \(k\), language and output order. Cardchoose is among the
     fastest for sorted output; for random output, algorithms that use a
-    hash table are faster until the table outgrows the cache. It is by
-    far the simplest algorithm to perform acceptably across the whole
-    range tested.
+    hash table are faster until the table outgrows the cache. Among the
+    algorithms that need no memory beyond their output, it has the best
+    worst-case time per number output over most of the range of \(k\),
+    and it is by far the simplest algorithm to perform acceptably
+    across the whole range tested.
 \end{abstract}
 
 \section{Introduction}
@@ -930,6 +932,18 @@ output, the two languages agree: quadratic F2 is the best below 100,
 where it needs neither a sort nor a shuffle, HSEL from there to
 \(10^6\), and the bit-vector F2 from \(10^7\). In between, the best is
 Hidden Shuffle in C++ and Cardchoose in Rust.
+
+Eight of the algorithms need no memory beyond the output array: the two
+quadratic algorithms, iterative choosing, reservoir sampling, RANKSB,
+Algorithm D, Hidden Shuffle and Cardchoose. Among these, Cardchoose is
+the best in 18 of the 28 bands of the four cases: in Rust, every band
+from 100 with random output and every band below \(10^7\) with sorted
+output, and in C++, every band below \(10^5\) with sorted output and
+those from 1,000 to \(10^5\) with random output. Quadratic F2 is the
+best in three bands of random output at small \(k\), and Hidden Shuffle
+in the other seven, at large \(k\). Among those of the eight that also
+need no floating point, Cardchoose is the best in every band but those
+three.
 
 An algorithm is dominated by bands if another scores no worse in any
 band and better in at least one. Eight algorithms are dominated by
