@@ -82,10 +82,12 @@ fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
     {
         use rand::seq::index::internals;
         type Sampler = fn(&mut Rng, u32, u32) -> rand::seq::index::IndexVec;
-        let each: [(&'static str, Sampler); 4] = [
+        let each: [(&'static str, Sampler); 5] = [
             ("floyd", internals::floyd),
             ("inplace", internals::inplace),
             ("rejection", internals::rejection),
+            // Rejection sampling as rand does it without std
+            ("rejectionbtree", internals::rejection_btree),
             ("cardchoose", internals::cardchoose),
         ];
         for (name, sampler) in each {

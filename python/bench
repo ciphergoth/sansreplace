@@ -44,10 +44,12 @@ ORDERS = ["random", "sorted"]
 # What the other orders hold, and the languages that have them. Of rand's,
 # indexsample is rand's index::sample, and the rest are the algorithms it
 # chooses between, which need --rust-features rand_internals and a --rust-rand
-# that exposes them.
+# that exposes them; rejectionbtree is its rejection sampling as built without
+# std.
 OTHER_ORDERS = {
     "component": (COMPONENTS, ["cpp", "rust"]),
-    "rand": (["indexsample", "floyd", "inplace", "rejection", "cardchoose"], ["rust"]),
+    "rand": (["indexsample", "floyd", "inplace", "rejection", "rejectionbtree", "cardchoose"],
+        ["rust"]),
 }
 
 # The counters --counters knows by name, each as the TYPE:CONFIG that
