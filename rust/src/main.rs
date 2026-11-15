@@ -51,17 +51,53 @@ fn table(order: &str) -> Vec<(&'static str, Algorithm)> {
         // against a checkout of rand, this times a change to it as python/bench
         // times everything else. It returns a vector, so copy that to the
         // output, as a caller that wants the indices somewhere must.
-        "rand" => vec![(
-            "indexsample",
-            Box::new(|rng: &mut Rng, length: u32, res: &mut [u32]| {
-                let sample = rand::seq::index::sample(rng, length as usize, res.len());
-                for (r, index) in res.iter_mut().zip(sample) {
-                    *r = index as u32;
-                }
-            }) as Algorithm,
-        )],
+        "rand" => rand_samplers(),
         _ => panic!("unknown order {order}"),
     }
+}
+
+/// Copy the vector that one of rand's samplers returns to the output
+fn copy_out(sample: rand::seq::index::IndexVec, res: &mut [u32]) {
+    for (r, index) in res.iter_mut().zip(sample) {
+        *r = index as u32;
+    }
+}
+
+fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
+    #[allow(unused_mut)]
+    let mut samplers = vec![(
+        "indexsample",
+        Box::new(|rng: &mut Rng, length: u32, res: &mut [u32]| {
+            copy_out(
+                rand::seq::index::sample(rng, length as usize, res.len()),
+                res,
+            )
+        }) as Algorithm,
+    )];
+    // With the rand_internals feature, each of the algorithms that
+    // index::sample chooses between, so that each can be timed where sample
+    // would not choose it. These need a checkout of rand that exposes them,
+    // which the published crate doesn't.
+    #[cfg(feature = "rand_internals")]
+    {
+        use rand::seq::index::internals;
+        type Sampler = fn(&mut Rng, u32, u32) -> rand::seq::index::IndexVec;
+        let each: [(&'static str, Sampler); 4] = [
+            ("floyd", internals::floyd),
+            ("inplace", internals::inplace),
+            ("rejection", internals::rejection),
+            ("cardchoose", internals::cardchoose),
+        ];
+        for (name, sampler) in each {
+            samplers.push((
+                name,
+                Box::new(move |rng: &mut Rng, length: u32, res: &mut [u32]| {
+                    copy_out(sampler(rng, length, res.len() as u32), res)
+                }) as Algorithm,
+            ));
+        }
+    }
+    samplers
 }
 
 /// Sample without replacement, or time doing it

@@ -34,6 +34,9 @@ siphash = []
 # Draw from another generator than SmallRng: see src/main.rs. At most one.
 pcg32 = ["dep:rand_pcg"]
 stdrng = []
+# Time the algorithms inside the rand crate's index::sample one by one: see
+# src/main.rs. Needs --rust-rand, with a checkout of rand that exposes them.
+rand_internals = []
 
 [dependencies.rand_pcg]
 version = "0.10"

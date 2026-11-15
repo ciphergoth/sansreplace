@@ -41,8 +41,14 @@ topdir = pathlib.Path(__file__).resolve().parent.parent
 # crate's own sampler, can be named too
 LANGUAGES = ["cpp", "rust"]
 ORDERS = ["random", "sorted"]
-# What the other orders hold, and the languages that have them
-OTHER_ORDERS = {"component": (COMPONENTS, ["cpp", "rust"]), "rand": (["indexsample"], ["rust"])}
+# What the other orders hold, and the languages that have them. Of rand's,
+# indexsample is rand's index::sample, and the rest are the algorithms it
+# chooses between, which need --rust-features rand_internals and a --rust-rand
+# that exposes them.
+OTHER_ORDERS = {
+    "component": (COMPONENTS, ["cpp", "rust"]),
+    "rand": (["indexsample", "floyd", "inplace", "rejection", "cardchoose"], ["rust"]),
+}
 
 # The counters --counters knows by name, each as the TYPE:CONFIG that
 # cpp/counters.h describes, and all of which a bare --counters counts.
