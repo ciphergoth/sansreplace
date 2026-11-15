@@ -129,9 +129,13 @@ def time_point(args, cmd, lang, order, alg, n, k):
     """Time a point in a process of its own, and return a row for each stack
     position it was timed at, as cpp/timing.h describes"""
     prefix, env = launcher(args)
+    # A point over the per-number limit is off the top of every graph, so one
+    # call is enough to say so; but only where a call takes min_time or more,
+    # since a shorter one costs the same to time properly
+    once_above = min(args.once_above, max(args.per_number_limit * 1e-9 * k, args.min_time))
     cmd = prefix + cmd + ["time", *impls.point_args(order, alg, n, k, impls.point_seed(n, k)),
         "--min-time", str(args.min_time), "--min-batches", str(args.min_batches),
-        "--once-above", str(args.once_above)]
+        "--once-above", str(once_above)]
     if lang != "python":
         cmd += ["--positions", str(args.positions)]
         for c in args.counters:
@@ -172,7 +176,8 @@ def time_one(args, lang, order, alg, csvfile):
             "counters": ",".join(args.counters), "cpu": args.cpu, "csv": csvfile,
             "fix_freq": args.fix_freq, "language": lang, "max_k": args.max_k,
             "min_batches": args.min_batches, "min_time": args.min_time, "nk": args.nk,
-            "once_above": args.once_above, "pages": args.pages, "positions": args.positions,
+            "once_above": args.once_above, "pages": args.pages,
+            "per_number_limit": args.per_number_limit, "positions": args.positions,
             "rust_features": ",".join(args.rust_features), "sorttype": order, "time_limit": args.time_limit, "values": args.values}
         for k, v in config.items():
             writer.writerow(["config", k, v])
@@ -191,8 +196,15 @@ def time_one(args, lang, order, alg, csvfile):
     # n. Some algorithms are slow only near k = n, so try again at the next n;
     # but if it goes over the limit at the same k for two different n, skip
     # that k and larger for every n after.
-    hit = None   # (n, k) where it last went over the limit
+    #
+    # The same goes once the time per number output is over its limit and
+    # rising with k, as for the quadratic algorithms, and for those that reject
+    # draws as k nears n. Where it is over the limit but falling, as at small k
+    # for the algorithms whose work goes with n, larger k may yet come under
+    # it, so nothing is skipped.
+    hit = None   # (n, k) where it last went over a limit
     klim = None  # k from which to skip it for every n
+    last = None  # (n, k, time per number) at the last point timed with k > 0
     res = {}
     for descrip, n, k in values(args):
         if (klim is not None and k >= klim) or (hit is not None and hit[0] == n and k >= hit[1]):
@@ -219,8 +231,17 @@ def time_one(args, lang, order, alg, csvfile):
                 writer.writerow(["position", alg, n, k, *p])
             f.flush()
         res[descrip] = t
+        over = None
         if t > args.time_limit:
-            print(f"over the time limit: {alg}", flush=True)
+            over = "the time limit"
+        elif k > 0:
+            per_number = 1e9 * t / k
+            if (per_number > args.per_number_limit and last is not None and last[0] == n
+                    and k > last[1] and per_number > last[2]):
+                over = "the limit per number, and rising"
+            last = (n, k, per_number)
+        if over is not None:
+            print(f"over {over}: {alg}", flush=True)
             if hit is not None and hit[1] == k:
                 klim = k
             hit = (n, k)
@@ -267,6 +288,10 @@ def parse_args():
         help="Once a call takes longer than this, in seconds, skip larger k for the same n, "
             "and if that happens at the same k for two n, that k and larger for every later n "
             "(default: %(default)s)")
+    p.add_argument("--per-number-limit", type=float, default=200.0,
+        help="Once a call takes more than this per number output, in ns, and more than at "
+            "the k before, skip larger k as for --time-limit. A point over it whose call "
+            "takes --min-time or more is timed by that call alone (default: %(default)s)")
     p.add_argument("--fix-freq", action="store_true",
         help="Set the CPU frequency governors to performance while timing (Linux, as root)")
     p.add_argument("--cpu", type=int,
