@@ -83,6 +83,16 @@ python/pack_runs --out runs.tar.xz results/run1 results/run2 results/run3
 python/stability --out results/stability --cpu 3
 ```
 
+`python/rand_bench` is for changes to the Rust [rand](https://github.com/rust-random/rand) crate
+itself: it builds a checkout of rand at two commits, runs one of rand's own Criterion benchmarks
+for each in turn, launched as `bench` launches our programs, and reports each case's time before
+and after, with the commits and the setup recorded beside them. Rand's benchmarks build on Linux
+and not on macOS.
+
+```
+python/rand_bench --rand ~/rand --before BEFORE --after AFTER --out results/rand --cpu 3
+```
+
 Each process warms up, then times batches of calls, each batch starting from the same seed, until
 it has timed at least `--min-batches` batches over at least `--min-time` seconds, and takes the
 fastest batch. It does that with its stack at each of `--positions` positions, 16 bytes apart, and
@@ -153,10 +163,17 @@ Each row of a results CSV starts with its kind:
 * `faults,ALG,N,K,MINOR_FAULTS,CALLS`: in results from before each point was timed in a process of
   its own, the minor page faults the timer took in the pass that timed that point, and how many
   calls that pass made.
-* `skipped,ALG,N,K`: a point not timed because the algorithm took more than `--time-limit` seconds
-  at a smaller or equal _k_ for the same _n_, or did so at the same _k_ for two different smaller
-  _n_. Some algorithms are slow only near _k_ = _n_, so going over the limit once only skips
-  larger _k_ for that _n_. Results from before these rows were added don't have them.
+* `skipped,ALG,N,K`: a point not timed because the algorithm went over a limit at a smaller or
+  equal _k_ for the same _n_, or did so at the same _k_ for two different smaller _n_. Some
+  algorithms are slow only near _k_ = _n_, so going over a limit once only skips larger _k_ for
+  that _n_. There are two limits: a call that takes more than `--time-limit` seconds, and a call
+  that takes more than `--per-number-limit` ns for each number output, 200 by default, and more
+  for each number than at the _k_ before. Past 200 ns a point is off the top of every graph
+  here, but an algorithm whose work goes with _n_ is over that at small _k_ and comes under it
+  as _k_ grows, so only a time per number that is rising counts. A point over
+  `--per-number-limit` whose call takes `--min-time` or more is timed by that one call. The
+  published results were timed with `--time-limit` alone. Results from before these rows were
+  added don't have them.
 * `run,ALG,N,K,INDEX`: in results that `python/fastest` combined, which of the runs that
   `info,fastest_of` lists, counting from 0, the point's other rows come from. The other `info` rows
   are the first run's.

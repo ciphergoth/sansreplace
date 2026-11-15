@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Run one of the rand crate's own Criterion benchmarks at two commits of a
+checkout of it, in turn, and compare them: before and after a change.
+
+Each commit is checked out and built in a directory of its own under --out,
+with rand's own build settings, and its benchmark is run as bench runs our
+programs: with an empty environment, on Linux with address space randomisation
+off, and with --cpu, pinned to that CPU. The commits take turns for --rounds
+rounds, so that a drift in the machine falls on both.
+
+Writes under --out: info.json, with the two commits and the setup; what each
+run printed, as COMMIT-ROUND.txt; Criterion's own files for each run; and
+times.csv, with a row for each case of the benchmark giving Criterion's
+estimate of the median time of a call in each run, in seconds. Prints for each
+case the fastest of each commit's runs, and the second commit's over the
+first's.
+"""
+
+import argparse
+import csv
+import json
+import pathlib
+import platform
+import re
+import shutil
+import subprocess
+import sys
+
+import gitstate
+import machine
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+LABELS = ["before", "after"]
+
+def output_of(cmd, cwd):
+    return subprocess.run(cmd, cwd=cwd, check=True, stdout=subprocess.PIPE, text=True).stdout.strip()
+
+def build(rand, commit, where, bench):
+    "Check the commit out in the directory where, build the benchmark, and return its executable"
+    subprocess.run(["git", "-C", rand, "worktree", "add", "--quiet", "--detach", where, commit], check=True)
+    out = output_of(["cargo", "bench", "--bench", bench, "--no-run",
+        "--message-format=json-render-diagnostics"], cwd=where / "benches")
+    [exe] = [m["executable"] for m in map(json.loads, out.splitlines())
+        if m["reason"] == "compiler-artifact" and m["target"]["name"] == bench
+            and m["executable"] is not None]
+    return exe
+
+def launcher(cpu):
+    "What to run the benchmark under, as bench's launcher is"
+    if sys.platform != "linux":
+        return []
+    prefix = [shutil.which("setarch"), platform.machine(), "-R"]
+    if cpu is not None:
+        prefix += [shutil.which("taskset"), "-c", str(cpu)]
+    return prefix
+
+def medians(criterion):
+    "Criterion's estimate of the median time of a call, in seconds, for each case it timed"
+    res = {}
+    for f in criterion.glob("**/new/estimates.json"):
+        case = "/".join(f.relative_to(criterion).parts[:-2])
+        res[case] = json.loads(f.read_text())["median"]["point_estimate"] * 1e-9
+    # In order of the numbers in each case's name, so that 100 comes before 1000
+    return dict(sorted(res.items(),
+        key=lambda item: [int(x) if x.isdigit() else x for x in re.split(r"(\d+)", item[0])]))
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--rand", type=pathlib.Path, required=True, help="A checkout of rand")
+    p.add_argument("--before", required=True, help="The commit to compare with")
+    p.add_argument("--after", required=True, help="The commit with the change")
+    p.add_argument("--out", type=pathlib.Path, required=True)
+    p.add_argument("--bench", default="seq_index",
+        help="The benchmark to run, from rand's benches/benches (default: %(default)s)")
+    p.add_argument("--rounds", type=int, default=2,
+        help="How many times to run each commit's benchmark (default: %(default)s)")
+    p.add_argument("--cpu", type=int, help="Run the benchmark on this CPU (Linux)")
+    p.add_argument("criterion", nargs="*",
+        help="Arguments for the benchmark itself, after --: a filter, --measurement-time and so on")
+    args = p.parse_args()
+    if sys.platform != "linux" and args.cpu is not None:
+        p.error("--cpu needs Linux")
+
+    out = args.out.resolve()
+    out.mkdir(parents=True)
+    commits = [output_of(["git", "rev-parse", c], cwd=args.rand) for c in [args.before, args.after]]
+    exes = [build(args.rand, commit, out / f"src-{label}", args.bench)
+        for label, commit in zip(LABELS, commits)]
+    info = {
+        "version": gitstate.get(topdir),
+        "rand": dict(zip(LABELS, commits)),
+        "bench": args.bench, "rounds": args.rounds, "cpu": args.cpu, "criterion": args.criterion,
+        "cargo": output_of(["cargo", "--version"], cwd=out),
+        **machine.get(),
+    }
+    (out / "info.json").write_text(json.dumps(info, indent=2) + "\n")
+
+    runs = {}
+    for r in range(args.rounds):
+        for label, exe in zip(LABELS, exes):
+            name = f"{label}-{r}"
+            print(f"running {name}", flush=True)
+            # Criterion would otherwise compare each run with whatever it
+            # found from the last, and report the change
+            criterion = out / "criterion" / name
+            with (out / f"{name}.txt").open("w") as log:
+                subprocess.run(launcher(args.cpu) + [exe, "--bench", *args.criterion],
+                    cwd=out, env={"CRITERION_HOME": str(criterion)}, check=True,
+                    stdout=log, stderr=subprocess.STDOUT)
+            runs[name] = medians(criterion)
+
+    names = list(runs)
+    cases = list(runs[names[0]])
+    with (out / "times.csv").open("w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["case", *names])
+        for case in cases:
+            writer.writerow([case, *(runs[name][case] for name in names)])
+    width = max(map(len, cases))
+    print(f"{'case':{width}}  {'before':>10}  {'after':>10}  after/before")
+    for case in cases:
+        best = [min(runs[f"{label}-{r}"][case] for r in range(args.rounds)) for label in LABELS]
+        print(f"{case:{width}}  {best[0]:10.4g}  {best[1]:10.4g}  {best[1] / best[0]:.2f}")
+
+if __name__ == "__main__":
+    main()
