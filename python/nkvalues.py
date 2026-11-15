@@ -62,6 +62,17 @@ def randbench_values():
             if length <= 1_000_000_000:
                 yield f"{amount} of {length}", length, amount
 
+def wide_values():
+    """Lengths over 2^32, which only the Rust rand crate's samplers take, and
+    for which they use 64-bit indices: one just over, and one far over, with
+    the amounts that fib has from 10 up."""
+    lengths = list(fib(2E12))
+    for pn in [48, 60]:
+        n = lengths[pn]
+        for pk, k in enumerate(fib(1E9)):
+            if k >= 10:
+                yield f"n = F_{pn} = {n}, k = F_{pk} = {k}", n, k
+
 def iter_values(names):
     done = set()
     for name in names:

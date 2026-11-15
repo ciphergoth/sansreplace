@@ -9,8 +9,10 @@
 //!
 //! ORDER is random, sorted, component for the parts of the algorithms in
 //! components.rs, or, for the one that does nothing, donothing. In this
-//! program alone it can also be rand, for the rand crate's own sampler. See
-//! timing.rs for what time and calls print.
+//! program alone it can also be rand, for the rand crate's own sampler. N
+//! fits in 32 bits, except that rand's samplers take a length over u32::MAX
+//! too, and then return 64-bit indices, as rand does. See timing.rs for what
+//! time and calls print.
 
 use clap::{Args, Parser, Subcommand};
 use rand::SeedableRng;
@@ -61,6 +63,58 @@ fn copy_out(sample: rand::seq::index::IndexVec, res: &mut [u32]) {
     for (r, index) in res.iter_mut().zip(sample) {
         *r = index as u32;
     }
+}
+
+/// The same for a length over u32::MAX, where the indices are 64-bit
+fn copy_out_wide(sample: rand::seq::index::IndexVec, res: &mut [u64]) {
+    for (r, index) in res.iter_mut().zip(sample) {
+        *r = index as u64;
+    }
+}
+
+/// What can be timed at a length over u32::MAX: the rand crate's sampler,
+/// which uses 64-bit indices there
+fn wide_table(order: &str) -> Vec<(&'static str, timing::Function<u64>)> {
+    match order {
+        "rand" => wide_rand_samplers(),
+        _ => panic!("{order} takes no n over {}", u32::MAX),
+    }
+}
+
+fn wide_rand_samplers() -> Vec<(&'static str, timing::Function<u64>)> {
+    #[allow(unused_mut)]
+    let mut samplers = vec![(
+        "indexsample",
+        Box::new(|rng: &mut Rng, length: u64, res: &mut [u64]| {
+            copy_out_wide(
+                rand::seq::index::sample(rng, length as usize, res.len()),
+                res,
+            )
+        }) as timing::Function<u64>,
+    )];
+    // With the rand_internals feature, those of rand's samplers that are
+    // generic over the type of the index, over u64. index::sample uses only
+    // rejection here.
+    #[cfg(feature = "rand_internals")]
+    {
+        use rand::seq::index::internals::wide;
+        type Sampler = fn(&mut Rng, u64, u64) -> rand::seq::index::IndexVec;
+        let each: [(&'static str, Sampler); 4] = [
+            ("rejection", wide::rejection),
+            ("rejectionbtree", wide::rejection_btree),
+            ("cardchoose", wide::cardchoose),
+            ("floydvectorised", wide::floyd_vectorised),
+        ];
+        for (name, sampler) in each {
+            samplers.push((
+                name,
+                Box::new(move |rng: &mut Rng, length: u64, res: &mut [u64]| {
+                    copy_out_wide(sampler(rng, length, res.len() as u64), res)
+                }) as timing::Function<u64>,
+            ));
+        }
+    }
+    samplers
 }
 
 fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
@@ -126,27 +180,55 @@ struct PointArgs {
     #[arg(long)]
     algorithm: String,
     #[arg(long)]
-    n: u32,
+    n: u64,
     #[arg(long)]
     k: u32,
     #[arg(long)]
     seed: u64,
 }
 
+/// A point with n that fits in 32 bits, or one with n over u32::MAX
+enum Point {
+    Narrow(timing::Point<u32>),
+    Wide(timing::Point<u64>),
+}
+
+fn find<F>(mut table: Vec<(&'static str, F)>, args: &PointArgs) -> F {
+    let i = table
+        .iter()
+        .position(|(name, _)| *name == args.algorithm)
+        .unwrap_or_else(|| panic!("no {} {}", args.order, args.algorithm));
+    table.swap_remove(i).1
+}
+
 impl PointArgs {
-    fn point(&self) -> timing::Point {
-        assert!(self.k <= self.n, "k must be at most n");
-        let mut table = table(&self.order);
-        let i = table
-            .iter()
-            .position(|(name, _)| *name == self.algorithm)
-            .unwrap_or_else(|| panic!("no {} {}", self.order, self.algorithm));
-        timing::Point {
-            function: table.swap_remove(i).1,
-            n: self.n,
-            k: self.k,
-            seed: self.seed,
+    fn point(&self) -> Point {
+        assert!(self.k as u64 <= self.n, "k must be at most n");
+        match u32::try_from(self.n) {
+            Ok(n) => Point::Narrow(timing::Point {
+                function: find(table(&self.order), self),
+                n,
+                k: self.k,
+                seed: self.seed,
+            }),
+            Err(_) => Point::Wide(timing::Point {
+                function: find(wide_table(&self.order), self),
+                n: self.n,
+                k: self.k,
+                seed: self.seed,
+            }),
         }
+    }
+}
+
+/// Print count samples, one to a line
+fn print_samples<T: Copy + Default + ToString>(point: &timing::Point<T>, count: u64) {
+    let mut rng = Rng::seed_from_u64(point.seed);
+    let mut result = vec![T::default(); point.k as usize];
+    for _ in 0..count {
+        (point.function)(&mut rng, point.n, &mut result);
+        let line: Vec<String> = result.iter().map(T::to_string).collect();
+        println!("{}", line.join(" "));
     }
 }
 
@@ -216,16 +298,10 @@ fn main() {
                 }
             }
         }
-        Command::Sample { point, count } => {
-            let point = point.point();
-            let mut rng = Rng::seed_from_u64(point.seed);
-            let mut result = vec![0; point.k as usize];
-            for _ in 0..count {
-                (point.function)(&mut rng, point.n, &mut result);
-                let line: Vec<String> = result.iter().map(u32::to_string).collect();
-                println!("{}", line.join(" "));
-            }
-        }
+        Command::Sample { point, count } => match point.point() {
+            Point::Narrow(point) => print_samples(&point, count),
+            Point::Wide(point) => print_samples(&point, count),
+        },
         Command::Time {
             point,
             counters,
@@ -240,13 +316,23 @@ fn main() {
                 positions,
                 once_above,
             };
-            timing::time_point(&point.point(), &budget, &counters.counters());
+            let counters = counters.counters();
+            match point.point() {
+                Point::Narrow(point) => timing::time_point(&point, &budget, &counters),
+                Point::Wide(point) => timing::time_point(&point, &budget, &counters),
+            }
         }
         Command::Calls {
             point,
             counters,
             calls,
             pad,
-        } => timing::time_calls(&point.point(), calls, pad, &counters.counters()),
+        } => {
+            let counters = counters.counters();
+            match point.point() {
+                Point::Narrow(point) => timing::time_calls(&point, calls, pad, &counters),
+                Point::Wide(point) => timing::time_calls(&point, calls, pad, &counters),
+            }
+        }
     }
 }

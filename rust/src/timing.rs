@@ -5,13 +5,18 @@ use std::{alloc, time::Instant};
 use rand::SeedableRng;
 
 use crate::{
-    Algorithm, Rng,
+    Rng,
     counters::{Counters, Counts},
 };
 
-pub struct Point {
-    pub function: Algorithm,
-    pub n: u32,
+/// Something to time, which fills its output with indices of type T. T is
+/// u32, but for the rand crate's samplers at lengths over u32::MAX, which
+/// return 64-bit indices.
+pub type Function<T> = Box<dyn Fn(&mut Rng, T, &mut [T])>;
+
+pub struct Point<T> {
+    pub function: Function<T>,
+    pub n: T,
     pub k: u32,
     pub seed: u64,
 }
@@ -52,8 +57,8 @@ fn new_stack() -> *mut u8 {
 /// malloc happened to put it. Vec can't ask for more alignment, so this has
 /// 15 spare elements, and the output starts at the first one on a 64-byte
 /// boundary.
-fn make_result(k: u32) -> (Vec<u32>, usize) {
-    let buf = vec![0; k as usize + 15];
+fn make_result<T: Copy + Default>(k: u32) -> (Vec<T>, usize) {
+    let buf = vec![T::default(); k as usize + 15];
     let offset = buf.as_ptr().align_offset(64);
     (buf, offset)
 }
@@ -67,10 +72,10 @@ fn minor_faults() -> i64 {
 }
 
 /// The time iters calls take, in seconds, and what the counters counted
-fn batch(
-    point: &Point,
+fn batch<T: Copy>(
+    point: &Point<T>,
     rng: &mut Rng,
-    result: &mut [u32],
+    result: &mut [T],
     iters: u64,
     counters: &Counters,
     counts: &mut Counts,
@@ -93,9 +98,9 @@ fn batch(
 
 /// Every batch starts from the same seed, so that every batch of a point
 /// makes the same draws, in any run
-fn seeded_batch(
-    point: &Point,
-    result: &mut [u32],
+fn seeded_batch<T: Copy>(
+    point: &Point<T>,
+    result: &mut [T],
     iters: u64,
     counters: &Counters,
     counts: &mut Counts,
@@ -136,11 +141,11 @@ fn print_position(
 /// Time at one stack position, and return the time per call. iters is the
 /// calls in a batch: zero at the first position, which sets it, so that every
 /// position times the same calls.
-fn time_position(
-    point: &Point,
+fn time_position<T: Copy>(
+    point: &Point<T>,
     budget: &Budget,
     counters: &Counters,
-    result: &mut [u32],
+    result: &mut [T],
     pad: usize,
     iters: &mut u64,
 ) -> f64 {
@@ -186,7 +191,7 @@ fn time_position(
 /// batches, the time per call in the fastest batch and in the median one, the
 /// minor page faults over all the batches, and what each counter counted per
 /// call in the fastest batch.
-pub fn time_point(point: &Point, budget: &Budget, counters: &Counters) {
+pub fn time_point<T: Copy + Default>(point: &Point<T>, budget: &Budget, counters: &Counters) {
     let (mut buf, offset) = make_result(point.k);
     let result = &mut buf[offset..offset + point.k as usize];
     let stack = new_stack();
@@ -203,7 +208,12 @@ pub fn time_point(point: &Point, budget: &Budget, counters: &Counters) {
 
 /// Make this many calls one after another at one stack position, and print a
 /// line for each: its time, and what each counter counted.
-pub fn time_calls(point: &Point, calls: usize, pad: usize, counters: &Counters) {
+pub fn time_calls<T: Copy + Default>(
+    point: &Point<T>,
+    calls: usize,
+    pad: usize,
+    counters: &Counters,
+) {
     let (mut buf, offset) = make_result(point.k);
     let result = &mut buf[offset..offset + point.k as usize];
     let mut times = vec![0.0; calls];

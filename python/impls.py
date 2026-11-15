@@ -18,6 +18,7 @@ cpp/main.cpp, rust/src/main.rs and, for the Python ones, python/sansreplace.
 A program runs once for each point timed, so that no point's time depends on
 what the process did before."""
 
+import hashlib
 import json
 import os
 import subprocess
@@ -28,8 +29,12 @@ SEED = 324
 def point_seed(n, k):
     """The seed every batch of calls at (n, k) starts from, so that a point's
     batches make the same draws in any run, whatever was timed before.
-    Distinct for every (n, k)."""
-    return SEED ^ (n << 32 | k)
+    Distinct for every (n, k) with n under 2^32. A seed is 64 bits, which
+    can't hold a larger n beside k, so those points take theirs from a hash of
+    the two."""
+    if n < 2**32:
+        return SEED ^ (n << 32 | k)
+    return int.from_bytes(hashlib.sha256(f"{SEED} {n} {k}".encode()).digest()[:8], "big")
 
 def cpp_command(topdir, build_dir):
     cppdir = topdir / "cpp"
