@@ -38,6 +38,11 @@ stdrng = []
 # src/main.rs. Needs --rust-rand, with a checkout of rand that exposes them.
 rand_internals = []
 
+# How much memory kept samples from rand hold: see examples/retained.rs
+[[example]]
+name = "retained"
+required-features = ["rand_internals", "pcg32"]
+
 [dependencies.rand_pcg]
 version = "0.10"
 optional = true
