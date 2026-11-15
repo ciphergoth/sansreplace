@@ -82,7 +82,7 @@ fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
     {
         use rand::seq::index::internals;
         type Sampler = fn(&mut Rng, u32, u32) -> rand::seq::index::IndexVec;
-        let each: [(&'static str, Sampler); 9] = [
+        let each: [(&'static str, Sampler); 10] = [
             ("floyd", internals::floyd),
             ("inplace", internals::inplace),
             ("rejection", internals::rejection),
@@ -97,6 +97,8 @@ fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
             ("inplaceseparate", internals::inplace_separate),
             ("inplaceshrink", internals::inplace_shrink),
             ("inplacecopy", internals::inplace_copy),
+            // Not in rand: Floyd's with a bit for each index as its set
+            ("bitvector", internals::bitvector),
         ];
         for (name, sampler) in each {
             samplers.push((
