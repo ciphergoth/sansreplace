@@ -136,7 +136,7 @@ fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
     {
         use rand::seq::index::internals;
         type Sampler = fn(&mut Rng, u32, u32) -> rand::seq::index::IndexVec;
-        let each: [(&'static str, Sampler); 10] = [
+        let each: [(&'static str, Sampler); 11] = [
             ("floyd", internals::floyd),
             ("inplace", internals::inplace),
             ("rejection", internals::rejection),
@@ -144,10 +144,12 @@ fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
             ("rejectionbtree", internals::rejection_btree),
             ("cardchoose", internals::cardchoose),
             // Changes we might propose, each returning what the original does:
-            // Floyd's with a scan that vectorises, and inplace with a working
-            // vector apart from the one it returns, or shrinking the one it
-            // returns, or returning a copy of the result
+            // Floyd's with a scan that vectorises, or one by the standard
+            // library's contains, and inplace with a working vector apart
+            // from the one it returns, or shrinking the one it returns, or
+            // returning a copy of the result
             ("floydvectorised", internals::floyd_vectorised),
+            ("floydcontains", internals::floyd_contains),
             ("inplaceseparate", internals::inplace_separate),
             ("inplaceshrink", internals::inplace_shrink),
             ("inplacecopy", internals::inplace_copy),
