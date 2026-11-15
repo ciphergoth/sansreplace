@@ -82,7 +82,7 @@ fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
     {
         use rand::seq::index::internals;
         type Sampler = fn(&mut Rng, u32, u32) -> rand::seq::index::IndexVec;
-        let each: [(&'static str, Sampler); 8] = [
+        let each: [(&'static str, Sampler); 9] = [
             ("floyd", internals::floyd),
             ("inplace", internals::inplace),
             ("rejection", internals::rejection),
@@ -92,10 +92,11 @@ fn rand_samplers() -> Vec<(&'static str, Algorithm)> {
             // Changes we might propose, each returning what the original does:
             // Floyd's with a scan that vectorises, and inplace with a working
             // vector apart from the one it returns, or shrinking the one it
-            // returns
+            // returns, or returning a copy of the result
             ("floydvectorised", internals::floyd_vectorised),
             ("inplaceseparate", internals::inplace_separate),
             ("inplaceshrink", internals::inplace_shrink),
+            ("inplacecopy", internals::inplace_copy),
         ];
         for (name, sampler) in each {
             samplers.push((

@@ -6,8 +6,9 @@
 //!   retained SAMPLER LENGTH AMOUNT COUNT
 //!
 //! SAMPLER is inplace, for rand's sample_inplace; inplaceseparate, for the
-//! version with a working vector of its own; or inplaceshrink, for the version
-//! that shrinks its vector to the result. Draws COUNT samples of AMOUNT
+//! version with a working vector of its own; inplaceshrink, for the version
+//! that shrinks its vector to the result; or inplacecopy, for the version that
+//! returns a copy of the result. Draws COUNT samples of AMOUNT
 //! indices from 0..LENGTH, keeps them all, and prints the bytes the samples
 //! need, the bytes their vectors have capacity for, and how much the
 //! process's resident memory grew, which is what the allocator really holds.
@@ -32,6 +33,7 @@ fn main() {
         "inplace" => internals::inplace,
         "inplaceseparate" => internals::inplace_separate,
         "inplaceshrink" => internals::inplace_shrink,
+        "inplacecopy" => internals::inplace_copy,
         other => panic!("unknown sampler {other}"),
     };
     let length: u32 = args[2].parse().unwrap();

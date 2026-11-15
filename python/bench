@@ -45,12 +45,12 @@ ORDERS = ["random", "sorted"]
 # indexsample is rand's index::sample, and the rest are the algorithms it
 # chooses between, which need --rust-features rand_internals and a --rust-rand
 # that exposes them; rejectionbtree is its rejection sampling as built without
-# std, and floydvectorised, inplaceseparate and inplaceshrink are changes to
-# two of them that return the same samples.
+# std, and floydvectorised, inplaceseparate, inplaceshrink and inplacecopy are
+# changes to two of them that return the same samples.
 OTHER_ORDERS = {
     "component": (COMPONENTS, ["cpp", "rust"]),
     "rand": (["indexsample", "floyd", "inplace", "rejection", "rejectionbtree", "cardchoose",
-        "floydvectorised", "inplaceseparate", "inplaceshrink"], ["rust"]),
+        "floydvectorised", "inplaceseparate", "inplaceshrink", "inplacecopy"], ["rust"]),
 }
 # rand's rejection sampling is only for amount < length, and rand never asks
 # it for anything else; it can't draw from an empty range at all
