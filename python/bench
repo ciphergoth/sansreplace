@@ -51,6 +51,9 @@ OTHER_ORDERS = {
     "rand": (["indexsample", "floyd", "inplace", "rejection", "rejectionbtree", "cardchoose"],
         ["rust"]),
 }
+# rand's rejection sampling is only for amount < length, and rand never asks
+# it for anything else; it can't draw from an empty range at all
+NEEDS_K_BELOW_N = {("rand", "rejection"), ("rand", "rejectionbtree")}
 
 # The counters --counters knows by name, each as the TYPE:CONFIG that
 # cpp/counters.h describes, and all of which a bare --counters counts.
@@ -226,7 +229,8 @@ def time_one(args, lang, order, alg, csvfile):
     last = None  # (n, k, time per number) at the last point timed with k > 0
     res = {}
     for descrip, n, k in values(args):
-        if (klim is not None and k >= klim) or (hit is not None and hit[0] == n and k >= hit[1]):
+        if ((klim is not None and k >= klim) or (hit is not None and hit[0] == n and k >= hit[1])
+                or ((order, alg) in NEEDS_K_BELOW_N and k >= n)):
             if writer is not None:
                 writer.writerow(["skipped", alg, n, k])
                 f.flush()
