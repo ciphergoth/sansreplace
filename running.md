@@ -94,6 +94,19 @@ python/bench --rust-rand ~/rand-before --run rust/rand/indexsample --out results
 python/bench --rust-rand ~/rand-after --run rust/rand/indexsample --out results/rand-after
 ```
 
+`python/rand_compare` does that for two commits of one checkout, with each of three random number
+generators and with both our build and Cargo's default, since which is faster can turn on either.
+`--rust-features pcg32` draws from the generator rand's own benchmarks use and `--rust-features
+stdrng` from the one behind `rand::rng()`, where everything else here draws from `SmallRng`;
+`--rust-default-build` builds without our target CPU, function alignment, single codegen unit and
+link-time optimisation. By default `rand_compare` times the points of `--values randbench`,
+which are the cases of the `seq_index` benchmark we added to our branch of rand, so that its
+times can be set beside Criterion's.
+
+```
+python/rand_compare --rand ~/rand --before BEFORE --after AFTER --out results/rand -- --cpu 3
+```
+
 `python/rand_bench` instead builds a checkout of rand at two commits and runs one of rand's own
 Criterion benchmarks for each in turn, launched as `bench` launches our programs, and reports
 each case's time before and after, with the commits and the setup recorded beside them. Those

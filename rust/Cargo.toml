@@ -27,10 +27,17 @@ version = "0.5.7"
 [dependencies.foldhash]
 version = "0.2.0"
 
+[features]
 # Hash with the standard library's default, SipHash, instead: see
 # src/algorithms/mod.rs
-[features]
 siphash = []
+# Draw from another generator than SmallRng: see src/main.rs. At most one.
+pcg32 = ["dep:rand_pcg"]
+stdrng = []
+
+[dependencies.rand_pcg]
+version = "0.10"
+optional = true
 
 [dependencies.rand]
 version = "0.10.3"

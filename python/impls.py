@@ -19,6 +19,7 @@ A program runs once for each point timed, so that no point's time depends on
 what the process did before."""
 
 import json
+import os
 import subprocess
 import sys
 
@@ -44,29 +45,41 @@ def cpp_command(topdir, build_dir):
     [exe] = [t["filename"][0] for t in targets if t["name"] == "sansreplace"]
     return [exe]
 
-def rust_command(topdir, features, rand):
+def rust_command(topdir, features, rand, default_build):
     # Cargo reads .cargo/config.toml, with the target CPU, from the directory
     # it runs in and its parents
     cmd = ["cargo", "build", "--release", "--features", ",".join(features),
         "--message-format=json-render-diagnostics"]
+    env = dict(os.environ)
     if rand is not None:
         # Use this checkout of the rand crate in place of the published one. A
         # path override does that without rewriting Cargo.lock, which a patch
         # would; it needs the checkout to be the version the lock file names.
         cmd += ["--config", f"paths=[{json.dumps(str(rand.resolve()))}]"]
-    out = subprocess.run(cmd, cwd=topdir / "rust", check=True, stdout=subprocess.PIPE, text=True).stdout
+    if default_build:
+        # Build as Cargo does when nothing is said: an empty RUSTFLAGS replaces
+        # the target CPU and function alignment that .cargo/config.toml asks
+        # for, and these put back what rust/Cargo.toml changes in the profile
+        env["RUSTFLAGS"] = ""
+        cmd += ["--config", "profile.release.lto=false",
+            "--config", "profile.release.codegen-units=16"]
+    out = subprocess.run(cmd, cwd=topdir / "rust", env=env, check=True,
+        stdout=subprocess.PIPE, text=True).stdout
     [exe] = [m["executable"] for m in map(json.loads, out.splitlines())
         if m["reason"] == "compiler-artifact" and m["target"]["kind"] == ["bin"]]
     return [exe]
 
-def command(topdir, language, build_dir=None, rust_features=(), rust_rand=None):
+def command(topdir, language, build_dir=None, rust_features=(), rust_rand=None,
+        rust_default_build=False):
     """Build the implementations in this language, and return the command that
     runs them. rust_features are the Cargo features to build the Rust with,
-    and rust_rand a checkout of the rand crate to build it against."""
+    rust_rand a checkout of the rand crate to build it against, and
+    rust_default_build whether to build it with Cargo's default settings rather
+    than ours."""
     if language == "cpp":
         return cpp_command(topdir, build_dir)
     if language == "rust":
-        return rust_command(topdir, rust_features, rust_rand)
+        return rust_command(topdir, rust_features, rust_rand, rust_default_build)
     return [sys.executable, str(topdir / "python/sansreplace")]
 
 def point_args(order, algorithm, n, k, seed):

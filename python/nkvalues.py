@@ -50,6 +50,18 @@ def largen_values():
     for k in range(0, n+1, 100_000):
         yield f"n = {n}, k = {k}", n, k
 
+def randbench_values():
+    """The cases of the seq_index benchmark that we added to our branch of the
+    Rust rand crate, so that our timings of rand can be set beside Criterion's,
+    case for case: amounts from 10 to 10 million, at five ratios of length to
+    amount, from every index to one in 100,000. That benchmark also has two
+    lengths over 2^32, which our programs can't take."""
+    for amount in [10, 100, 1_000, 10_000, 100_000, 1_000_000, 10_000_000]:
+        for ratio in [1, 2, 30, 1_000, 100_000]:
+            length = amount * ratio
+            if length <= 1_000_000_000:
+                yield f"{amount} of {length}", length, amount
+
 def iter_values(names):
     done = set()
     for name in names:

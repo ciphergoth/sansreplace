@@ -13,7 +13,7 @@
 //! timing.rs for what time and calls print.
 
 use clap::{Args, Parser, Subcommand};
-use rand::{SeedableRng, rngs::SmallRng};
+use rand::SeedableRng;
 
 mod algorithms;
 mod components;
@@ -23,7 +23,16 @@ mod timing;
 /// SmallRng is Xoshiro256++, and like rand_init in cpp/randbelow.c,
 /// seed_from_u64 expands the seed with SplitMix64, so both start from the same
 /// state.
-type Rng = SmallRng;
+#[cfg(not(any(feature = "pcg32", feature = "stdrng")))]
+type Rng = rand::rngs::SmallRng;
+/// With the pcg32 feature, the generator that the rand crate's own sequence
+/// benchmarks use
+#[cfg(feature = "pcg32")]
+type Rng = rand_pcg::Pcg32;
+/// With the stdrng feature, the generator behind rand::rng(), which is what a
+/// program gets unless it chooses another: ChaCha with 12 rounds
+#[cfg(feature = "stdrng")]
+type Rng = rand::rngs::StdRng;
 type Algorithm = algorithms::Algorithm<Rng>;
 
 const ORDERS: [&str; 5] = ["donothing", "random", "sorted", "component", "rand"];

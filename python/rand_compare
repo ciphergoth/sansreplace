@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 Paul Crowley
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Time the rand crate's index::sample with bench at two commits of a checkout
+of rand, before and after a change, with each of several random number
+generators and each of two ways of building: ours, and Cargo's default.
+
+The generators are those rust/src/main.rs can be built with: smallrng, which
+is Xoshiro256++ and what everything else here is timed with; pcg32, which
+rand's own benchmarks use; and stdrng, which is behind rand::rng(). For each
+generator and build, the two commits take turns for --rounds rounds.
+
+Writes bench's CSVs under --out, as GENERATOR-BUILD/COMMIT-ROUND, and prints
+for each generator and build the time per index at each point before and
+after, taking the fastest round of each, and the second over the first.
+"""
+
+import argparse
+import csv
+import pathlib
+import subprocess
+import sys
+
+topdir = pathlib.Path(__file__).resolve().parent.parent
+LABELS = ["before", "after"]
+BUILDS = {"ours": [], "default": ["--rust-default-build"]}
+GENERATORS = {"smallrng": [], "pcg32": ["--rust-features", "pcg32"], "stdrng": ["--rust-features", "stdrng"]}
+
+def times(csvfile):
+    with csvfile.open(newline="") as f:
+        return {(int(r[2]), int(r[3])): float(r[4]) for r in csv.reader(f) if r[0] == "result"}
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--rand", type=pathlib.Path, required=True, help="A checkout of rand")
+    p.add_argument("--before", required=True, help="The commit to compare with")
+    p.add_argument("--after", required=True, help="The commit with the change")
+    p.add_argument("--out", type=pathlib.Path, required=True)
+    p.add_argument("--values", default="randbench",
+        help="The points to time, as bench's --values (default: %(default)s)")
+    p.add_argument("--generators", type=lambda arg: arg.split(","), default=list(GENERATORS),
+        help="Which of smallrng, pcg32 and stdrng to time with (default: all)")
+    p.add_argument("--builds", type=lambda arg: arg.split(","), default=list(BUILDS),
+        help="Which of ours and default to build as (default: both)")
+    p.add_argument("--rounds", type=int, default=1,
+        help="How many times to time each commit (default: %(default)s)")
+    p.add_argument("bench", nargs="*",
+        help="Further options for bench, after --: --cpu, --counters and so on")
+    args = p.parse_args()
+
+    out = args.out.resolve()
+    out.mkdir(parents=True)
+    for label, commit in zip(LABELS, [args.before, args.after]):
+        subprocess.run(["git", "-C", args.rand, "worktree", "add", "--quiet", "--detach",
+            out / "src" / label, commit], check=True)
+    results = {}
+    for generator in args.generators:
+        for build in args.builds:
+            for r in range(args.rounds):
+                for label in LABELS:
+                    where = out / f"{generator}-{build}" / f"{label}-{r}"
+                    print(f"timing {where.relative_to(out)}", flush=True)
+                    subprocess.run([topdir / "python/bench", "--run", "rust/rand/indexsample",
+                        "--values", args.values, "--rust-rand", out / "src" / label,
+                        *GENERATORS[generator], *BUILDS[build], "--out", where, *args.bench],
+                        check=True, stdout=subprocess.DEVNULL)
+                    results[(generator, build, label, r)] = times(where / "rust-rand/indexsample.csv")
+
+    for generator in args.generators:
+        for build in args.builds:
+            print(f"\n{generator}, {build} build: ns per index before and after, and after over before")
+            best = [{nk: min(results[(generator, build, label, r)][nk] for r in range(args.rounds))
+                for nk in results[(generator, build, label, 0)]} for label in LABELS]
+            for (n, k), before in best[0].items():
+                after = best[1][(n, k)]
+                print(f"  {k:>10,} of {n:>13,}  {1e9 * before / k:7.2f}  {1e9 * after / k:7.2f}  {after / before:.2f}")
+
+if __name__ == "__main__":
+    main()
