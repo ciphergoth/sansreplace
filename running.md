@@ -83,11 +83,23 @@ python/pack_runs --out runs.tar.xz results/run1 results/run2 results/run3
 python/stability --out results/stability --cpu 3
 ```
 
-`python/rand_bench` is for changes to the Rust [rand](https://github.com/rust-random/rand) crate
-itself: it builds a checkout of rand at two commits, runs one of rand's own Criterion benchmarks
-for each in turn, launched as `bench` launches our programs, and reports each case's time before
-and after, with the commits and the setup recorded beside them. Rand's benchmarks build on Linux
-and not on macOS.
+There are two ways to time a change to the Rust [rand](https://github.com/rust-random/rand) crate
+itself. `bench --run rust/rand/indexsample` times rand's own `index::sample`, which chooses
+between algorithms of its own, as `bench` times everything else; with `--rust-rand DIR` the Rust
+is built against a checkout of rand in place of the published crate, and each CSV records that
+checkout's commit. So two runs, one for each commit, time a change over the whole grid:
+
+```
+python/bench --rust-rand ~/rand-before --run rust/rand/indexsample --out results/rand-before
+python/bench --rust-rand ~/rand-after --run rust/rand/indexsample --out results/rand-after
+```
+
+`python/rand_bench` instead builds a checkout of rand at two commits and runs one of rand's own
+Criterion benchmarks for each in turn, launched as `bench` launches our programs, and reports
+each case's time before and after, with the commits and the setup recorded beside them. Those
+benchmarks time many cases in one process, built as rand builds them, so a change to one function
+can move the times of others whose code hasn't changed. Rand's benchmarks build on Linux and not
+on macOS.
 
 ```
 python/rand_bench --rand ~/rand --before BEFORE --after AFTER --out results/rand --cpu 3

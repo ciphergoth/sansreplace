@@ -44,23 +44,29 @@ def cpp_command(topdir, build_dir):
     [exe] = [t["filename"][0] for t in targets if t["name"] == "sansreplace"]
     return [exe]
 
-def rust_command(topdir, features):
+def rust_command(topdir, features, rand):
     # Cargo reads .cargo/config.toml, with the target CPU, from the directory
     # it runs in and its parents
-    out = subprocess.run(["cargo", "build", "--release", "--features", ",".join(features),
-            "--message-format=json-render-diagnostics"],
-        cwd=topdir / "rust", check=True, stdout=subprocess.PIPE, text=True).stdout
+    cmd = ["cargo", "build", "--release", "--features", ",".join(features),
+        "--message-format=json-render-diagnostics"]
+    if rand is not None:
+        # Use this checkout of the rand crate in place of the published one. A
+        # path override does that without rewriting Cargo.lock, which a patch
+        # would; it needs the checkout to be the version the lock file names.
+        cmd += ["--config", f"paths=[{json.dumps(str(rand.resolve()))}]"]
+    out = subprocess.run(cmd, cwd=topdir / "rust", check=True, stdout=subprocess.PIPE, text=True).stdout
     [exe] = [m["executable"] for m in map(json.loads, out.splitlines())
         if m["reason"] == "compiler-artifact" and m["target"]["kind"] == ["bin"]]
     return [exe]
 
-def command(topdir, language, build_dir=None, rust_features=()):
+def command(topdir, language, build_dir=None, rust_features=(), rust_rand=None):
     """Build the implementations in this language, and return the command that
-    runs them. rust_features are the Cargo features to build the Rust with."""
+    runs them. rust_features are the Cargo features to build the Rust with,
+    and rust_rand a checkout of the rand crate to build it against."""
     if language == "cpp":
         return cpp_command(topdir, build_dir)
     if language == "rust":
-        return rust_command(topdir, rust_features)
+        return rust_command(topdir, rust_features, rust_rand)
     return [sys.executable, str(topdir / "python/sansreplace")]
 
 def point_args(order, algorithm, n, k, seed):

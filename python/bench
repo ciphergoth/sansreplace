@@ -36,10 +36,13 @@ from algorithms import ALGORITHMS, COMPONENTS
 
 topdir = pathlib.Path(__file__).resolve().parent.parent
 
-# What * means in --run; python, the Python implementations, and component,
-# the parts of the algorithms in cpp/components.cpp, can be named too
+# What * means in --run; python, the Python implementations, component, the
+# parts of the algorithms in cpp/components.cpp, and rand, the Rust rand
+# crate's own sampler, can be named too
 LANGUAGES = ["cpp", "rust"]
 ORDERS = ["random", "sorted"]
+# What the other orders hold, and the languages that have them
+OTHER_ORDERS = {"component": (COMPONENTS, ["cpp", "rust"]), "rand": (["indexsample"], ["rust"])}
 
 # The counters --counters knows by name, each as the TYPE:CONFIG that
 # cpp/counters.h describes, and all of which a bare --counters counts.
@@ -69,7 +72,11 @@ def counter_list(arg):
 PAGES = {"4k": None, "2M": "glibc.malloc.hugetlb=2"}
 
 def names_for(order):
-    return COMPONENTS if order == "component" else ALGORITHMS
+    return OTHER_ORDERS[order][0] if order in OTHER_ORDERS else ALGORITHMS
+
+def languages_for(order):
+    "The languages that have this order"
+    return OTHER_ORDERS[order][1] if order in OTHER_ORDERS else LANGUAGES + ["python"]
 
 def run_spec(spec):
     "Parse LANG/ORDER/ALGORITHM, where any part may be * to mean all of them"
@@ -77,20 +84,20 @@ def run_spec(spec):
     if len(parts) != 3:
         raise argparse.ArgumentTypeError(f"{spec!r} is not LANG/ORDER/ALGORITHM")
     lang, order, alg = parts
-    for part, names in [(lang, LANGUAGES + ["python"]), (order, ORDERS + ["component"]),
+    for part, names in [(lang, LANGUAGES + ["python"]), (order, ORDERS + list(OTHER_ORDERS)),
             (alg, names_for(order))]:
         if part != "*" and part not in names:
             raise argparse.ArgumentTypeError(
                 f"{part!r} in {spec!r} is not * or one of {', '.join(names)}")
-    if lang == "python" and order == "component":
-        raise argparse.ArgumentTypeError(f"{spec!r}: the components are only in C++ and Rust")
+    if lang != "*" and lang not in languages_for(order):
+        raise argparse.ArgumentTypeError(
+            f"{spec!r}: {order} is only in {' and '.join(languages_for(order))}")
     return parts
 
 def todo(specs):
     "The (language, order, algorithm) triples the specs name, in the order to time them"
-    langs = LANGUAGES + ["python"]
-    return [(lang, order, alg) for order in ORDERS + ["component"] for lang in langs
-        for alg in names_for(order)
+    return [(lang, order, alg) for order in ORDERS + list(OTHER_ORDERS)
+        for lang in languages_for(order) for alg in names_for(order)
         if any(all(part == name or (part == "*" and name in names)
             for part, name, names in zip(spec, [lang, order, alg],
                 [LANGUAGES, ORDERS, names_for(order)]))
@@ -166,7 +173,7 @@ def time_one(args, lang, order, alg, csvfile):
     and return its time at each point it timed."""
     if args.fix_freq:
         fix_freq()
-    cmd = impls.command(topdir, lang, args.build_dir, args.rust_features)
+    cmd = impls.command(topdir, lang, args.build_dir, args.rust_features, args.rust_rand)
     writer = None
     if csvfile is not None:
         csvfile.parent.mkdir(parents=True, exist_ok=True)
@@ -178,7 +185,9 @@ def time_one(args, lang, order, alg, csvfile):
             "min_batches": args.min_batches, "min_time": args.min_time, "nk": args.nk,
             "once_above": args.once_above, "pages": args.pages,
             "per_number_limit": args.per_number_limit, "positions": args.positions,
-            "rust_features": ",".join(args.rust_features), "sorttype": order, "time_limit": args.time_limit, "values": args.values}
+            "rust_features": ",".join(args.rust_features),
+            "rust_rand": "" if args.rust_rand is None else gitstate.get(args.rust_rand),
+            "sorttype": order, "time_limit": args.time_limit, "values": args.values}
         for k, v in config.items():
             writer.writerow(["config", k, v])
         info = {
@@ -311,6 +320,9 @@ def parse_args():
         metavar="FEATURE,...",
         help="Cargo features to build the Rust with, from rust/Cargo.toml: siphash has its "
             "hash tables hash as the standard library's do by default")
+    p.add_argument("--rust-rand", type=pathlib.Path, metavar="DIR",
+        help="Build the Rust against this checkout of the rand crate rather than the "
+            "published one, to time a change to rand with --run rust/rand/indexsample")
     args = p.parse_args()
     if args.values is None and args.nk is None:
         args.values = ["small", "fib"]

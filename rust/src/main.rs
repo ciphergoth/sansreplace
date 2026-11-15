@@ -8,8 +8,9 @@
 //!   sansreplace calls --order ORDER --algorithm NAME --n N --k K --seed SEED --calls CALLS ...
 //!
 //! ORDER is random, sorted, component for the parts of the algorithms in
-//! components.rs, or, for the one that does nothing, donothing. See timing.rs
-//! for what time and calls print.
+//! components.rs, or, for the one that does nothing, donothing. In this
+//! program alone it can also be rand, for the rand crate's own sampler. See
+//! timing.rs for what time and calls print.
 
 use clap::{Args, Parser, Subcommand};
 use rand::{SeedableRng, rngs::SmallRng};
@@ -25,7 +26,7 @@ mod timing;
 type Rng = SmallRng;
 type Algorithm = algorithms::Algorithm<Rng>;
 
-const ORDERS: [&str; 4] = ["donothing", "random", "sorted", "component"];
+const ORDERS: [&str; 5] = ["donothing", "random", "sorted", "component", "rand"];
 
 fn table(order: &str) -> Vec<(&'static str, Algorithm)> {
     match order {
@@ -36,6 +37,20 @@ fn table(order: &str) -> Vec<(&'static str, Algorithm)> {
         "random" => algorithms::algorithms(algorithms::SortType::Random),
         "sorted" => algorithms::algorithms(algorithms::SortType::Sorted),
         "component" => components::components(),
+        // What the rand crate itself does when asked for a sample, which is
+        // in random order: it chooses between algorithms of its own. Built
+        // against a checkout of rand, this times a change to it as python/bench
+        // times everything else. It returns a vector, so copy that to the
+        // output, as a caller that wants the indices somewhere must.
+        "rand" => vec![(
+            "indexsample",
+            Box::new(|rng: &mut Rng, length: u32, res: &mut [u32]| {
+                let sample = rand::seq::index::sample(rng, length as usize, res.len());
+                for (r, index) in res.iter_mut().zip(sample) {
+                    *r = index as u32;
+                }
+            }) as Algorithm,
+        )],
         _ => panic!("unknown order {order}"),
     }
 }
