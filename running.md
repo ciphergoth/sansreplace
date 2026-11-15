@@ -98,6 +98,11 @@ results are timed on, listed in [`python/bench`](python/bench), and it counts th
 given a list, as in `--counters cycles,instructions,l2-misses`; a list can also name any other
 counter by its code, as `NAME=TYPE:CONFIG`.
 
+`--rust-features` builds the Rust with Cargo features from [`rust/Cargo.toml`](rust/Cargo.toml).
+`--rust-features siphash` has its hash tables hash with SipHash, as the standard library's do
+unless told otherwise, rather than with foldhash as in the published results; this is to see
+what the default costs.
+
 The timer's settings, such as `--min-time` and `--time-limit`, are options too, each defaulting to
 what the published results use; see `--help`. On macOS it keeps the machine from idle-sleeping while
 it runs, so give one run everything you want timed, rather than running it several times in a row:

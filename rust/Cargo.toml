@@ -27,6 +27,11 @@ version = "0.5.7"
 [dependencies.foldhash]
 version = "0.2.0"
 
+# Hash with the standard library's default, SipHash, instead: see
+# src/algorithms/mod.rs
+[features]
+siphash = []
+
 [dependencies.rand]
 version = "0.10.3"
 

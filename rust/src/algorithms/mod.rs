@@ -24,8 +24,16 @@ pub type Algorithm<R> = Box<dyn Fn(&mut R, u32, &mut [u32])>;
 // hasher rather than the default SipHash, which resists collision attacks at a
 // cost that the C++'s Boost tables don't pay. Its fixed seed, like Boost's
 // unseeded hash, keeps reruns the same.
-pub type HashSet<T> = std::collections::HashSet<T, foldhash::fast::FixedState>;
-pub type HashMap<K, V> = std::collections::HashMap<K, V, foldhash::fast::FixedState>;
+#[cfg(not(feature = "siphash"))]
+type Hasher = foldhash::fast::FixedState;
+// With the siphash feature they hash as the standard library's tables do when
+// nothing is said, which is what most Rust programs get, but with SipHash's
+// keys fixed rather than drawn afresh for each table, again so that reruns are
+// the same.
+#[cfg(feature = "siphash")]
+type Hasher = std::hash::BuildHasherDefault<std::collections::hash_map::DefaultHasher>;
+pub type HashSet<T> = std::collections::HashSet<T, Hasher>;
+pub type HashMap<K, V> = std::collections::HashMap<K, V, Hasher>;
 
 // The algorithms draw from 0..x + 1 rather than 0..=x. rand's random_range has
 // no #[inline], and LLVM kept the RangeInclusive instance out of line once it
