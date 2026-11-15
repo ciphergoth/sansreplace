@@ -471,8 +471,10 @@ afterwards and write out the position of every bit that is set, as in
 Bentley's bit-vector sort \cite[Column 1]{pearls}, so that no sort is
 needed. For random output, there is no scan, and the order is kept
 random as in Floyd's F2 above. The listing uses a byte for each bit,
-for clarity; our C++ and Rust implementations pack 64 bits into a word,
-and find the set bits in each word by counting trailing zeros. The draws
+for clarity; our C++ and Rust implementations take a packed bit vector
+from a library, Boost's \mintinline{cpp}{dynamic_bitset} and the
+\mintinline{rust}{fixedbitset} crate, which hold 64 bits in a word and
+find the set bits by counting trailing zeros. The draws
 take \(\bigO{k}\) time, but clearing the bit vector, and for sorted
 output scanning it, takes \(\bigO{n}\) time, though little for each
 value, since a word covers 64 of them.

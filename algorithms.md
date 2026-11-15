@@ -12,6 +12,7 @@ Quadratic rejection sampling | [Python](python/algorithms/quadraticreject.py) | 
 Set-based rejection sampling | [Python](python/algorithms/rejectionsample.py) | [C++](cpp/rejectionsample.cpp) | [Rust](rust/src/algorithms/rejectionsample.rs) | Random | Set | _k_
 Floyd's F2 | [Python](python/algorithms/floydf2.py) | [C++](cpp/floydf2.cpp) | [Rust](rust/src/algorithms/floydf2.rs) | none | Set | _k_
 Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | [Rust](rust/src/algorithms/quadraticf2.rs) | Random | none | _k_^2
+Bit-vector F2 | [Python](python/algorithms/bitvectorf2.py) | [C++](cpp/bitvectorf2.cpp) | [Rust](rust/src/algorithms/bitvectorf2.rs) | Sorted | _n_-bit vector | _n_
 Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/iterativechoose.cpp) | [Rust](rust/src/algorithms/iterativechoose.rs) | Sorted | none | _n_
 Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/reservoirsample.cpp) | [Rust](rust/src/algorithms/reservoirsample.rs) | Random | none | _n_
 SELECT | [Python](python/algorithms/select.py) | [C++](cpp/select.cpp) | [Rust](rust/src/algorithms/select.rs) | Random | n-sized list | _n_
@@ -102,6 +103,33 @@ sorted order, only the set matters until the final sort, so where _t_ is already
 adds _j_ instead of moving the existing _t_ to _j_. That gives the same set, and the step only has
 to check whether _t_ is present, as in quadratic rejection sampling, which is faster than
 rewriting every entry.
+
+## Bit-vector F2
+
+Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
+----|----|----|----|----|----|----
+Bit-vector F2 | [Python](python/algorithms/bitvectorf2.py) | [C++](cpp/bitvectorf2.cpp) | [Rust](rust/src/algorithms/bitvectorf2.rs) | Sorted | _n_-bit vector | _n_
+
+Floyd's F2 with a bit vector of _n_ bits as its set: each step tests one bit and sets one. This
+is the first of the ways to hold the set that Devroye compares in Chapter XII §2 of _Non-Uniform
+Random Variate Generation_, and the fastest. The draws take time proportional to _k_, but
+clearing the bit vector takes time proportional to _n_, though little for each value, since a
+word covers 64 of them. So it does best where _n_/_k_ is moderate: it is the fastest algorithm
+for sorted output wherever 2 _k_ ≤ _n_ < 16 _k_ and _k_ < 10<sup>7</sup>, and for random output
+at most points with 16 _k_ ≤ _n_ < 256 _k_; see the [results](results.md).
+
+For sorted order, nothing is written to the output until the end, when one scan of the bit vector
+writes out the position of every bit that is set, as in Bentley's bit-vector sort in Column 1 of
+_Programming Pearls_; no sort is needed. For random order there is no scan. The output is filled
+in as the values are drawn, and the order is kept random as in Floyd's F2 above: when the draw is
+already present, a randomly chosen earlier output moves to the end and _m_ takes its place, which
+costs an extra draw. A bit vector says only that a value is present, not where it is in the
+output, so quadratic F2's way of doing this without the extra draw isn't open to it.
+
+The Python uses a byte for each bit, for clarity. The C++ and Rust take a packed bit vector from
+a library, Boost's `dynamic_bitset` and the `fixedbitset` crate, as they take their sort and hash
+tables from libraries. The two differ in how they read the set bits off: see [the
+libraries](measurement.md#the-libraries).
 
 ## Iterative choosing (Algorithm S)
 
