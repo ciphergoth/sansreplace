@@ -110,9 +110,9 @@ Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
 ----|----|----|----|----|----|----
 Bit-vector F2 | [Python](python/algorithms/bitvectorf2.py) | [C++](cpp/bitvectorf2.cpp) | [Rust](rust/src/algorithms/bitvectorf2.rs) | Sorted | _n_-bit vector | _n_
 
-Floyd's F2 with a bit vector of _n_ bits as its set: each step tests one bit and sets one. This
-is the first of the ways to hold the set that Devroye compares in Chapter XII §2 of _Non-Uniform
-Random Variate Generation_. The draws take time proportional to _k_, but
+Floyd's F2 with a bit vector of _n_ bits as its set: each step tests one bit and sets one. Teuhola
+and Nevalainen, and Devroye in Chapter XII §2 of _Non-Uniform Random Variate Generation_, describe
+a bit vector as the set for rejection sampling. The draws take time proportional to _k_, but
 clearing the bit vector takes time proportional to _n_, though little for each value, since a
 word covers 64 of them. So it does best where _n_/_k_ is moderate: it is the fastest algorithm
 for sorted output wherever 2 _k_ ≤ _n_ < 16 _k_ and _k_ < 10<sup>7</sup>, and for random output

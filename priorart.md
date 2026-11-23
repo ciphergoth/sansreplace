@@ -34,9 +34,13 @@ Ting's reworkings of the established algorithms are a sparse Fisher–Yates samp
 and Nevalainen's HSEL, the swapping method on an existing array with its swaps undone afterwards,
 and a sorted sampler that draws each skip from a beta-binomial distribution in floating point.
 
-Three other algorithms need no memory beyond the output array and take O(_k_) expected time:
-Nijenhuis and Wilf's RANKSB, Vitter's Algorithm D and Shekelyan and Cormode's Hidden Shuffle. The
-first two predate Cardchoose, and the last two need floating-point arithmetic.
+Four other algorithms need no memory beyond the output array and take O(_k_) expected time:
+Teuhola and Nevalainen's HTRY, Nijenhuis and Wilf's RANKSB, Vitter's Algorithm D and Shekelyan and
+Cormode's Hidden Shuffle. The first three predate Cardchoose, and the last two need floating-point
+arithmetic. HTRY is set-based rejection sampling with its hash table packed into the output array,
+each entry holding a value and a link. I have not implemented it: the packing is
+intricate, and in its authors' own timings (their Figure 4) it takes two to three times as long as
+their other hash-based algorithm until _k_ exceeds _n_/2.
 
 Gupta and Bhattacharjee's GSEL also takes O(_k_ log _k_) time and can return sorted output. Like
 SELECT, it draws each value as a uniform rank among the values not yet chosen, and it finds the
@@ -75,6 +79,9 @@ makes one.
   [doi:10.1515/mcma.1999.5.1.39](https://doi.org/10.1515/mcma.1999.5.1.39).
 * Jarmo Ernvall and Olli Nevalainen, "An algorithm for unbiased random sampling", _The Computer
   Journal_ 25(1), 45–47, 1982. [doi:10.1093/comjnl/25.1.45](https://doi.org/10.1093/comjnl/25.1.45).
+* J. Teuhola and O. Nevalainen, "Two efficient algorithms for random sampling without
+  replacement", _International Journal of Computer Mathematics_ 11(2), 127–140, 1982.
+  [doi:10.1080/00207168208803304](https://doi.org/10.1080/00207168208803304).
 * Luc Devroye, _Non-Uniform Random Variate Generation_, Springer-Verlag, 1986. Chapter XII,
   "Random sampling". [Online](https://luc.devroye.org/rnbookindex.html).
 * Daniel Ting, "Simple, optimal algorithms for random sampling without replacement", 2021.

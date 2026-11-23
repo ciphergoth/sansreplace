@@ -350,11 +350,17 @@ existing array with its swaps undone afterwards, and a sorted sampler
 that draws each skip from a beta-binomial distribution in floating
 point.
 
-Three other algorithms need no memory beyond the output array and take
-\(\bigO{k}\) expected time: Nijenhuis and Wilf's RANKSB
+Four other algorithms need no memory beyond the output array and take
+\(\bigO{k}\) expected time: Teuhola and Nevalainen's HTRY
+\cite{teuhola}, Nijenhuis and Wilf's RANKSB
 \cite[Chapter 4]{nijenhuiswilf}, Vitter's Algorithm D and Shekelyan
-and Cormode's Hidden Shuffle \cite{hiddenshuffle}. The first two
+and Cormode's Hidden Shuffle \cite{hiddenshuffle}. The first three
 predate Cardchoose, and the last two need floating-point arithmetic.
+HTRY is set-based rejection sampling with its hash table packed into
+the output array, each entry holding a value and a link. We have not
+implemented it: the packing is intricate, and in its authors' own
+timings it takes two to three times as long as their other hash-based
+algorithm until \(k\) exceeds \(n/2\) \cite[Figure 4]{teuhola}.
 
 Gupta and Bhattacharjee's GSEL \cite{gupta} also takes
 \(\bigO{k \log k}\) time and can return sorted output. Like SELECT, it
@@ -484,9 +490,9 @@ the set matters, and then sort.
 
 \subsection{Bit-vector F2}
 \inputminted{Python}{code/bitvectorf2.py}
-Floyd's F2 with a bit vector of \(n\) bits as its set, the first of the
-ways to hold the set that Devroye \cite[Chapter XII \S 2]{devroye}
-compares, and in our benchmarks the fastest algorithm where \(n/k\) is
+Floyd's F2 with a bit vector of \(n\) bits as its set, as Teuhola and
+Nevalainen \cite{teuhola} and Devroye \cite[Chapter XII \S 2]{devroye}
+describe for rejection sampling, and in our benchmarks the fastest algorithm where \(n/k\) is
 moderate (\autoref{results}). For sorted output, scan the bit vector
 afterwards and write out the position of every bit that is set, as in
 Bentley's bit-vector sort \cite[Column 1]{pearls}, so that no sort is
@@ -874,7 +880,8 @@ sorted output, as Nijenhuis and Wilf
 \cite[Chapter 4]{nijenhuiswilf} suggest for \(k \geq n/2\), or to
 reservoir sampling or SELECT for random output. Devroye
 \cite[Chapter XII \S 2]{devroye} suggests instead sampling the values to
-leave out; but that is complicated to do in place, works only for
+leave out; but that is complicated to do in place, as Teuhola and
+Nevalainen \cite{teuhola} found, works only for
 sorted output, and is unlikely to be faster than switching to one of
 the algorithms above. We time each algorithm as described, without any
 such switch.
