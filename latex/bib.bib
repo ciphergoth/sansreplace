@@ -34,7 +34,7 @@
 
 @article{hsel,
     author = {Ernvall, Jarmo and Nevalainen, Olli},
-    title = "{An Algorithm for Unbiased Random Sampling}",
+    title = {An Algorithm for Unbiased Random Sampling},
     journal = {The Computer Journal},
     volume = {25},
     number = {1},
@@ -133,7 +133,7 @@ address = {USA}
 @online{rust-random,
   author = {{The Rand Project Developers}},
   shorthand = {Ran18},
-  title = {rand},
+  title = {{rand}},
   subtitle = {\texttt{src/seq/index.rs}},
   organization = {GitHub},
   year = {2018},
@@ -152,7 +152,7 @@ address = {USA}
 }
 
 @article{RouzankinVoytishek,
-  title = {On the cost of algorithms for random selection},
+  title = {On the Cost of Algorithms for Random Selection},
   author = {P.S. Rouzankin and A.V. Voytishek},
   pages = {39--54},
   volume = {5},
@@ -165,7 +165,7 @@ address = {USA}
 
 @article{teuhola,
   author = {Teuhola, J. and Nevalainen, O.},
-  title = {Two efficient algorithms for random sampling without replacement},
+  title = {Two Efficient Algorithms for Random Sampling without Replacement},
   journal = {International Journal of Computer Mathematics},
   volume = {11},
   number = {2},
@@ -173,6 +173,7 @@ address = {USA}
   year  = {1982},
   publisher = {Taylor & Francis},
   doi = {10.1080/00207168208803304},
+  addendum = {Calls the HSEL of \cite{hsel} HSELECT, and its own algorithm HSEL; \cite{gupta} follows it}
 }
 
 @article{vitterfaster,
@@ -195,7 +196,7 @@ address = {USA}
 
 @inproceedings{gupta,
   author = {Gupta, P. and Bhattacharjee, G. P.},
-  title = {An efficient algorithm for random sampling without replacement},
+  title = {An Efficient Algorithm for Random Sampling without Replacement},
   booktitle = {Foundations of Software Technology and Theoretical Computer Science},
   series = {Lecture Notes in Computer Science},
   volume = {181},
@@ -207,8 +208,8 @@ address = {USA}
 
 @inproceedings{mytkowicz,
   author = {Mytkowicz, Todd and Diwan, Amer and Hauswirth, Matthias and Sweeney, Peter F.},
-  title = {Producing wrong data without doing anything obviously wrong!},
-  booktitle = {Proceedings of the 14th International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS)},
+  title = {Producing Wrong Data without Doing Anything Obviously Wrong!},
+  booktitle = {Proceedings of the 14th International Conference on Architectural Support for Programming Languages and Operating Systems ({ASPLOS})},
   pages = {265--276},
   publisher = {ACM},
   year = {2009},
@@ -216,7 +217,7 @@ address = {USA}
 }
 
 @article{rajan,
-title = {An efficient parallel algorithm for random sampling},
+title = {An Efficient Parallel Algorithm for Random Sampling},
 journal = {Information Processing Letters},
 volume = {30},
 number = {5},
@@ -245,34 +246,47 @@ abstract = {A parallel algorithm for drawing an unbiased random sample of size M
 }
 @book{levinperes,
   author = {Levin, David A. and Peres, Yuval},
-  title = {Markov Chains and Mixing Times},
+  title = {{Markov} Chains and Mixing Times},
   edition = {2},
   publisher = {American Mathematical Society},
   year = {2017},
-  url = {https://pages.uoregon.edu/dlevin/MARKOV/mcmt2e.pdf}
+  url = {https://pages.uoregon.edu/dlevin/MARKOV/mcmt2e.pdf},
+  addendum = {Lemma 2.7 is stated without proof; Exercise 2.11 asks for one}
 }
 
 @article{nivengrendar,
   author = {Niven, Robert K. and Grendar, Marian},
-  title = {Generalized classical, quantum and intermediate statistics and the {P}{\'o}lya urn model},
+  title = {Generalized Classical, Quantum and Intermediate Statistics and the {P{\'o}lya} Urn Model},
   journal = {Physics Letters A},
   volume = {373},
   number = {6},
   pages = {621--626},
   year = {2009},
+  doi = {10.1016/j.physleta.2008.12.025},
   eprint = {0808.2102},
   eprinttype = {arxiv}
 }
 
 @article{blackwellmacqueen,
   author = {Blackwell, David and MacQueen, James B.},
-  title = {Ferguson distributions via {P}{\'o}lya urn schemes},
+  title = {{Ferguson} Distributions via {P{\'o}lya} Urn Schemes},
   journal = {The Annals of Statistics},
   volume = {1},
   number = {2},
   pages = {353--355},
   year = {1973},
   doi = {10.1214/aos/1176342372}
+}
+
+@article{batageljbrandes,
+  author = {Batagelj, Vladimir and Brandes, Ulrik},
+  title = {Efficient Generation of Large Random Networks},
+  journal = {Physical Review E},
+  volume = {71},
+  number = {3},
+  pages = {036113},
+  year = {2005},
+  doi = {10.1103/PhysRevE.71.036113}
 }
 
 @book{nijenhuiswilf,
@@ -302,10 +316,18 @@ abstract = {A parallel algorithm for drawing an unbiased random sample of size M
   doi = {10.1145/355900.355907}
 }
 
-@inproceedings{hiddenshuffle,
+@online{hiddenshuffle,
   author = {Shekelyan, Michael and Cormode, Graham},
-  title = {Sequential Random Sampling Revisited: Hidden Shuffle Method},
-  booktitle = {Proceedings of the 24th International Conference on Artificial Intelligence and Statistics (AISTATS)},
+  title = {Sequential Random Sampling Revisited: {Hidden Shuffle} Method},
+  year = {2021},
+  url = {https://compsci.science/shekelyan/hiddenshuffle.pdf},
+  addendum = {Corrected version of \cite{hiddenshuffleproc}}
+}
+
+@inproceedings{hiddenshuffleproc,
+  author = {Shekelyan, Michael and Cormode, Graham},
+  title = {Sequential Random Sampling Revisited: {Hidden Shuffle} Method},
+  booktitle = {Proceedings of the 24th International Conference on Artificial Intelligence and Statistics ({AISTATS})},
   series = {Proceedings of Machine Learning Research},
   volume = {130},
   year = {2021},
@@ -314,7 +336,7 @@ abstract = {A parallel algorithm for drawing an unbiased random sample of size M
 
 @online{sampleiterator,
   author = {Shekelyan, Michael},
-  title = {sampleiterator},
+  title = {{sampleiterator}},
   organization = {GitHub},
   url = {https://github.com/shekelyan/sampleiterator}
 }
@@ -365,7 +387,7 @@ abstract = {A parallel algorithm for drawing an unbiased random sample of size M
 
 @article{bayes,
   author = {Bayes, Thomas and Price, Richard},
-  title = {An essay towards solving a problem in the doctrine of chances},
+  title = {An Essay towards Solving a Problem in the Doctrine of Chances},
   journal = {Philosophical Transactions of the Royal Society of London},
   volume = {53},
   pages = {370--418},

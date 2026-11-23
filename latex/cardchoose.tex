@@ -93,7 +93,8 @@
     algorithms that need no memory beyond their output, it has the best
     worst-case time per number output over most of the range of \(k\),
     and it is by far the simplest algorithm to perform acceptably
-    across the whole range tested.
+    across the whole range tested. GitHub:
+    \url{https://github.com/ciphergoth/sansreplace}
 \end{abstract}
 
 \section{Introduction}
@@ -103,7 +104,7 @@ from \(\{0, 1, \ldots, n-1\}\) such that every \(k\)-element subset is
 equally likely to be returned. Many programming languages include facilities for this in
 their standard libraries, for example Python's
 \mintinline{python}{random.sample()} or Rust's
-\mintinline{rust}{rand::seq::index::sample}; Ting \cite{ting} lists
+\mintinline{rust}{rand::seq::index::sample}; Ting \cite{ting} surveys
 the algorithms that several of them use.
 
 We present Cardchoose, a new algorithm for this problem, which we
@@ -113,6 +114,10 @@ of integer arithmetic. It needs
 no memory beyond the array in which the result is written, and takes
 \(\bigO{k \log k}\) time. \autoref{cardchoose} explains it and proves
 it fair, and \autoref{priorart} places it relative to earlier work.
+A video \cite{video} explains the algorithm and its proof with
+animation. Implementations of every algorithm described here, with the
+benchmarks and their results, are at
+\url{https://github.com/ciphergoth/sansreplace}.
 
 Many other algorithms solve this problem, with different strengths.
 Some are fast only for certain values of \(k, n\), for example where
@@ -252,7 +257,7 @@ the same probability is a standard lemma \cite[Lemma 2.7]{levinperes};
 for completeness, we give two independent proofs.
 
 \paragraph{By counting insertions.} Picture the urn as a process on
-the row of \autoref{starsandbars} \cite{video}: starting from the \(t -
+the row of \autoref{starsandbars}: starting from the \(t -
 1\) bars alone, insert each new star in a uniformly random slot in the
 row so far, between two neighbouring symbols or at either end. Before
 step \(i\) the row holds \(t - 1\) bars and \(i\) stars, so it has \(t
@@ -286,7 +291,7 @@ is
     = \frac{(t - 1)! \prod_j c_j!}{(t + k - 1)!},
 \end{displaymath}
 which depends only on the counts, not on their order, as Feller
-observes for two colours \cite[p.~120]{feller}. The multiset
+observes for two colours \cite[pp.~120--121]{feller}. The multiset
 with these counts is drawn by \(k! / \prod_j c_j!\) distinct
 sequences, so its probability is
 \begin{displaymath}
@@ -312,30 +317,38 @@ Fermi--Dirac. So the one-line summary of Cardchoose is: generate a
 Bose--Einstein configuration with a P\'olya urn, then map it to
 Fermi--Dirac by stars and bars.
 
-Both halves are long established, but not as a way to generate
-samples. The P\'olya urn is a textbook model, and Niven and Grendar
-\cite{nivengrendar} map all three statistics onto it, but as a model,
-not a generator. Uniform counts are also what the scholium of Bayes's
+Both halves are long established. The P\'olya urn is a textbook model,
+and Niven and Grendar \cite{nivengrendar} map all three statistics onto
+it. Uniform counts are also what the scholium of Bayes's
 essay \cite{bayes} takes to characterise knowing nothing beforehand,
 the assumption behind Laplace's rule of succession \cite[Chapter V \S
 2, pp.~123--124]{feller}. For \(t\) outcomes, that rule says that after
 \(i\) trials, of which \(c\) came out \(j\), the next comes out \(j\)
 with probability \((c + 1) / (t + i)\): exactly the urn's step, so the
 urn draws each element of a uniformly random multiset revealed in
-random order from its correct distribution given those before it. The
-nearest thing to running an urn as a sampler in
-earnest is the Blackwell--MacQueen urn \cite{blackwellmacqueen}, which
-draws an exchangeable sequence from a Dirichlet process, a different
-purpose. The combinatorial generation literature does generate random
+random order from its correct distribution given those before it.
+
+We have not found the urn set out as an algorithm, though. Its draws
+can be generated from the other side of an equivalence that Blackwell
+and MacQueen \cite{blackwellmacqueen} prove for a more general urn:
+draw a vector of probabilities from a Dirichlet distribution, then
+sample from it independently. That takes floating-point arithmetic and
+memory proportional to \(t\). The device in Cardchoose's first loop,
+drawing by copying a uniformly random earlier entry of an array, does
+appear in Batagelj and Brandes's generator for preferential-attachment
+graphs \cite{batageljbrandes}, which runs a related urn where each step
+also adds a new colour. The combinatorial generation literature does generate random
 multisets, but through stars and bars in the other direction:
 Nijenhuis and Wilf's RANCOM \cite[Chapter 6]{nijenhuiswilf} chooses a
 random \((k-1)\)-subset of \(\{1, \ldots, n+k-1\}\) and differences
 it. Nor do surveys of sampling without replacement describe anything
 like Cardchoose: Devroye's \cite[Chapter XII]{devroye} has no urn and
 no stars and bars, and Ting's \cite{ting} reworkings of the
-established algorithms are a sparse Fisher--Yates sampler, essentially
-HSEL, and a sorted sampler that draws each skip from a beta-binomial
-distribution in floating point.
+established algorithms are a sparse Fisher--Yates sampler, which is
+Ernvall and Nevalainen's HSEL \cite{hsel}, the swapping method on an
+existing array with its swaps undone afterwards, and a sorted sampler
+that draws each skip from a beta-binomial distribution in floating
+point.
 
 Three other algorithms need no memory beyond the output array and take
 \(\bigO{k}\) expected time: Nijenhuis and Wilf's RANKSB
@@ -352,7 +365,12 @@ Rouzankin and Voytishek \cite{RouzankinVoytishek} use a sorted array
 or an unbalanced search tree instead. We have not benchmarked GSEL:
 the tree needs memory that Cardchoose does not, and following pointers
 through it for every value drawn is unlikely to beat one sort over a
-flat array.
+flat array. Rouzankin and Voytishek's halving algorithm also takes
+\(\bigO{k \log k}\) expected time and returns sorted output, with only
+a recursion stack beside the output array: it splits the range in two,
+decides with one draw for each value which half it falls in, and
+recurses, so it makes about \(\log k\) draws for each value where
+Cardchoose makes one.
 
 \section{Benchmarked algorithms}\label{otheralgs}
 We compare Cardchoose with twelve other algorithms. Every
@@ -413,7 +431,7 @@ rejection sampling below.
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
 As above, but check each draw against a set of the values chosen so
-far, with an efficient membership test \cite{goodman}. Teuhola and
+far, with an efficient membership test. Teuhola and
 Nevalainen \cite{teuhola} and Ahrens and Dieter \cite{ahrensd} keep
 the set in a hash table, and Devroye \cite[Chapter XII \S 2]{devroye}
 compares the data structures that can hold it. The output is in random
@@ -422,8 +440,10 @@ takes \(\bigO{k}\) expected time for \(k \leq n/2\), where each draw is
 rejected with probability at most a half; Jakobsson \cite{jakobsson}
 shows that the expected number of draws is then less than
 \(2k \ln 2 \approx 1.39k\). As \(k\) approaches \(n\), rejections
-mount: the expected number of draws is \(n(H_n - H_{n-k})\), where
-\(H_m\) is the \(m\)th harmonic number, so at \(k = n\) it takes
+mount, as in the coupon collector's problem \cite[Chapter IX \S 3,
+pp.~224--225]{feller}: the expected number of draws is \(n(H_n - H_{n-k})\)
+\cite[\S 6.3, p.~300]{goodman}, where \(H_m\) is the \(m\)th harmonic
+number, so at \(k = n\) it takes
 \(\bigO{n \log n}\) time.
 
 \subsection{Floyd's F2}
@@ -464,9 +484,10 @@ the set matters, and then sort.
 
 \subsection{Bit-vector F2}
 \inputminted{Python}{code/bitvectorf2.py}
-Floyd's F2 with a bit vector of \(n\) bits as its set: the first of the
+Floyd's F2 with a bit vector of \(n\) bits as its set, the first of the
 ways to hold the set that Devroye \cite[Chapter XII \S 2]{devroye}
-compares, and the fastest. For sorted output, scan the bit vector
+compares, and in our benchmarks the fastest algorithm where \(n/k\) is
+moderate (\autoref{results}). For sorted output, scan the bit vector
 afterwards and write out the position of every bit that is set, as in
 Bentley's bit-vector sort \cite[Column 1]{pearls}, so that no sort is
 needed. For random output, there is no scan, and the order is kept
@@ -506,7 +527,8 @@ needs floating point; we time only Algorithm R.
 Fill an array with the elements of \(\NN_{<n}\), and run the first
 \(k\) steps of a Fisher--Yates shuffle on it: at step \(i\), swap a
 random element from position \(i\) onwards into position \(i\)
-\cite{goodman}. The first \(k\) elements are then the sample, in
+\cite[\S 6.3, p.~303]{goodman}. The first \(k\) elements are then the
+sample, in
 random order. It makes only \(k\) draws, but the array takes
 \(\bigO{n}\) memory and \(\bigO{n}\) time to fill.
 
@@ -557,10 +579,15 @@ Vitter introduced Algorithm D in \cite{vitterfaster}; our
 \impls{vitterd} implementations follow the improved code in the appendix of
 \cite{vitterD}, which is too long to list here. Ahrens and Dieter
 \cite{ahrensd} give other sequential methods that take \(\bigO{k}\)
-time, and Ting \cite{ting} one that draws each skip from a
-beta-binomial distribution; like Algorithm D, these draw their skips in
-floating point, and we take Algorithm D and Hidden Shuffle to represent
-them.
+time. Devroye \cite[Chapter XII \S\S 3--4]{devroye} gives further ways
+to draw the skips, and oversampling, which rounds sorted uniforms to
+integers and repairs the repeats afterwards. Ting \cite{ting} observes that the skip is a beta-binomial
+variate, so that the same loop takes only a few lines wherever a
+library provides a binomial generator; it takes \(\bigO{k}\) time when
+that generator takes constant expected time, and the work of Algorithm
+D's rejection step is then done inside it. Like Algorithm D, these draw
+their skips in floating point, and we take Algorithm D and Hidden
+Shuffle to represent them.
 
 \subsection{Hidden Shuffle}
 Shekelyan and Cormode's Hidden Shuffle \cite{hiddenshuffle} considers
@@ -579,10 +606,11 @@ uniformly random subset of the low positions, chosen in order by
 Vitter's Algorithm A. The output is sorted, the time is \(\bigO{k}\) in
 the worst case, and no extra memory is needed; like Algorithm D, it
 relies on floating-point arithmetic, with an exponentiation for each
-high draw. The code printed in the paper can divide by zero, and its
-last step has an off-by-one error that biases the output; our
-\impls{hiddenshuffle} implementations apply the corrections from the errata in
-\cite{sampleiterator}. We thank metasj for bringing this algorithm to
+high draw. The code printed in the proceedings
+\cite{hiddenshuffleproc} can divide by zero, and its last step has an
+off-by-one error that biases the output; the authors' corrected version
+and the errata in \cite{sampleiterator} fix both, and our
+\impls{hiddenshuffle} implementations apply those corrections. We thank metasj for bringing this algorithm to
 our attention.
 
 \subsection{Cardchoose}
@@ -593,8 +621,7 @@ only memory needed is the output array.
 
 \section{Benchmarks}\label{benchmarks}
 
-The accompanying repository
-(\url{https://github.com/ciphergoth/sansreplace}) includes C++ and Rust
+The accompanying repository includes C++ and Rust
 implementations of these algorithms, which were benchmarked for a
 variety of values of \(n\) and \(k\), for both sorted output and
 random output, on an AWS r8a.xlarge, whose four vCPUs are each a whole
@@ -740,7 +767,7 @@ position it is given for every number, where
 \(n = k = 1{,}346{,}269\), the C++ sorted variant takes 3.8\,ns per
 number, against 2.2\,ns with a loop of our own that did the same.
 
-\subsection{Results}
+\subsection{Results}\label{results}
 
 Performance depends on both \(n\) and \(k\), so static graphs can
 show only slices of it, and we encourage readers to explore the
@@ -817,8 +844,7 @@ is also faster than RANKSB wherever \(n \geq 16k\) and \(k \geq 1000\)
 in both languages, with RANKSB taking 1.1 to 2.7 times as long. As
 \(k\) approaches \(n\), RANKSB slows down, taking up to 490 times as
 long as the fastest algorithm at \(k = n\) in C++, and 940 times in
-Rust; \cite{nijenhuiswilf} pairs it with iterative choosing (which
-Nijenhuis and Wilf refer to as RKS2) for \(k \geq n/2\). Vitter's
+Rust. Vitter's
 Algorithm D, with its fallback to Algorithm A, takes 0.38 to 2.0 times
 as long as Hidden Shuffle at every point with \(k \geq 10\). Where
 \(n \geq 4k\), it takes 0.63 to 2.8 times as long as Cardchoose in C++
@@ -841,6 +867,17 @@ bit-vector F2 at most of the rest. Floyd's F2 takes at most 1.23 times
 as long as set-based rejection there, and HSEL up to 2.5 times; but
 set-based rejection slows down as \(k\) approaches \(n\), and HSEL does
 not.
+
+Several of these algorithms slow down as \(k\) approaches \(n\). A
+reasonable fix is to switch algorithm there: to iterative choosing for
+sorted output, as Nijenhuis and Wilf
+\cite[Chapter 4]{nijenhuiswilf} suggest for \(k \geq n/2\), or to
+reservoir sampling or SELECT for random output. Devroye
+\cite[Chapter XII \S 2]{devroye} suggests instead sampling the values to
+leave out; but that is complicated to do in place, works only for
+sorted output, and is unlikely to be faster than switching to one of
+the algorithms above. We time each algorithm as described, without any
+such switch.
 
 The hash-based algorithms are faster than Cardchoose until their tables
 no longer fit in cache. Wherever \(100 \leq k < 10^6\) and

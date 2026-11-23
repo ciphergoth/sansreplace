@@ -91,8 +91,8 @@ operation on _k_ random numbers below 2<sup>32</sup> − 1 over that of drawing 
 For sorted output, `bitvectorf2` is the fastest algorithm wherever 2 _k_ ≤ _n_ < 16 _k_ and _k_ <
 10<sup>7</sup>, and `hiddenshuffle` wherever _n_ ≥ 256 _k_ and _k_ ≥ 100. Wherever _n_ ≥ 16 _k_
 and _k_ ≥ 1000, `cardchoose` takes 1.3–2.3× as long as `hiddenshuffle`, and `ranksb` 1.2–2.6× as
-long. `ranksb` slows down as _k_ approaches _n_, where Nijenhuis and Wilf pair it with
-`iterativechoose` (which they refer to as RKS2).
+long. `ranksb` slows down as _k_ approaches _n_, where Nijenhuis and Wilf suggest switching to
+`iterativechoose`, which they call RKS2.
 
 For random output, `select` is the fastest wherever 2 _k_ ≤ _n_ < 16 _k_ and _k_ <
 10<sup>5</sup>. From _n_ of about 8 million, each call maps its array afresh (see

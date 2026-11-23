@@ -54,9 +54,9 @@ already-produced values.
 
 One of the simplest possible algorithms, but the cost of set lookups and insertions
 is high. It takes O(_k_) expected time for _k_ ≤ _n_/2, where each draw is rejected with
-probability at most a half. As _k_ approaches _n_, rejections mount: the expected number of draws
-is _n_(_H_<sub>_n_</sub> − _H_<sub>_n_−_k_</sub>), where _H_ is the harmonic number, so at
-_k_ = _n_ it takes O(_n_ log _n_) time.
+probability at most a half. As _k_ approaches _n_, rejections mount, as in the coupon collector's
+problem: the expected number of draws is _n_(_H_<sub>_n_</sub> − _H_<sub>_n_−_k_</sub>), where _H_
+is the harmonic number, so at _k_ = _n_ it takes O(_n_ log _n_) time (Feller, chapter IX §3).
 
 ## Floyd's F2
 
@@ -112,7 +112,7 @@ Bit-vector F2 | [Python](python/algorithms/bitvectorf2.py) | [C++](cpp/bitvector
 
 Floyd's F2 with a bit vector of _n_ bits as its set: each step tests one bit and sets one. This
 is the first of the ways to hold the set that Devroye compares in Chapter XII §2 of _Non-Uniform
-Random Variate Generation_, and the fastest. The draws take time proportional to _k_, but
+Random Variate Generation_. The draws take time proportional to _k_, but
 clearing the bit vector takes time proportional to _n_, though little for each value, since a
 word covers 64 of them. So it does best where _n_/_k_ is moderate: it is the fastest algorithm
 for sorted output wherever 2 _k_ ≤ _n_ < 16 _k_ and _k_ < 10<sup>7</sup>, and for random output
@@ -237,8 +237,8 @@ its bin, and that depends only on how many values the bin has accepted. Then cho
 values within each bin; bins hold about one value each, so a quadratic method is fine. The
 output comes out sorted, it takes O(_k_) expected time for _k_ ≤ _n_/2, and the book's program
 needs no storage beyond the output array. As _k_ approaches _n_ it slows down, and for
-_k_ ≥ _n_/2 the book pairs it with iterative choosing (which Nijenhuis and Wilf refer to as
-RKS2); I benchmark RANKSB on its own.
+_k_ ≥ _n_/2 the book suggests switching to iterative choosing, which Nijenhuis and Wilf call
+RKS2; I benchmark RANKSB on its own.
 
 My C++ and Rust implementations follow the program in the book, except that they fill each bin
 as soon as they know where its values go, rather than first marking out every bin's slots and
@@ -300,15 +300,16 @@ chooses them in order. The output comes out sorted, it takes O(_k_) time in the 
 needs no extra memory. Like Algorithm D, it relies on floating-point arithmetic, including an
 exponentiation for each high draw.
 
-The code printed in the paper is wrong: it can divide by zero, and the last step has an off-by-one
-error that biases the output. My implementations apply the corrections from the errata in the
-authors' repository. Thanks to metasj for bringing this algorithm to my attention.
+The code printed in the proceedings is wrong: it can divide by zero, and the last step has an
+off-by-one error that biases the output. The authors' corrected version of the paper and the
+errata in their repository fix both, and my implementations apply those corrections. Thanks to metasj for bringing this algorithm to my attention.
 
 * Michael Shekelyan and Graham Cormode
     * Sequential Random Sampling Revisited: Hidden Shuffle Method
     * Proceedings of the 24th International Conference on Artificial Intelligence and Statistics
       (AISTATS 2021), PMLR volume 130
     * https://proceedings.mlr.press/v130/shekelyan21a.html
+    * Corrected version: https://compsci.science/shekelyan/hiddenshuffle.pdf
     * Errata and the authors' implementations: https://github.com/shekelyan/sampleiterator
 
 ## Cardchoose
