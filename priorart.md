@@ -93,6 +93,11 @@ makes one.
 * Albert Nijenhuis and Herbert S. Wilf, _Combinatorial Algorithms for Computers and Calculators_,
   2nd edition, Academic Press, 1978. Chapter 4, "Random _k_-Subset of an _n_-Set (RANKSB)", and
   chapter 6, "Random Composition of n into k Parts (RANCOM)".
+* Jon Louis Bentley and James B. Saxe, "Generating sorted lists of random numbers", _ACM
+  Transactions on Mathematical Software_ 6(3), 359–364, 1980.
+  [doi:10.1145/355900.355907](https://doi.org/10.1145/355900.355907).
+* Jeffrey Scott Vitter, "Faster methods for random sampling", _Communications of the ACM_ 27(7),
+  703–718, 1984. [doi:10.1145/358105.893](https://doi.org/10.1145/358105.893).
 * Jeffrey Scott Vitter, "An efficient algorithm for sequential random sampling", _ACM Transactions
   on Mathematical Software_ 13(1), 58–67, 1987.
   [doi:10.1145/23002.23003](https://doi.org/10.1145/23002.23003).

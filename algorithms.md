@@ -355,14 +355,15 @@ others there is none beyond the size of the list.
 * **Rouzankin and Voytishek's halving algorithm** makes about log _k_ draws for each value (see
   [prior art](priorart.md)).
 * **Other ways to draw the skips of a sequential sampler** such as Algorithm D. Devroye (Chapter
-  XII §§3–4) gives several, and oversampling, which rounds sorted uniforms to integers and repairs
-  the repeats afterwards. Ting observes that the skip is a beta-binomial variate, so that the loop
+  XII §3) gives several. Ting observes that the skip is a beta-binomial variate, so that the loop
   takes only a few lines wherever a library provides a binomial generator; it takes O(_k_) time
   when that generator takes constant expected time, and the work of Algorithm D's rejection step
   is then done inside it. Like Algorithm D, these draw their skips in floating point.
-* **Drawing with replacement, sorting and removing duplicates.** Bentley (_Programming Pearls_,
-  §12.3) suggests drawing somewhat more than _k_ values, sorting them, removing the duplicates,
-  and taking a sorted sample of _k_ from what is left. It needs room for the excess, and a second
-  sampler to trim it.
+* **Oversampling.** Draw somewhat more than _k_ values with replacement, remove the duplicates,
+  and take a sample of _k_ from what is left. Bentley proposed it with the draws generated in
+  sorted order by Bentley and Saxe's method, so that no sort is needed and, with a generator that
+  can be restarted, nor is memory for the excess; Vitter (1984, §8) timed that at about twice the
+  time of Algorithm D. Devroye (Chapter XII §4) analyses it, and Bentley (_Programming Pearls_,
+  §12.3) also sketches a version that sorts.
 
 [Prior art](priorart.md) gives the references for all of these.

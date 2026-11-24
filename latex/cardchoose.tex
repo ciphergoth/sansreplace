@@ -671,19 +671,21 @@ through a tree for every value drawn.
 \cite{RouzankinVoytishek} makes about \(\log k\) draws for each value
 (\autoref{priorart}).
 \item Other ways to draw the skips of a sequential sampler such as
-Algorithm D. Devroye \cite[Chapter XII \S\S 3--4]{devroye} gives
-several, and oversampling, which rounds sorted uniforms to integers
-and repairs the repeats afterwards. Ting \cite{ting} observes that the
+Algorithm D. Devroye \cite[Chapter XII \S 3]{devroye} gives
+several. Ting \cite{ting} observes that the
 skip is a beta-binomial variate, so that the loop takes only a few
 lines wherever a library provides a binomial generator; it takes
 \(\bigO{k}\) time when that generator takes constant expected time,
 and the work of Algorithm D's rejection step is then done inside it.
 Like Algorithm D, these draw their skips in floating point.
-\item Drawing with replacement, sorting and removing duplicates.
-Bentley \cite[\S 12.3]{pearls} suggests drawing somewhat more than
-\(k\) values, sorting them, removing the duplicates, and taking a
-sorted sample of \(k\) from what is left. It needs room for the excess,
-and a second sampler to trim it.
+\item Oversampling. Draw somewhat more than \(k\) values with
+replacement, remove the duplicates, and take a sample of \(k\) from
+what is left. Bentley proposed it with the draws generated in sorted
+order \cite{bentleysaxe}, so that no sort is needed and, with a
+generator that can be restarted, nor is memory for the excess; Vitter
+\cite[\S 8]{vitterfaster} timed that at about twice the time of
+Algorithm D. Devroye \cite[Chapter XII \S 4]{devroye} analyses it, and
+Bentley \cite[\S 12.3]{pearls} also sketches a version that sorts.
 \end{itemize}
 
 \section{Benchmarks}\label{benchmarks}
