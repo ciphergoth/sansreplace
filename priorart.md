@@ -34,13 +34,11 @@ Ting's reworkings of the established algorithms are a sparse Fisher–Yates samp
 and Nevalainen's HSEL, the swapping method on an existing array with its swaps undone afterwards,
 and a sorted sampler that draws each skip from a beta-binomial distribution in floating point.
 
-Four other algorithms need no memory beyond the output array and take O(_k_) expected time:
-Teuhola and Nevalainen's HTRY, Nijenhuis and Wilf's RANKSB, Vitter's Algorithm D and Shekelyan and
-Cormode's Hidden Shuffle. The first three predate Cardchoose, and the last two need floating-point
-arithmetic. HTRY is set-based rejection sampling with its hash table packed into the output array,
-each entry holding a value and a link. I have not implemented it: the packing is
-intricate, and in its authors' own timings (their Figure 4) it takes two to three times as long as
-their other hash-based algorithm until _k_ exceeds _n_/2.
+Five other algorithms need no memory beyond the output array and take O(_k_) expected time:
+Teuhola and Nevalainen's HTRY, Nijenhuis and Wilf's RANKSB, Ahrens and Dieter's SG\*, Vitter's
+Algorithm D and Shekelyan and Cormode's Hidden Shuffle. Hidden Shuffle postdates Cardchoose, and
+the last three need floating-point arithmetic. I have not benchmarked HTRY or SG\*; [algorithms
+not benchmarked](algorithms.md#algorithms-not-benchmarked) describes them.
 
 Gupta and Bhattacharjee's GSEL also takes O(_k_ log _k_) time and can return sorted output. Like
 SELECT, it draws each value as a uniform rank among the values not yet chosen, and it finds the
@@ -82,6 +80,9 @@ makes one.
 * J. Teuhola and O. Nevalainen, "Two efficient algorithms for random sampling without
   replacement", _International Journal of Computer Mathematics_ 11(2), 127–140, 1982.
   [doi:10.1080/00207168208803304](https://doi.org/10.1080/00207168208803304).
+* J. H. Ahrens and U. Dieter, "Sequential random sampling", _ACM Transactions on Mathematical
+  Software_ 11(2), 157–169, 1985.
+  [doi:10.1145/214392.214402](https://doi.org/10.1145/214392.214402).
 * Luc Devroye, _Non-Uniform Random Variate Generation_, Springer-Verlag, 1986. Chapter XII,
   "Random sampling". [Online](https://luc.devroye.org/rnbookindex.html).
 * Daniel Ting, "Simple, optimal algorithms for random sampling without replacement", 2021.

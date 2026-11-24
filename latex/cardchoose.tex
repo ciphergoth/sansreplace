@@ -127,7 +127,8 @@ generated, which adds memory and a significant constant factor to the
 runtime. Some need extra memory proportional to \(n\), or
 floating-point arithmetic. We describe twelve such algorithms in
 \autoref{otheralgs}, and in \autoref{benchmarks} we compare the
-performance of C++ and Rust implementations of each. Along the way, in
+performance of C++ and Rust implementations of each;
+\autoref{notbenchmarked} lists others that we have not timed. Along the way, in
 \autoref{quadraticf2}, we propose what appears to be a novel
 optimisation of the quadratic variant of Floyd's F2 for generating a
 fair random order.
@@ -350,17 +351,15 @@ existing array with its swaps undone afterwards, and a sorted sampler
 that draws each skip from a beta-binomial distribution in floating
 point.
 
-Four other algorithms need no memory beyond the output array and take
+Five other algorithms need no memory beyond the output array and take
 \(\bigO{k}\) expected time: Teuhola and Nevalainen's HTRY
 \cite{teuhola}, Nijenhuis and Wilf's RANKSB
-\cite[Chapter 4]{nijenhuiswilf}, Vitter's Algorithm D and Shekelyan
-and Cormode's Hidden Shuffle \cite{hiddenshuffle}. The first three
-predate Cardchoose, and the last two need floating-point arithmetic.
-HTRY is set-based rejection sampling with its hash table packed into
-the output array, each entry holding a value and a link. We have not
-implemented it: the packing is intricate, and in its authors' own
-timings it takes two to three times as long as their other hash-based
-algorithm until \(k\) exceeds \(n/2\) \cite[Figure 4]{teuhola}.
+\cite[Chapter 4]{nijenhuiswilf}, Ahrens and Dieter's SG*
+\cite{ahrensd}, Vitter's Algorithm D and Shekelyan
+and Cormode's Hidden Shuffle \cite{hiddenshuffle}. Hidden Shuffle
+postdates Cardchoose, and the last three need floating-point arithmetic.
+We have not benchmarked HTRY or SG*; \autoref{notbenchmarked} describes
+them.
 
 Gupta and Bhattacharjee's GSEL \cite{gupta} also takes
 \(\bigO{k \log k}\) time and can return sorted output. Like SELECT, it
@@ -378,7 +377,7 @@ decides with one draw for each value which half it falls in, and
 recurses, so it makes about \(\log k\) draws for each value where
 Cardchoose makes one.
 
-\section{Benchmarked algorithms}\label{otheralgs}
+\section{Other algorithms}\label{otheralgs}
 We compare Cardchoose with twelve other algorithms. Every
 implementation fills an array of \(k\)
 elements. Some applications require that the returned elements be in
@@ -543,11 +542,7 @@ random order. It makes only \(k\) draws, but the array takes
 SELECT with a ``virtual'' array: a hash table stores only the elements
 that have changed, so it needs no \(n\)-element array
 \cite{hsel}. The output is in random order, and it takes \(\bigO{k}\)
-expected time and \(\bigO{k}\) memory for the hash table. Teuhola and
-Nevalainen \cite{teuhola} give a version that needs \(2k\) storage
-locations rather than about \(5k\), which draws all \(k\) random
-numbers first and then works out which value each one stands for,
-from the last back. Our C++ and Rust implementations use a faster
+expected time and \(\bigO{k}\) memory for the hash table. Our C++ and Rust implementations use a faster
 variant, which keeps the first \(k\) entries of the virtual array in
 the output array itself, so only swaps that reach beyond them touch
 the hash table. This variant was described by rici \cite{rici}; we
@@ -583,17 +578,7 @@ no extra memory. Once \(n \leq 13k\) it falls back on Vitter's
 Algorithm A, which draws each skip in time proportional to its length.
 Vitter introduced Algorithm D in \cite{vitterfaster}; our
 \impls{vitterd} implementations follow the improved code in the appendix of
-\cite{vitterD}, which is too long to list here. Ahrens and Dieter
-\cite{ahrensd} give other sequential methods that take \(\bigO{k}\)
-time. Devroye \cite[Chapter XII \S\S 3--4]{devroye} gives further ways
-to draw the skips, and oversampling, which rounds sorted uniforms to
-integers and repairs the repeats afterwards. Ting \cite{ting} observes that the skip is a beta-binomial
-variate, so that the same loop takes only a few lines wherever a
-library provides a binomial generator; it takes \(\bigO{k}\) time when
-that generator takes constant expected time, and the work of Algorithm
-D's rejection step is then done inside it. Like Algorithm D, these draw
-their skips in floating point, and we take Algorithm D and Hidden
-Shuffle to represent them.
+\cite{vitterD}, which is too long to list here.
 
 \subsection{Hidden Shuffle}
 Shekelyan and Cormode's Hidden Shuffle \cite{hiddenshuffle} considers
@@ -624,6 +609,55 @@ Described in \autoref{cardchoose}: choose a multiset of \(k\) cell
 numbers below \(n - k + 1\) with a P\'olya urn, then sort it and add
 each one's index to turn it into a set. The output is sorted, and the
 only memory needed is the output array.
+
+\subsection{Algorithms not benchmarked}\label{notbenchmarked}
+The literature holds many more algorithms than the thirteen we time,
+and our coverage is not complete. These are the ones we know of and
+have not timed; for some we give a reason, and for others there is
+none beyond the size of the list.
+
+\begin{itemize}
+\item Ahrens and Dieter's SG, SG* and SH \cite{ahrensd}, all for
+sorted output. SG takes each value independently with probability a
+little over \(k/n\), drawing the gaps between them from a geometric
+distribution in floating point; it starts again if it has fewer than
+\(k\) values, and otherwise discards the excess at random. It needs an
+array a little longer than \(k\). SG* needs none: it runs the
+generator once to count the values, restores its state, and runs it
+again, keeping exactly \(k\) by iterative choosing. SH is rejection
+sampling into a hash table whose hash is the value scaled down, so
+that the table is nearly in order and an insertion sort finishes the
+job. Their authors found SG and SH about equally fast, and four to
+five times as fast as the Algorithm D of the time.
+\item Teuhola and Nevalainen's HTRY \cite{teuhola} is set-based
+rejection sampling with its hash table packed into the output array,
+each entry holding a value and a link, so that it needs no memory
+beyond the output. The packing is intricate, and in its authors' own
+timings it takes two to three times as long as their other hash-based
+algorithm until \(k\) exceeds \(n/2\) \cite[Figure 4]{teuhola}.
+\item Teuhola and Nevalainen's version of HSEL \cite{teuhola} needs
+\(2k\) storage locations rather than about \(5k\). It draws all \(k\)
+random numbers first and then works out which value each one stands
+for, from the last back.
+\item Gupta and Bhattacharjee's GSEL \cite{gupta}, and Rouzankin and
+Voytishek's algorithms that hold the chosen values in a sorted array
+or an unbalanced search tree \cite{RouzankinVoytishek}, draw each
+value as a rank among those not yet chosen (\autoref{priorart}). They
+need memory that Cardchoose does not, and GSEL follows pointers
+through a tree for every value drawn.
+\item Rouzankin and Voytishek's halving algorithm
+\cite{RouzankinVoytishek} makes about \(\log k\) draws for each value
+(\autoref{priorart}).
+\item Other ways to draw the skips of a sequential sampler such as
+Algorithm D. Devroye \cite[Chapter XII \S\S 3--4]{devroye} gives
+several, and oversampling, which rounds sorted uniforms to integers
+and repairs the repeats afterwards. Ting \cite{ting} observes that the
+skip is a beta-binomial variate, so that the loop takes only a few
+lines wherever a library provides a binomial generator; it takes
+\(\bigO{k}\) time when that generator takes constant expected time,
+and the work of Algorithm D's rejection step is then done inside it.
+Like Algorithm D, these draw their skips in floating point.
+\end{itemize}
 
 \section{Benchmarks}\label{benchmarks}
 

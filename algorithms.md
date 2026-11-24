@@ -204,16 +204,6 @@ in 1982:
     * 45--47
     * https://academic.oup.com/comjnl/article/25/1/45/527401
 
-Teuhola and Nevalainen give a version that needs 2_k_ storage locations rather than about 5_k_,
-which draws all _k_ random numbers first and then works out which value each one stands for, from
-the last back:
-
-* J. Teuhola and O. Nevalainen
-    * Two efficient algorithms for random sampling without replacement
-    * International Journal of Computer Mathematics 11(2), 1982
-    * 127--140
-    * https://doi.org/10.1080/00207168208803304
-
 It is also presented in Martin Harriman, [Sampling Without Replacement: Durstenfeld-Fisher-Yates
 Permutation for Very Large Permutation
 Sizes](https://www.tdcommons.org/cgi/viewcontent.cgi?article=1485&context=dpubs_series).
@@ -321,3 +311,40 @@ Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
 This is my algorithm: a Pólya urn generates a uniform
 multiset, and stars and bars turns it into a uniform subset. [Detailed
 description](cardchoose.md), including how it relates to [prior art](priorart.md).
+
+## Algorithms not benchmarked
+
+The literature holds many more algorithms than the thirteen I time, and my coverage is not
+complete. These are the ones I know of and have not timed; for some I give a reason, and for
+others there is none beyond the size of the list.
+
+* **Ahrens and Dieter's SG, SG\* and SH**, all for sorted output. SG takes each value
+  independently with probability a little over _k_/_n_, drawing the gaps between them from a
+  geometric distribution in floating point; it starts again if it has fewer than _k_ values, and
+  otherwise discards the excess at random. It needs an array a little longer than _k_. SG\* needs
+  none: it runs the generator once to count the values, restores its state, and runs it again,
+  keeping exactly _k_ by iterative choosing. SH is rejection sampling into a hash table whose hash
+  is the value scaled down, so that the table is nearly in order and an insertion sort finishes
+  the job. Their authors found SG and SH about equally fast, and four to five times as fast as the
+  Algorithm D of the time.
+* **Teuhola and Nevalainen's HTRY** is set-based rejection sampling with its hash table packed
+  into the output array, each entry holding a value and a link, so that it needs no memory beyond
+  the output. The packing is intricate, and in its authors' own timings (their Figure 4) it takes
+  two to three times as long as their other hash-based algorithm until _k_ exceeds _n_/2.
+* **Teuhola and Nevalainen's version of HSEL** needs 2_k_ storage locations rather than about
+  5_k_. It draws all _k_ random numbers first and then works out which value each one stands for,
+  from the last back.
+* **Gupta and Bhattacharjee's GSEL**, and Rouzankin and Voytishek's algorithms that hold the
+  chosen values in a sorted array or an unbalanced search tree, draw each value as a rank among
+  those not yet chosen (see [prior art](priorart.md)). They need memory that Cardchoose does not,
+  and GSEL follows pointers through a tree for every value drawn.
+* **Rouzankin and Voytishek's halving algorithm** makes about log _k_ draws for each value (see
+  [prior art](priorart.md)).
+* **Other ways to draw the skips of a sequential sampler** such as Algorithm D. Devroye (Chapter
+  XII §§3–4) gives several, and oversampling, which rounds sorted uniforms to integers and repairs
+  the repeats afterwards. Ting observes that the skip is a beta-binomial variate, so that the loop
+  takes only a few lines wherever a library provides a binomial generator; it takes O(_k_) time
+  when that generator takes constant expected time, and the work of Algorithm D's rejection step
+  is then done inside it. Like Algorithm D, these draw their skips in floating point.
+
+[Prior art](priorart.md) gives the references for all of these.
