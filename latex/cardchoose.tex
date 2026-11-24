@@ -439,9 +439,11 @@ rejection sampling below.
 \subsection{Set-based rejection sampling}
 \inputminted{Python}{code/rejectionsample.py}
 As above, but check each draw against a set of the values chosen so
-far, with an efficient membership test. Teuhola and
-Nevalainen \cite{teuhola} and Ahrens and Dieter \cite{ahrensd} keep
-the set in a hash table, and Devroye \cite[Chapter XII \S 2]{devroye}
+far, with an efficient membership test. Fan, Muller and Rezucha
+\cite[Method 5]{fanetal} keep the set in a table in sorted order;
+Knuth \cite[\S 3.4.2, exercise 16]{taocp2}, Teuhola and Nevalainen
+\cite{teuhola} and Ahrens and Dieter
+\cite{ahrensd} keep it in a hash table, and Devroye \cite[Chapter XII \S 2]{devroye}
 compares the data structures that can hold it. The output is in random
 order, and the set takes \(\bigO{k}\) memory. With a hash table, this
 takes \(\bigO{k}\) expected time for \(k \leq n/2\), where each draw is
@@ -522,8 +524,9 @@ value, since a word covers 64 of them.
 Go through the values of \(\NN_{<n}\) in order, and choose each with
 the probability that it is in the sample given how many values are
 still to choose and how many remain to consider
-\cite[Method 1, p.391]{fanetal}; this is Knuth's Algorithm S
-\cite{taocp2}. The output is sorted, no extra memory is needed, and it
+\cite[Method 1, p.~391]{fanetal}; this is Knuth's Algorithm S
+\cite[\S 3.4.2]{taocp2}, which he reports T.~G.~Jones found
+independently. The output is sorted, no extra memory is needed, and it
 makes one draw for every value it considers, so it takes \(\bigO{n}\)
 time.
 
@@ -532,12 +535,13 @@ time.
 Fill the output with the elements of \(\NN_{<k}\) in random order.
 Then for each \(i\) from \(k\) to \(n - 1\), draw \(r\) from
 \(\NN_{<i + 1}\), and if \(r < k\), replace the \(r\)th output with
-\(i\); this is Knuth's Algorithm R \cite{taocp2}. The output is in
+\(i\); this is Knuth's Algorithm R \cite[\S 3.4.2]{taocp2}, which he
+credits to Alan Waterman. The output is in
 random order, no extra memory is needed, and it makes one draw for
 every value, so it takes \(\bigO{n}\) time. Vitter's Algorithm Z
-\cite{vitterZ} instead draws how many elements to skip, which takes
-\(\bigO{k(1 + \log(n/k))}\) expected time but, like Algorithm D below,
-needs floating point; we time only Algorithm R.
+\cite{vitterZ} skips ahead instead of considering every value, but it
+is for input whose length is not known in advance; where \(n\) is
+known, his Algorithm D does less work.
 
 \subsection{SELECT}
 \inputminted{Python}{code/select.py}
@@ -554,7 +558,12 @@ random order. It makes only \(k\) draws, but the array takes
 SELECT with a ``virtual'' array: a hash table stores only the elements
 that have changed, so it needs no \(n\)-element array
 \cite{hsel}. The output is in random order, and it takes \(\bigO{k}\)
-expected time and \(\bigO{k}\) memory for the hash table. Our C++ and Rust implementations use a faster
+expected time and \(\bigO{k}\) memory for the hash table. An algorithm
+of Ole-Johan Dahl's does the same job. It is an exercise in Knuth
+\cite[\S 3.4.2, exercise 15]{taocp2}, and was already in the second
+edition of 1981, a year before Ernvall and Nevalainen's paper appeared.
+Dahl keeps the entries for the output positions in an array, and looks
+up only the others in a symbol table. Our C++ and Rust implementations use a faster
 variant, which keeps the first \(k\) entries of the virtual array in
 the output array itself, so only swaps that reach beyond them touch
 the hash table. This variant was described by rici \cite{rici}; we
@@ -930,7 +939,8 @@ reasonable fix is to switch algorithm there: to iterative choosing for
 sorted output, as Nijenhuis and Wilf
 \cite[Chapter 4]{nijenhuiswilf} suggest for \(k \geq n/2\), or to
 reservoir sampling or SELECT for random output. Another
-suggestion, first made by Ernvall and Nevalainen \cite{hsel}, is to
+suggestion, made by Ernvall and Nevalainen \cite{hsel} and by Knuth
+\cite[\S 3.4.2, exercise 16]{taocp2}, is to
 sample the values to leave out; but that is complicated to do in place,
 as Teuhola and Nevalainen \cite{teuhola} found, gives its output in
 sorted order, and is unlikely to be faster than switching to one of

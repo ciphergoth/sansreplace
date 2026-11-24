@@ -147,13 +147,14 @@ Iterative choosing | [Python](python/algorithms/iterativechoose.py) | [C++](cpp/
 Iterate through every possible value in [0, _n_) in order and decide whether to include it in the
 output, weighting the probability appropriately depending on the number of spaces left in the output
 and the number of values remaining to test. One of the faster algorithms for producing sorted output
-where _k_ is a large fraction of _n_.
+where _k_ is a large fraction of _n_. Knuth credits it to Fan, Muller and Rezucha, and reports
+that T. G. Jones found it independently.
 
 * Donald Knuth
     * The Art of Computer Programming
-    * Volume 2: Seminumerical Algorithms.
+    * Volume 2: Seminumerical Algorithms, 3rd edition
     * Section 3.4.2
-    * Page 137
+    * Page 142
     * "Algorithm S"
 
 ## Reservoir sampling (Algorithm R)
@@ -165,13 +166,14 @@ Reservoir sampling | [Python](python/algorithms/reservoirsample.py) | [C++](cpp/
 Initialize the output with the integers [0, _k_) in random order.
 Then iterate through the remaining values [k, _n_) in order and decide
 whether to replace an existing, randomly chosen output with that integer.
-Fast for producing random output where _k_ is a large fraction of _n_.
+Fast for producing random output where _k_ is a large fraction of _n_. Knuth credits it to Alan
+Waterman.
 
 * Donald Knuth
     * The Art of Computer Programming
-    * Volume 2: Seminumerical Algorithms.
+    * Volume 2: Seminumerical Algorithms, 3rd edition
     * Section 3.4.2
-    * Page 138
+    * Page 144
     * "Algorithm R"
 
 ## SELECT
@@ -202,14 +204,18 @@ Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
 HSEL | [Python](python/algorithms/hsel.py) | [C++](cpp/hsel.cpp) | [Rust](rust/src/algorithms/hsel.rs) | Random | Dictionary | _k_
 
 This is a variation of the above which uses a hash table to simulate the array
-of values [0, _n_), storing only the entries that change. First proposed by Ernvall and Nevalainen
-in 1982:
+of values [0, _n_), storing only the entries that change. Ernvall and Nevalainen published it in
+1982, and named it:
 
 * Jarmo Ernvall and Olli Nevalainen
     * An algorithm for unbiased random sampling
     * The Computer Journal Volume 25, Number 1, February, 1982
     * 45--47
     * https://academic.oup.com/comjnl/article/25/1/45/527401
+
+An algorithm of Ole-Johan Dahl's does the same job. It is exercise 15 of Section 3.4.2 of Knuth's
+_Seminumerical Algorithms_, and was already in the second edition of 1981. Dahl keeps the entries
+for the output positions in an array, and looks up only the others in a symbol table.
 
 It is also presented in Martin Harriman, [Sampling Without Replacement: Durstenfeld-Fisher-Yates
 Permutation for Very Large Permutation
