@@ -18,7 +18,7 @@
   number = {9},
   issn = {0001-0782},
   doi = {10.1145/30401.315746},
-  journal = {Commun. ACM},
+  journal = {Communications of the ACM},
   month = {9},
   pages = {754--757},
   numpages = {4}
@@ -38,7 +38,7 @@
     journal = {The Computer Journal},
     volume = {25},
     number = {1},
-    pages = {45-47},
+    pages = {45--47},
     year = {1982},
     month = {02},
     issn = {0010-4620},
@@ -69,7 +69,7 @@ address = {USA}
   journal = {Journal of the American Statistical Association},
   volume = {57},
   number = {298},
-  pages = {387-402},
+  pages = {387--402},
   year  = {1962},
   publisher = {Taylor & Francis},
   doi = {10.1080/01621459.1962.10480667},
@@ -87,7 +87,7 @@ address = {USA}
   issn = {0098-3500},
   doi = {10.1145/23002.23003},
   abstract = {We examine several methods for drawing a sequential random sample of n records from a file containing N records. Method D is recommended for general use. The algorithm is on-line (so that CPU time can be overlapped with I/O), has a small constant memory requirement, and is easy to program. An improved implementation is detailed in the Appendix.},
-  journal = {ACM Trans. Math. Softw.},
+  journal = {ACM Transactions on Mathematical Software},
   month = {3},
   pages = {58--67},
   numpages = {10}
@@ -105,7 +105,7 @@ address = {USA}
   issn = {0098-3500},
   doi = {10.1145/214392.214402},
   abstract = {Fast algorithms for selecting a random set of exactly k records from a file of n records are constructed. Selection is sequential: the sample records are chosen in the same order in which they occur in the file. All procedures run in O(k) time. The “geometric” method has two versions: with or without O(k) auxiliary space. A further procedure uses hashing techniques and requires O(k) space.},
-  journal = {ACM Trans. Math. Softw.},
+  journal = {ACM Transactions on Mathematical Software},
   month = {6},
   pages = {157--169},
   numpages = {13},
@@ -113,7 +113,7 @@ address = {USA}
 }
 
 @article{vitterZ,
-  author = {Vitter, Jeffrey S.},
+  author = {Vitter, Jeffrey Scott},
   title = {Random Sampling with a Reservoir},
   year = {1985},
   issue_date = {March 1985},
@@ -124,7 +124,7 @@ address = {USA}
   issn = {0098-3500},
   doi = {10.1145/3147.3165},
   abstract = {We introduce fast algorithms for selecting a random sample of n records without replacement from a pool of N records, where the value of N is unknown beforehand. The main result of the paper is the design and analysis of Algorithm Z; it does the sampling in one pass using constant space and in O(n(1 + log(N/n))) expected time, which is optimum, up to a constant factor. Several optimizations are studied that collectively improve the speed of the naive version of the algorithm by an order of magnitude. We give an efficient Pascal-like implementation that incorporates these modifications and that is suitable for general use. Theoretical and empirical results indicate that Algorithm Z outperforms current methods by a significant margin.},
-  journal = {ACM Trans. Math. Softw.},
+  journal = {ACM Transactions on Mathematical Software},
   month = {3},
   pages = {37--57},
   numpages = {21}
@@ -145,7 +145,7 @@ address = {USA}
   url = {https://arxiv.org/abs/2104.05091},
   author = {Ting, Daniel},
   keywords = {Data Structures and Algorithms (cs.DS), Computation (stat.CO), FOS: Computer and information sciences, FOS: Computer and information sciences},
-  title = {Simple, Optimal Algorithms for Random Sampling Without Replacement},
+  title = {Simple, Optimal Algorithms for Random Sampling without Replacement},
   publisher = {arXiv},
   year = {2021},
   copyright = {arXiv.org perpetual, non-exclusive license}
@@ -153,7 +153,7 @@ address = {USA}
 
 @article{RouzankinVoytishek,
   title = {On the Cost of Algorithms for Random Selection},
-  author = {P.S. Rouzankin and A.V. Voytishek},
+  author = {P. S. Rouzankin and A. V. Voytishek},
   pages = {39--54},
   volume = {5},
   number = {1},
@@ -188,7 +188,7 @@ address = {USA}
   issn = {0001-0782},
   doi = {10.1145/358105.893},
   abstract = {Several new methods are presented for selecting n records at random without replacement from a file containing N records. Each algorithm selects the records for the sample in a sequential manner—in the same order the records appear in the file. The algorithms are online in that the records for the sample are selected iteratively with no preprocessing. The algorithms require a constant amount of space and are short and easy to implement. The main result of this paper is the design and analysis of Algorithm D, which does the sampling in O(n) time, on the average; roughly n uniform random variates are generated, and approximately n exponentiation operations (of the form ab, for real numbers a and b) are performed during the sampling. This solves an open problem in the literature. CPU timings on a large mainframe computer indicate that Algorithm D is significantly faster than the sampling algorithms in use today.},
-  journal = {Commun. ACM},
+  journal = {Communications of the ACM},
   month = {7},
   pages = {703--718},
   numpages = {16}
@@ -225,7 +225,7 @@ pages = {265--268},
 year = {1989},
 issn = {0020-0190},
 doi = {10.1016/0020-0190(89)90206-8},
-author = {Vijayan Rajan and R.K. Ghosh and P. Gupta},
+author = {Vijayan Rajan and R. K. Ghosh and P. Gupta},
 keywords = {Parallel algorithm, random sampling},
 abstract = {A parallel algorithm for drawing an unbiased random sample of size M from a population of N elements where M⩽N is proposed. The algorithm runs in O(log M) time on a concurrent read, exclusive write (CREW) PRAM with M processors.}
 }
@@ -240,7 +240,8 @@ abstract = {A parallel algorithm for drawing an unbiased random sample of size M
 	pages = {1--14},
 	author = {Peter Sanders and Sebastian Lamm and Lorenz Hübschle-Schneider and Emanuel Schrade and Carsten Dachsbacher},
 	title = {Efficient Parallel Random Sampling{\textemdash}Vectorized, Cache-Efficient, and Online},
-	journal = {{ACM} Transactions on Mathematical Software},
+	journal = {ACM Transactions on Mathematical Software},
+	issn = {0098-3500},
 	eprint = {1610.05141},
 	eprinttype = {arxiv}
 }
@@ -313,6 +314,7 @@ abstract = {A parallel algorithm for drawing an unbiased random sample of size M
   number = {3},
   pages = {359--364},
   year = {1980},
+  issn = {0098-3500},
   doi = {10.1145/355900.355907}
 }
 
@@ -358,6 +360,7 @@ abstract = {A parallel algorithm for drawing an unbiased random sample of size M
   number = {4},
   pages = {412--413},
   year = {1985},
+  issn = {0010-4620},
   doi = {10.1093/comjnl/28.4.412}
 }
 
