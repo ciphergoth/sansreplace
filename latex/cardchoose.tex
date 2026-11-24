@@ -53,6 +53,12 @@
 % Ragged right, with hyphenation: the text is full of code that can't be
 % broken, which justified lines would have to stretch around
 \usepackage[document]{ragged2e}
+% Hyphenate only where a line would otherwise end very short: let lines
+% end well short of the margin, and make a hyphen cost about as much as a
+% line that ends 70pt short
+\setlength{\RaggedRightRightskip}{0pt plus 3em}
+\tolerance=2000
+\hyphenpenalty=1000
 \setmainfont{STIXTwoText}[Extension=.otf, UprightFont=*-Regular,
   BoldFont=*-Bold, ItalicFont=*-Italic, BoldItalicFont=*-BoldItalic]
 \setmathrm{lmroman10-regular.otf}
@@ -90,8 +96,11 @@
 \addbibresource{bib.bib}
 % Let URLs in the bibliography break after letters, so that they don't
 % overrun the margin
-\setcounter{biburllcpenalty}{7000}
-\setcounter{biburlucpenalty}{8000}
+\setcounter{biburllcpenalty}{9000}
+\setcounter{biburlucpenalty}{9500}
+% biblatex puts stretchable space after each "/" and "." in a URL, which
+% spreads the URL out along a line that ends short; make it rigid
+\biburlbigskip=0mu
 % Let a line with code in it, which can't be hyphenated, end further short
 % of the margin than ragged2e allows by default, rather than overrun it
 \emergencystretch=2em
