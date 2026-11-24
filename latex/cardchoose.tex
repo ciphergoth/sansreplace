@@ -349,7 +349,10 @@ established algorithms are a sparse Fisher--Yates sampler, which is
 Ernvall and Nevalainen's HSEL \cite{hsel}, the swapping method on an
 existing array with its swaps undone afterwards, and a sorted sampler
 that draws each skip from a beta-binomial distribution in floating
-point.
+point. The nearest we have found to drawing first and sorting
+afterwards is a sampler that Bentley sketches
+\cite[\S 12.3]{pearls}, which draws with replacement, sorts, and
+removes duplicates (\autoref{notbenchmarked}).
 
 Five other algorithms need no memory beyond the output array and take
 \(\bigO{k}\) expected time: Teuhola and Nevalainen's HTRY
@@ -496,13 +499,15 @@ the set matters, and then sort.
 
 \subsection{Bit-vector F2}
 \inputminted{Python}{code/bitvectorf2.py}
-Floyd's F2 with a bit vector of \(n\) bits as its set, as Teuhola and
+Floyd's F2 with a bit vector of \(n\) bits as its set. Teuhola and
 Nevalainen \cite{teuhola} and Devroye \cite[Chapter XII \S 2]{devroye}
-describe for rejection sampling, and in our benchmarks the fastest algorithm where \(n/k\) is
-moderate (\autoref{results}). For sorted output, scan the bit vector
-afterwards and write out the position of every bit that is set, as in
-Bentley's bit-vector sort \cite[Column 1]{pearls}, so that no sort is
-needed. For random output, there is no scan, and the order is kept
+describe a bit vector as the set for rejection sampling; Bentley
+\cite[Column 13]{pearls} times one, and sets Floyd's algorithm with
+the same sets as an exercise. In our benchmarks it is the fastest
+algorithm where \(n/k\) is moderate (\autoref{results}). For sorted
+output, scan the bit vector afterwards and write out the position of
+every bit that is set, as Bentley does there and in his bit-vector
+sort \cite[Column 1]{pearls}, so that no sort is needed. For random output, there is no scan, and the order is kept
 random as in Floyd's F2 above. The listing uses a byte for each bit,
 for clarity; our C++ and Rust implementations take a packed bit vector
 from a library, Boost's \mintinline{cpp}{dynamic_bitset} and the
@@ -664,6 +669,11 @@ lines wherever a library provides a binomial generator; it takes
 \(\bigO{k}\) time when that generator takes constant expected time,
 and the work of Algorithm D's rejection step is then done inside it.
 Like Algorithm D, these draw their skips in floating point.
+\item Drawing with replacement, sorting and removing duplicates.
+Bentley \cite[\S 12.3]{pearls} suggests drawing somewhat more than
+\(k\) values, sorting them, removing the duplicates, and taking a
+sorted sample of \(k\) from what is left. It needs room for the excess,
+and a second sampler to trim it.
 \end{itemize}
 
 \section{Benchmarks}\label{benchmarks}

@@ -32,7 +32,9 @@ through stars and bars in the other direction: Nijenhuis and Wilf's RANCOM choos
 replacement describe anything like Cardchoose: Devroye's has no urn and no stars and bars, and
 Ting's reworkings of the established algorithms are a sparse Fisher–Yates sampler, which is Ernvall
 and Nevalainen's HSEL, the swapping method on an existing array with its swaps undone afterwards,
-and a sorted sampler that draws each skip from a beta-binomial distribution in floating point.
+and a sorted sampler that draws each skip from a beta-binomial distribution in floating point. The
+nearest I have found to drawing first and sorting afterwards is a sampler that Bentley sketches
+(_Programming Pearls_, §12.3), which draws with replacement, sorts, and removes duplicates.
 
 Five other algorithms need no memory beyond the output array and take O(_k_) expected time:
 Teuhola and Nevalainen's HTRY, Nijenhuis and Wilf's RANKSB, Ahrens and Dieter's SG\*, Vitter's
@@ -83,6 +85,7 @@ makes one.
 * J. H. Ahrens and U. Dieter, "Sequential random sampling", _ACM Transactions on Mathematical
   Software_ 11(2), 157–169, 1985.
   [doi:10.1145/214392.214402](https://doi.org/10.1145/214392.214402).
+* Jon Bentley, _Programming Pearls_, 2nd edition, Addison-Wesley, 2000. Columns 1, 12 and 13.
 * Luc Devroye, _Non-Uniform Random Variate Generation_, Springer-Verlag, 1986. Chapter XII,
   "Random sampling". [Online](https://luc.devroye.org/rnbookindex.html).
 * Daniel Ting, "Simple, optimal algorithms for random sampling without replacement", 2021.

@@ -118,15 +118,16 @@ Bit-vector F2 | [Python](python/algorithms/bitvectorf2.py) | [C++](cpp/bitvector
 
 Floyd's F2 with a bit vector of _n_ bits as its set: each step tests one bit and sets one. Teuhola
 and Nevalainen, and Devroye in Chapter XII §2 of _Non-Uniform Random Variate Generation_, describe
-a bit vector as the set for rejection sampling. The draws take time proportional to _k_, but
+a bit vector as the set for rejection sampling; Bentley times one in Column 13 of _Programming
+Pearls_, and sets Floyd's algorithm with the same sets as an exercise. The draws take time proportional to _k_, but
 clearing the bit vector takes time proportional to _n_, though little for each value, since a
 word covers 64 of them. So it does best where _n_/_k_ is moderate: it is the fastest algorithm
 for sorted output wherever 2 _k_ ≤ _n_ < 16 _k_ and _k_ < 10<sup>7</sup>, and for random output
 at most points with 16 _k_ ≤ _n_ < 256 _k_; see the [results](results.md).
 
 For sorted order, nothing is written to the output until the end, when one scan of the bit vector
-writes out the position of every bit that is set, as in Bentley's bit-vector sort in Column 1 of
-_Programming Pearls_; no sort is needed. For random order there is no scan. The output is filled
+writes out the position of every bit that is set, as Bentley does there and in his bit-vector sort in
+Column 1; no sort is needed. For random order there is no scan. The output is filled
 in as the values are drawn, and the order is kept random as in Floyd's F2 above: when the draw is
 already present, a randomly chosen earlier output moves to the end and _m_ takes its place, which
 costs an extra draw. A bit vector says only that a value is present, not where it is in the
@@ -352,5 +353,9 @@ others there is none beyond the size of the list.
   takes only a few lines wherever a library provides a binomial generator; it takes O(_k_) time
   when that generator takes constant expected time, and the work of Algorithm D's rejection step
   is then done inside it. Like Algorithm D, these draw their skips in floating point.
+* **Drawing with replacement, sorting and removing duplicates.** Bentley (_Programming Pearls_,
+  §12.3) suggests drawing somewhat more than _k_ values, sorting them, removing the duplicates,
+  and taking a sorted sample of _k_ from what is left. It needs room for the excess, and a second
+  sampler to trim it.
 
 [Prior art](priorart.md) gives the references for all of these.
