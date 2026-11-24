@@ -43,11 +43,13 @@ in
         environ
         floatrow
         forloop
+        inconsolata
         minted.tex
         patchedMintedBin
         pbox
         preprint
         sectsty
+        stix2-otf
         titling
         upquote
         xargs

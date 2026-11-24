@@ -20,11 +20,11 @@ comes up, and delete it when it is done.
 
 ## Paper
 
-- Go back to a modern body font with Latin Modern for the mathematics, keeping the URL breaking,
-  `emergencystretch` and `microtype` from the arXiv version.
 - Read the PDF by eye for layout. The text and the references were checked after each change in
-  the references pass; the layout was not. Look at the bulleted subsection "Algorithms not
-  benchmarked" and the bibliography.
+  the references pass; the layout was not, and the fonts have changed since, to STIX Two and
+  Inconsolata. Look at the bulleted subsection "Algorithms not benchmarked", the bibliography,
+  and the first paragraph of the introduction, which is set loosely to keep
+  `rand::seq::index::sample` inside the margin.
 - A new tag and release once a host is chosen: the repository links in `latex/cardchoose.tex`
   point at the tag `arxiv_01`, and the paper has changed a great deal since. `latex/make_arxiv`
   and the tag's name are left over from the arXiv submission.

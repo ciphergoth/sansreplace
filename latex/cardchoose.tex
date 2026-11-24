@@ -33,6 +33,13 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[landau,operators,probability,sets]{cryptocode}
+% STIX Two for the text, Latin Modern for the mathematics, digits included,
+% and Inconsolata for code. XeLaTeX finds fonts in the TeX tree by file name.
+\setmainfont{STIXTwoText}[Extension=.otf, UprightFont=*-Regular,
+  BoldFont=*-Bold, ItalicFont=*-Italic, BoldItalicFont=*-BoldItalic]
+\setmathrm{lmroman10-regular.otf}
+\setmonofont{Inconsolatazi4}[Extension=.otf, UprightFont=*-Regular,
+  BoldFont=*-Bold, Scale=MatchLowercase]
 \usepackage[cachedir=build/_minted-cardchoose]{minted}
 \usepackage{pgf}
 % Matplotlib's pgf figures use \mathdefault in tick labels
@@ -69,7 +76,7 @@
 \setcounter{biburlucpenalty}{8000}
 % Let a line with code in it, which can't be hyphenated, stretch a little
 % rather than overrun the margin
-\emergencystretch=1em
+\emergencystretch=2em
 
 \title{Cardchoose: simple, fast sampling without replacement}
 \author{Paul~Crowley}
