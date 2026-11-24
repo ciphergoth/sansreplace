@@ -562,12 +562,13 @@ expected time and \(\bigO{k}\) memory for the hash table. An algorithm
 of Ole-Johan Dahl's does the same job. It is an exercise in Knuth
 \cite[\S 3.4.2, exercise 15]{taocp2}, and was already in the second
 edition of 1981, a year before Ernvall and Nevalainen's paper appeared.
-Dahl keeps the entries for the output positions in an array, and looks
-up only the others in a symbol table. Our C++ and Rust implementations use a faster
-variant, which keeps the first \(k\) entries of the virtual array in
-the output array itself, so only swaps that reach beyond them touch
-the hash table. This variant was described by rici \cite{rici}; we
-thank Mathias Weller for bringing it to our attention.
+Dahl keeps the entries for the output positions in an array beside the
+output, and looks up only the others in a symbol table. Our C++ and
+Rust implementations use a simpler and faster form of the same idea,
+in which the output array itself holds those entries, so that only
+swaps that reach beyond them touch the hash table. This form was
+described by rici \cite{rici}; we thank Mathias Weller for bringing it
+to our attention.
 
 \subsection{RANKSB}
 Divide \(\NN_{<n}\) into \(k\) bins of nearly equal size. First
@@ -592,8 +593,8 @@ Like iterative choosing, produce the output in sorted order, but
 instead of deciding about each value in turn, draw the number of values
 to skip before the next chosen one directly. The skip has a known
 discrete distribution, which Algorithm D samples by rejection from a
-continuous approximation, the smallest of \(k\) uniform reals drawn in
-one step as in \cite{bentleysaxe}, in \(\bigO{1}\) expected time per
+continuous approximation, the smallest of \(k\) uniform reals, which can
+be drawn in one step, in \(\bigO{1}\) expected time per
 output, at the cost of a few floating-point exponentiations, and with
 no extra memory. Once \(n \leq 13k\) it falls back on Vitter's
 Algorithm A, which draws each skip in time proportional to its length.

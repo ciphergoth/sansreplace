@@ -215,15 +215,16 @@ of values [0, _n_), storing only the entries that change. Ernvall and Nevalainen
 
 An algorithm of Ole-Johan Dahl's does the same job. It is exercise 15 of Section 3.4.2 of Knuth's
 _Seminumerical Algorithms_, and was already in the second edition of 1981. Dahl keeps the entries
-for the output positions in an array, and looks up only the others in a symbol table.
+for the output positions in an array beside the output, and looks up only the others in a symbol
+table.
 
 It is also presented in Martin Harriman, [Sampling Without Replacement: Durstenfeld-Fisher-Yates
 Permutation for Very Large Permutation
 Sizes](https://www.tdcommons.org/cgi/viewcontent.cgi?article=1485&context=dpubs_series).
 
-My C++ and Rust implementations use a faster variant, which keeps the first _k_ entries of the
-simulated array in the output array itself, so only swaps that reach beyond _k_ touch the hash
-table. This variant was described by rici in a [Stack Overflow
+My C++ and Rust implementations use a simpler and faster form of Dahl's idea, in which the output
+array itself holds the first _k_ entries of the simulated array, so that only swaps that reach
+beyond _k_ touch the hash table. This form was described by rici in a [Stack Overflow
 answer](https://stackoverflow.com/a/30559195) in 2015. Thanks to Mathias Weller for bringing it to
 my attention.
 
@@ -263,7 +264,7 @@ A sequential sampling algorithm: like iterative choosing, it produces the output
 instead of deciding about each value in [0, _n_) in turn, it draws the number of values to skip
 before the next chosen one directly. The skip has a known discrete distribution, and Algorithm D
 samples it by rejection from a continuous approximation, the smallest of _k_ uniform reals,
-drawn in one step as in Bentley and Saxe's method for generating sorted random numbers. This takes
+which can be drawn in one step. This takes
 O(1) expected time per output, so the whole algorithm takes O(_k_) expected time and needs no extra memory. The cost is
 floating-point arithmetic: each output needs a few uniform variates and exponentiations. Once
 _n_ is at most 13 _k_, it falls back on Vitter's Algorithm A, which draws each skip in O(skip) time,
@@ -271,12 +272,6 @@ so the total work for the rest of the output is O(_n_).
 
 My C++ and Rust implementations follow the Pascal-like code in the paper's appendix; the
 Python one states the method directly, which is easier to follow.
-
-* Jon Louis Bentley and James B. Saxe
-    * Generating Sorted Lists of Random Numbers
-    * ACM Transactions on Mathematical Software, Volume 6, Number 3, September 1980
-    * 359--364
-    * https://doi.org/10.1145/355900.355907
 
 * Jeffrey Scott Vitter
     * An Efficient Algorithm for Sequential Random Sampling
@@ -314,6 +309,12 @@ errata in their repository fix both, and my implementations apply those correcti
     * https://proceedings.mlr.press/v130/shekelyan21a.html
     * Corrected version: https://compsci.science/shekelyan/hiddenshuffle.pdf
     * Errata and the authors' implementations: https://github.com/shekelyan/sampleiterator
+
+* Jon Louis Bentley and James B. Saxe
+    * Generating Sorted Lists of Random Numbers
+    * ACM Transactions on Mathematical Software, Volume 6, Number 3, September 1980
+    * 359--364
+    * https://doi.org/10.1145/355900.355907
 
 ## Cardchoose
 
