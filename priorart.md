@@ -34,7 +34,10 @@ Ting's reworkings of the established algorithms are a sparse Fisher–Yates samp
 and Nevalainen's HSEL, the swapping method on an existing array with its swaps undone afterwards,
 and a sorted sampler that draws each skip from a beta-binomial distribution in floating point. The
 nearest I have found to drawing first and sorting afterwards is a sampler that Bentley sketches
-(_Programming Pearls_, §12.3), which draws with replacement, sorts, and removes duplicates.
+(_Programming Pearls_, §12.3), which draws with replacement, sorts, and removes duplicates. Rajan, Ghosh and Gupta's parallel
+algorithm also rests on a sort: it draws all the random numbers of SELECT at once, sorts them, and
+works out from the sorted order which value each one stands for, using several arrays of length
+_k_ beside the output.
 
 Five other algorithms need no memory beyond the output array and take O(_k_) expected time:
 Teuhola and Nevalainen's HTRY, Nijenhuis and Wilf's RANKSB, Ahrens and Dieter's SG\*, Vitter's
@@ -93,6 +96,9 @@ makes one.
 * Albert Nijenhuis and Herbert S. Wilf, _Combinatorial Algorithms for Computers and Calculators_,
   2nd edition, Academic Press, 1978. Chapter 4, "Random _k_-Subset of an _n_-Set (RANKSB)", and
   chapter 6, "Random Composition of n into k Parts (RANCOM)".
+* Vijayan Rajan, R. K. Ghosh and P. Gupta, "An efficient parallel algorithm for random sampling",
+  _Information Processing Letters_ 30(5), 265–268, 1989.
+  [doi:10.1016/0020-0190(89)90206-8](https://doi.org/10.1016/0020-0190(89)90206-8).
 * Jon Louis Bentley and James B. Saxe, "Generating sorted lists of random numbers", _ACM
   Transactions on Mathematical Software_ 6(3), 359–364, 1980.
   [doi:10.1145/355900.355907](https://doi.org/10.1145/355900.355907).

@@ -352,7 +352,11 @@ that draws each skip from a beta-binomial distribution in floating
 point. The nearest we have found to drawing first and sorting
 afterwards is a sampler that Bentley sketches
 \cite[\S 12.3]{pearls}, which draws with replacement, sorts, and
-removes duplicates (\autoref{notbenchmarked}).
+removes duplicates (\autoref{notbenchmarked}). Rajan, Ghosh and
+Gupta's parallel algorithm \cite{rajan} also rests on a sort: it draws
+all the random numbers of SELECT at once, sorts them, and works out
+from the sorted order which value each one stands for, using several
+arrays of length \(k\) beside the output.
 
 Five other algorithms need no memory beyond the output array and take
 \(\bigO{k}\) expected time: Teuhola and Nevalainen's HTRY
@@ -650,7 +654,10 @@ again, keeping exactly \(k\) by iterative choosing. SH is rejection
 sampling into a hash table whose hash is the value scaled down, so
 that the table is nearly in order and an insertion sort finishes the
 job. Their authors found SG and SH about equally fast, and four to
-five times as fast as the Algorithm D of the time.
+five times as fast as Algorithm D. Vitter \cite[\S 3]{vitterD} replied
+that they had timed a poor implementation of it; against the improved
+one that we follow, he found SG still faster for \(k\) of 100 or more,
+by up to a factor of two, and SG* slower throughout.
 \item Teuhola and Nevalainen's HTRY \cite{teuhola} is set-based
 rejection sampling with its hash table packed into the output array,
 each entry holding a value and a link, so that it needs no memory
