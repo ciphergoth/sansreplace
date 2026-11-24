@@ -34,7 +34,25 @@
 \usepackage{amssymb}
 \usepackage[landau,operators,probability,sets]{cryptocode}
 % STIX Two for the text, Latin Modern for the mathematics, digits included,
-% and Inconsolata for code. XeLaTeX finds fonts in the TeX tree by file name.
+% Libre Franklin for the headings, and Inconsolata for code. XeLaTeX finds
+% fonts in the TeX tree by file name.
+\setsansfont{LibreFranklin}[Extension=.otf, UprightFont=*-Regular,
+  BoldFont=*-SemiBold, ItalicFont=*-Italic, BoldItalicFont=*-SemiBoldItalic]
+\usepackage{sectsty}
+\allsectionsfont{\sffamily}
+% Separate paragraphs with space rather than an indent
+\usepackage{parskip}
+% The title and the abstract's heading in the headings' font, and no indent
+% in the abstract
+\usepackage{titling}
+\pretitle{\begin{center}\LARGE\sffamily\bfseries}
+\usepackage{abstract}
+\renewcommand{\abstractnamefont}{\normalfont\small\sffamily\bfseries}
+\setlength{\absparindent}{0pt}
+\setlength{\abstitleskip}{0pt}
+% Ragged right, with hyphenation: the text is full of code that can't be
+% broken, which justified lines would have to stretch around
+\usepackage[document]{ragged2e}
 \setmainfont{STIXTwoText}[Extension=.otf, UprightFont=*-Regular,
   BoldFont=*-Bold, ItalicFont=*-Italic, BoldItalicFont=*-BoldItalic]
 \setmathrm{lmroman10-regular.otf}
@@ -74,8 +92,8 @@
 % overrun the margin
 \setcounter{biburllcpenalty}{7000}
 \setcounter{biburlucpenalty}{8000}
-% Let a line with code in it, which can't be hyphenated, stretch a little
-% rather than overrun the margin
+% Let a line with code in it, which can't be hyphenated, end further short
+% of the margin than ragged2e allows by default, rather than overrun it
 \emergencystretch=2em
 
 \title{Cardchoose: simple, fast sampling without replacement}

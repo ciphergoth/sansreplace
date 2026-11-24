@@ -21,10 +21,12 @@ comes up, and delete it when it is done.
 ## Paper
 
 - Read the PDF by eye for layout. The text and the references were checked after each change in
-  the references pass; the layout was not, and the fonts have changed since, to STIX Two and
-  Inconsolata. Look at the bulleted subsection "Algorithms not benchmarked", the bibliography,
-  and the first paragraph of the introduction, which is set loosely to keep
-  `rand::seq::index::sample` inside the margin.
+  the references pass; the layout was not, and the whole design has changed since: STIX Two,
+  Libre Franklin headings, Inconsolata, spaced paragraphs and ragged right. Look at the bulleted
+  subsection "Algorithms not benchmarked" and the bibliography.
+- Headings sit close to a code listing that follows them directly, as in "Reservoir sampling".
+- A URL in the bibliography, in the entry for `sampleiterator`, is stretched out letter by
+  letter to fill its line. It comes from the settings that let bibliography URLs break.
 - A new tag and release once a host is chosen: the repository links in `latex/cardchoose.tex`
   point at the tag `arxiv_01`, and the paper has changed a great deal since. `latex/make_arxiv`
   and the tag's name are left over from the arXiv submission.

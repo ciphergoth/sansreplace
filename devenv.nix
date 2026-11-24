@@ -42,8 +42,10 @@ in
         cryptocode
         environ
         floatrow
+        footmisc
         forloop
         inconsolata
+        librefranklin
         minted.tex
         patchedMintedBin
         pbox
