@@ -129,9 +129,9 @@ floating-point arithmetic. We describe twelve such algorithms in
 \autoref{otheralgs}, and in \autoref{benchmarks} we compare the
 performance of C++ and Rust implementations of each;
 \autoref{notbenchmarked} lists others that we have not timed. Along the way, in
-\autoref{quadraticf2}, we propose what appears to be a novel
-optimisation of the quadratic variant of Floyd's F2 for generating a
-fair random order.
+\autoref{quadraticf2}, we describe what appears to be a new way to run
+Floyd's permutation algorithm on an array, which keeps the output in a
+fair random order without shifting any entries.
 
 No single algorithm is close to the fastest for all \(n, k\), and
 libraries such as Python's and Rust's implement several algorithms and
@@ -467,23 +467,30 @@ afterwards. Instead, as in Ting's random-order version of Floyd's
 algorithm \cite{tingblog}, when the chosen value is already present,
 they move a randomly chosen earlier output to the end and put the new
 value in its place. This keeps the order uniformly random, and costs an
-extra random number only on collisions.
+extra random number only on collisions. Floyd's own Algorithm P
+\cite{floydf2} needs no extra draw, but it has to find the matching
+entry in the output, which a set does not record.
 
 \subsection{Quadratic F2}\label{quadraticf2}
 \inputminted{Python}{code/quadraticf2.py}
 Floyd's F2 with the output array as its set, scanned to check each
 draw, so that it needs no extra memory and takes \(\bigO{k^2}\) time.
-When the draw \(r\) is already present, it replaces that entry with
-\(m\) and appends \(r\), which keeps the output in uniformly random
-order without a shuffle or any extra draw: the scan has already found
-where \(r\) is, which Floyd's F2 with a set does not know. Rust's \mintinline{rust}{rand} crate used
-Floyd's F2 with a scan in the same way \cite{rust-random}, but kept
-the order random either by inserting \(m\) before the matching entry,
-which shifts every entry after it, or by shuffling the whole output
-afterwards, which costs \(k\) more draws. It has used our version
+For random order, Floyd's Algorithm P \cite{floydf2} needs no shuffle
+and no extra draw: a new draw goes on the front of the output, and
+when the draw is already present, \(m\) is inserted just after it. In
+an array, that insertion shifts every entry after it, taking time
+proportional to their number on each collision. Our version instead
+replaces the matching entry with \(m\) and appends the draw \(r\), so
+that nothing is shifted; the scan has already found where \(r\) is. As
+with Algorithm P, each step can be undone, so every ordered output
+comes from exactly one sequence of draws, and all are equally likely.
+Rust's \mintinline{rust}{rand} crate also used
+Floyd's F2 with a scan of the output \cite{rust-random}: for
+\(k < 50\) it ran Algorithm P in mirror image, appending each new draw
+and inserting \(m\) before the matching entry, and for larger \(k\) it
+shuffled the whole output afterwards, which costs \(k\) more draws. It has used our version
 since 2023; the pull request that made that change \cite{randpr} is
-the first publication of this way of keeping the order random that we
-know of. For sorted output,
+the first publication of it that we know of. For sorted output,
 our implementations append \(m\) instead, since before the sort only
 the set matters, and then sort.
 
@@ -912,11 +919,11 @@ Several of these algorithms slow down as \(k\) approaches \(n\). A
 reasonable fix is to switch algorithm there: to iterative choosing for
 sorted output, as Nijenhuis and Wilf
 \cite[Chapter 4]{nijenhuiswilf} suggest for \(k \geq n/2\), or to
-reservoir sampling or SELECT for random output. Devroye
-\cite[Chapter XII \S 2]{devroye} suggests instead sampling the values to
-leave out; but that is complicated to do in place, as Teuhola and
-Nevalainen \cite{teuhola} found, works only for
-sorted output, and is unlikely to be faster than switching to one of
+reservoir sampling or SELECT for random output. Another
+suggestion, first made by Ernvall and Nevalainen \cite{hsel}, is to
+sample the values to leave out; but that is complicated to do in place,
+as Teuhola and Nevalainen \cite{teuhola} found, gives its output in
+sorted order, and is unlikely to be faster than switching to one of
 the algorithms above. We time each algorithm as described, without any
 such switch.
 

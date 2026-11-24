@@ -73,7 +73,9 @@ F2 returns a set, with no order. For random order, the C++ and Rust implementati
 shuffle afterwards: as in Daniel Ting's
 [random-order version](https://www.tableau.com/blog/fun-optimal-random-sampling), when the chosen
 value is already present, they move a randomly chosen earlier output to the end and put the new
-value in its place, which costs an extra draw only on collisions.
+value in its place, which costs an extra draw only on collisions. Floyd's own Algorithm P, from
+the same article as F2, needs no extra draw, but it has to find the matching entry in the output,
+which a set does not record.
 
 The original presentation is as one of Jon Bentley's Programming Pearls, though the algorithm is due to Robert W Floyd: [A Sample of Brilliance](https://doi.org/10.1145/30401.315746).
 
@@ -84,16 +86,20 @@ Algorithm | Python | C++ | Rust | Order guarantee | Data structures | Time
 Quadratic F2 | [Python](python/algorithms/quadraticf2.py) | [C++](cpp/quadraticf2.cpp) | [Rust](rust/src/algorithms/quadraticf2.rs) | Random | none | _k_^2
 
 A quadratic variant on Floyd's F2 which needs no external data structure: the output array is the
-set, scanned to check each draw. When the draw _r_ is already present, it replaces that entry with
-_m_ and appends _r_, which keeps the output in uniformly random order without a shuffle. The
+set, scanned to check each draw. For random order, Floyd's Algorithm P, from the same article as
+F2, needs no shuffle and no extra draw: a new draw goes on the front of the output, and when the
+draw is already present, _m_ is inserted just after it. In an array, that insertion shifts every
+entry after it, taking time proportional to their number on each collision. My version instead
+replaces the matching entry with _m_ and appends the draw _r_, so that nothing is shifted. As with
+Algorithm P, each step can be undone, so every ordered output comes from exactly one sequence of
+draws, and all are equally likely. The
 [Rust rand crate](https://github.com/rust-random/rand/blob/19897e53c1908c5a193e2aacff59170e3e72b8de/src/seq/index.rs#L231)
-used Floyd's F2 with a scan in the same way, but kept the order random either by inserting _m_
-before the matching entry, which shifts every entry after it, or by shuffling the whole output
-afterwards; it has used this version since
+also used Floyd's F2 with a scan of the output: for _k_ < 50 it ran Algorithm P in mirror image,
+appending each new draw and inserting _m_ before the matching entry, and for larger _k_ it
+shuffled the whole output afterwards; it has used this version since
 [rand pull request 1277](https://github.com/rust-random/rand/pull/1277), in 2023. Unlike Ting's
 random-order Floyd's F2 above, it needs no extra draw on a collision, because the scan has already
-found where _r_ is. That pull request is the first publication of this way of keeping the order
-random that I know of. Like quadratic rejection sampling, the small constants mean this does very
+found where _r_ is. That pull request is the first publication of my version that I know of. Like quadratic rejection sampling, the small constants mean this does very
 well for small _k_.
 
 For random order, each step draws _t_ and replaces the existing _t_, if there is one, with _j_.
