@@ -33,8 +33,6 @@ comes up, and delete it when it is done.
 - A new tag and release once a host is chosen: the repository links in `latex/cardchoose.tex`
   point at the tag `arxiv_01`, and the paper has changed a great deal since. `latex/make_arxiv`
   and the tag's name are left over from the arXiv submission.
-- Publisher names in `latex/bib.bib` vary in form ("John Wiley and Sons, Inc.", "Addison-Wesley
-  Longman Publishing Co., Inc.", "Addison-Wesley"). Unifying them means shortening some.
 
 ## Documents
 
