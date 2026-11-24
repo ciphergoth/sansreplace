@@ -214,7 +214,7 @@ of values [0, _n_), storing only the entries that change. Ernvall and Nevalainen
     * https://academic.oup.com/comjnl/article/25/1/45/527401
 
 An algorithm of Ole-Johan Dahl's does the same job. It is exercise 15 of Section 3.4.2 of Knuth's
-_Seminumerical Algorithms_, and was already in the second edition of 1981. Dahl keeps the entries
+_Seminumerical Algorithms_, and first appeared in the second edition of 1981. Dahl keeps the entries
 for the output positions in an array beside the output, and looks up only the others in a symbol
 table.
 
