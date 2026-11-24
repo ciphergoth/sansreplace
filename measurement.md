@@ -214,9 +214,11 @@ above, and can decide which language looks faster.
   and the C++ Floyd's F2, HSEL and set-based rejection sampling take about 0.2 times as long in
   random order and 0.45 times as long sorted.
 - **Hashing.** Rust's tables hash with SipHash by default, which resists collision attacks; Boost's
-  hash does not, so the Rust hashes with foldhash instead, with a fixed seed. That made inserting
-  into a hash set alone about 1.6 times as fast, and the Rust's hash-based algorithms take 0.6–0.8
-  times as long.
+  hash does not, so the Rust hashes with foldhash instead, with a fixed seed. With SipHash,
+  inserting into a hash set alone takes 1.4–2.2 times as long, and at the median set-based
+  rejection takes 1.83 times as long, Floyd's F2 1.66 and HSEL 1.60, in random order. The
+  `siphash` feature in `rust/Cargo.toml` builds the Rust that way; these figures are from one run
+  with it.
 - **Sorting.** The C++ uses Boost's `pdqsort`. libstdc++'s `std::sort` and libc++'s are different
   code: switching from libstdc++ to libc++ made Cardchoose take about 0.55 times as long, and the
   other sorted variants about 0.8 times. Rust's `sort_unstable`, ipnsort, still sorts in about half

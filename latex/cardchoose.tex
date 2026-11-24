@@ -803,6 +803,15 @@ the set takes 1.0 to 1.3 times as long in Rust as in C++
 (\autoref{componenttimes}), and with random output the hash-based
 algorithms take 1.08 to 1.14 times as long at the median.
 
+With SipHash, which is what a Rust program gets unless it asks for
+another hasher, inserting into the set takes 1.4 to 2.2 times as long
+as with foldhash, and at the median set-based rejection takes 1.83
+times as long, Floyd's F2 1.66 and HSEL 1.60. Wherever
+\(100 \leq k < 10^6\) and \(n \geq 2k\) they then take 0.73 to 1.38
+times as long as Cardchoose, and wherever \(k \geq 10^7\) and
+\(n \geq 2k\), 2.5 to 5.0 times as long. These figures are from one
+run, built with the \texttt{siphash} feature of the Rust.
+
 \paragraph{Sorting.} Boost's \mintinline{cpp}{pdqsort} is a
 pattern-defeating quicksort, and Rust's \mintinline{rust}{sort_unstable}
 is ipnsort, its successor. Sorting the same arrays of random numbers,
@@ -1259,7 +1268,8 @@ standard library's hash tables are node-based, and Boost's flat tables
 insert 4 to 16 times as fast; with them, the C++ Floyd's F2, HSEL and
 set-based rejection take about 0.2 times as long in random order.
 Rust's default hasher, SipHash, resists collision attacks that Boost's
-does not, and foldhash inserts about 1.6 times as fast. Switching the
+does not, and takes 1.4 to 2.2 times as long to insert as foldhash
+does. Switching the
 C++ standard library from libstdc++ to libc++ made Cardchoose take
 about 0.55 times as long, because the two
 \mintinline{cpp}{std::sort}s are different code. With each language's

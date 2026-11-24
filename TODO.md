@@ -20,11 +20,6 @@ comes up, and delete it when it is done.
 
 ## Paper
 
-- A sentence or two in "The two languages" on what Rust's default hasher, SipHash, costs the
-  hash-based algorithms: what a Rust user gets with the defaults, as the libc++ and standard hash
-  table figures already tell C++ readers. The timings are done: the run is
-  `scratch/rand/hashers1`, read by `scratch/rand/claims_sip.py`, built with the `siphash` feature
-  in `rust/Cargo.toml`.
 - Go back to a modern body font with Latin Modern for the mathematics, keeping the URL breaking,
   `emergencystretch` and `microtype` from the arXiv version.
 - Read the PDF by eye for layout. The text and the references were checked after each change in

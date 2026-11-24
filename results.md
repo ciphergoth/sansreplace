@@ -63,7 +63,12 @@ operation on _k_ random numbers below 2<sup>32</sup> − 1 over that of drawing 
   collision attacks; Boost's do not, so the Rust's hash with foldhash, with a fixed seed. Inserting
   into the set takes 1.0–1.3× as long in Rust as in C++, and with random output the hash-based
   algorithms, `rejectionsample`, `floydf2` and `hsel`, take 1.08–1.14× as long in Rust, at the
-  median.
+  median. With SipHash, which is what a Rust program gets unless it asks for another hasher,
+  inserting into the set takes 1.4–2.2× as long as with foldhash, and at the median
+  `rejectionsample` takes 1.83× as long, `floydf2` 1.66× and `hsel` 1.60×. Wherever 100 ≤ _k_ <
+  10<sup>6</sup> and _n_ ≥ 2 _k_ they then take 0.73–1.38× as long as `cardchoose`, and wherever
+  _k_ ≥ 10<sup>7</sup> and _n_ ≥ 2 _k_, 2.5–5.0× as long. These figures are from one run, built
+  with the `siphash` feature of the Rust.
 - **Sorting.** Boost's `pdqsort` is a pattern-defeating quicksort, and Rust's `sort_unstable` is
   ipnsort, its successor. `pdqsort` takes 1.96–2.4× as long, and `cardchoose` takes about 0.5× as
   long in Rust as in C++. `ranksb`, `vitterd` and `hiddenshuffle` need neither a hash table nor a
