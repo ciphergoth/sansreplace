@@ -96,6 +96,10 @@ makes one.
 * Albert Nijenhuis and Herbert S. Wilf, _Combinatorial Algorithms for Computers and Calculators_,
   2nd edition, Academic Press, 1978. Chapter 4, "Random _k_-Subset of an _n_-Set (RANKSB)", and
   chapter 6, "Random Composition of n into k Parts (RANCOM)".
+* Peter Sanders, Sebastian Lamm, Lorenz Hübschle-Schneider, Emanuel Schrade and Carsten
+  Dachsbacher, "Efficient parallel random sampling: vectorized, cache-efficient, and online", _ACM
+  Transactions on Mathematical Software_ 44(3), 2018.
+  [arXiv:1610.05141](https://arxiv.org/abs/1610.05141).
 * Vijayan Rajan, R. K. Ghosh and P. Gupta, "An efficient parallel algorithm for random sampling",
   _Information Processing Letters_ 30(5), 265–268, 1989.
   [doi:10.1016/0020-0190(89)90206-8](https://doi.org/10.1016/0020-0190(89)90206-8).

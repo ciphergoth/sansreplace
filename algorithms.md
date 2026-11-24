@@ -342,7 +342,15 @@ others there is none beyond the size of the list.
   the job. Their authors found SG and SH about equally fast, and four to five times as fast as
   Algorithm D. Vitter (1987, §3) replied that they had timed a poor implementation of it; against
   the improved one that I follow, he found SG still faster for _k_ of 100 or more, by up to a
-  factor of two, and SG\* slower throughout.
+  factor of two, and SG\* slower throughout. Sanders et al. (§6) also time SG: it was faster than
+  Algorithm D and slower than their Algorithm R, but several times faster than either when
+  vectorised.
+* **Sanders et al.'s Algorithm R** (§3.1). It splits the range in half, draws from a
+  hypergeometric distribution how many of the values fall in each half, and recurses until a part
+  needs few enough values that a hash table for them fits in cache, where it uses set-based
+  rejection sampling. It takes O(_k_) expected time, and needs a hypergeometric generator, in
+  floating point. Its authors found it up to five times as fast as rejection sampling with one
+  large hash table, and seven times as fast as the 1984 form of Algorithm D.
 * **Teuhola and Nevalainen's HTRY** is set-based rejection sampling with its hash table packed
   into the output array, each entry holding a value and a link, so that it needs no memory beyond
   the output. The packing is intricate, and in its authors' own timings (their Figure 4) it takes
