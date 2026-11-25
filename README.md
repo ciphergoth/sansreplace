@@ -21,7 +21,10 @@ of the four cases.
 * [Guide to algorithms tested](algorithms.md)
 * [Benchmark results](results.md)
 * [Explorer](https://ciphergoth.github.io/sansreplace/): pick _n_ and _k_ and compare every algorithm there
-* [Paper](https://ciphergoth.github.io/sansreplace/cardchoose.pdf): "Cardchoose: simple, fast sampling without replacement"
+* [Paper](https://doi.org/10.5281/zenodo.24545117): "Cardchoose: simple, fast sampling without
+  replacement", on Zenodo; cite it by that DOI, 10.5281/zenodo.24545117, which always leads to the
+  latest version. The [PDF built from this repository](https://ciphergoth.github.io/sansreplace/cardchoose.pdf)
+  may be newer.
 * [Choosing algorithms](choosing.md)
 * Pairwise comparisons: [ratio of times](results/latest/pairwise-ratio.md),
   [difference in time/_k_](results/latest/pairwise-difference.md)

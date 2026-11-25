@@ -5,7 +5,7 @@ comes up, and delete it when it is done.
 
 ## Next
 
-- Push sansreplace, and the one unpushed commit in terraform-config (`df476b0`).
+- Push the one unpushed commit in terraform-config (`df476b0`).
 - Email Daniel Ting: his sparse Fisher–Yates sampler is Ernvall and Nevalainen's HSEL (1982), and
   Dahl's algorithm in Knuth's second edition (1981) is earlier still. His blog post already
   credits Bui (2015) and Dreik.
@@ -30,17 +30,13 @@ comes up, and delete it when it is done.
   the references pass; the layout was not, and the whole design has changed since: STIX Two,
   Libre Franklin headings, Inconsolata, spaced paragraphs and ragged right. Look at the bulleted
   subsection "Algorithms not benchmarked" and the bibliography.
-- Publish the paper on Zenodo. The DOI `10.5281/zenodo.24545118` is reserved for the first
-  version and does not resolve until the record is published. Published files cannot be
-  changed, only superseded by a new version with its own DOI. The paper prints the DOI and the
-  date 25 November 2026, and its repository links point at the tag `paper_v1`, which exists
-  only locally. Before uploading: push the branch and the tag, so that the links resolve;
-  create a GitHub release on `paper_v1` with `runs.tar.xz` attached, as `arxiv_01` has (the
-  results have not changed since that tag, so it is the same file); choose a licence; build the
-  PDF from the tagged commit. If anything is committed before the push, move the tag to it,
-  and change the date if the day of publication changes.
-- Once it is published, note the DOI that covers all versions, which is the one for others to
-  cite, and give it in `README.md`.
+- The paper's first version is published on Zenodo as `10.5281/zenodo.24545118`, built from the
+  tag `paper_v1`; `10.5281/zenodo.24545117` covers all versions. A second version needs: "New
+  version" on the record at zenodo.org, which gives a draft with a new number and DOI; that
+  number and a new tag, `paper_v2`, in `latex/zenodo_draft` and in `latex/cardchoose.tex`, with
+  the new date; a GitHub release on the tag carrying `runs.tar.xz`; then `latex/zenodo_draft`
+  and Publish. The script has only been run against a first version, so check it against the
+  new draft before trusting it.
 - `latex/make_arxiv` and the tag name `arxiv_01` are left over from the arXiv submission.
 
 ## Documents
@@ -58,8 +54,8 @@ comes up, and delete it when it is done.
   now does.
 - Then the issue proposing Cardchoose in place of the `BTreeSet`. Rewrite
   `scratch/rand/rand-proposal.md` first; it predates the plan to open with a pull request.
-- The issue is to cite the paper for the fairness proof by its Zenodo DOI, once the record is
-  published.
+- The issue is to cite the paper for the fairness proof by its Zenodo DOI,
+  `10.5281/zenodo.24545117`.
 
 ## Housekeeping
 
