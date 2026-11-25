@@ -682,7 +682,8 @@ sorted output. SG takes each value independently with probability a
 little over \(k/n\), drawing the gaps between them from a geometric
 distribution in floating point; it starts again if it has fewer than
 \(k\) values, and otherwise discards the excess at random. It needs an
-array a little longer than \(k\). SG* needs none: it runs the
+array longer than \(k\) by a multiple of \(\sqrt{k}\). SG* needs no
+extra length: it runs the
 generator once to count the values, restores its state, and runs it
 again, keeping exactly \(k\) by iterative choosing. SH is rejection
 sampling into a hash table whose hash is the value scaled down, so

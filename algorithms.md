@@ -335,8 +335,8 @@ others there is none beyond the size of the list.
 * **Ahrens and Dieter's SG, SG\* and SH**, all for sorted output. SG takes each value
   independently with probability a little over _k_/_n_, drawing the gaps between them from a
   geometric distribution in floating point; it starts again if it has fewer than _k_ values, and
-  otherwise discards the excess at random. It needs an array a little longer than _k_. SG\* needs
-  none: it runs the generator once to count the values, restores its state, and runs it again,
+  otherwise discards the excess at random. It needs an array longer than _k_ by a multiple of
+  √_k_. SG\* needs no extra length: it runs the generator once to count the values, restores its state, and runs it again,
   keeping exactly _k_ by iterative choosing. SH is rejection sampling into a hash table whose hash
   is the value scaled down, so that the table is nearly in order and an insertion sort finishes
   the job. Their authors found SG and SH about equally fast, and four to five times as fast as

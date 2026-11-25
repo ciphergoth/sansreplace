@@ -15,7 +15,11 @@ comes up, and delete it when it is done.
 - Whether to time Sanders et al.'s Algorithm R and Ahrens and Dieter's SG. Both are reported
   faster than Algorithm D, and the paper lists them under "Algorithms not benchmarked". Timing
   them means implementations in Python, C++ and Rust, a benchmark run, and revised results and
-  choosing sections.
+  choosing sections. SG fits the calling convention as it is: it would allocate its buffer of
+  ⌊_k_ + 4 _a_ √_k_⌋ entries inside the call, as the hash-based algorithms allocate their
+  tables, and write the _k_ it keeps into the output array. Keep that convention: an output
+  array allocated per call would bring back the alignment and page-mapping effects that
+  `measurement.md` describes.
 - Where to host the paper, since arXiv declined it.
 
 ## Paper
