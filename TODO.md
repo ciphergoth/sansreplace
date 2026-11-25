@@ -20,7 +20,9 @@ comes up, and delete it when it is done.
   tables, and write the _k_ it keeps into the output array. Keep that convention: an output
   array allocated per call would bring back the alignment and page-mapping effects that
   `measurement.md` describes.
-- Where to host the paper, since arXiv declined it.
+- Whether to post the paper to Hexagon as well as Zenodo. Hexagon compiles from TeX source in
+  an environment it does not document; its API suggests LuaLaTeX is accepted and says nothing
+  of XeLaTeX, biber or minted.
 
 ## Paper
 
@@ -28,9 +30,18 @@ comes up, and delete it when it is done.
   the references pass; the layout was not, and the whole design has changed since: STIX Two,
   Libre Franklin headings, Inconsolata, spaced paragraphs and ragged right. Look at the bulleted
   subsection "Algorithms not benchmarked" and the bibliography.
-- A new tag and release once a host is chosen: the repository links in `latex/cardchoose.tex`
-  point at the tag `arxiv_01`, and the paper has changed a great deal since. `latex/make_arxiv`
-  and the tag's name are left over from the arXiv submission.
+- Publish the paper on Zenodo. The DOI `10.5281/zenodo.24545118` is reserved for the first
+  version and does not resolve until the record is published. Published files cannot be
+  changed, only superseded by a new version with its own DOI. The paper prints the DOI and the
+  date 25 November 2026, and its repository links point at the tag `paper_v1`, which exists
+  only locally. Before uploading: push the branch and the tag, so that the links resolve;
+  create a GitHub release on `paper_v1` with `runs.tar.xz` attached, as `arxiv_01` has (the
+  results have not changed since that tag, so it is the same file); choose a licence; build the
+  PDF from the tagged commit. If anything is committed before the push, move the tag to it,
+  and change the date if the day of publication changes.
+- Once it is published, note the DOI that covers all versions, which is the one for others to
+  cite, and give it in `README.md`.
+- `latex/make_arxiv` and the tag name `arxiv_01` are left over from the arXiv submission.
 
 ## Documents
 
@@ -47,8 +58,8 @@ comes up, and delete it when it is done.
   now does.
 - Then the issue proposing Cardchoose in place of the `BTreeSet`. Rewrite
   `scratch/rand/rand-proposal.md` first; it predates the plan to open with a pull request.
-- The issue was to cite the paper for the fairness proof once it had an arXiv identifier. It needs
-  the paper's new home instead.
+- The issue is to cite the paper for the fairness proof by its Zenodo DOI, once the record is
+  published.
 
 ## Housekeeping
 

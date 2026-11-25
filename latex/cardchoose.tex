@@ -88,7 +88,7 @@
 
 % A link to a file in the repository, as it was when this version of the
 % paper was tagged
-\newcommand{\repo}[2]{\href{https://github.com/ciphergoth/sansreplace/blob/arxiv_01/#1}{#2}}
+\newcommand{\repo}[2]{\href{https://github.com/ciphergoth/sansreplace/blob/paper_v1/#1}{#2}}
 % Links to an algorithm's Python, C++ and Rust implementations
 \newcommand{\impls}[1]{\repo{python/algorithms/#1.py}{Python},
   \repo{cpp/#1.cpp}{C++} and \repo{rust/src/algorithms/#1.rs}{Rust}}
@@ -107,6 +107,7 @@
 
 \title{Cardchoose: simple, fast sampling without replacement}
 \author{Paul~Crowley}
+\date{25 November 2026}
 
 \begin{document}
 \maketitle
@@ -128,7 +129,8 @@
     worst-case time per number output over most of the range of \(k\),
     and it is by far the simplest algorithm to perform acceptably
     across the whole range tested. GitHub:
-    \url{https://github.com/ciphergoth/sansreplace}
+    \url{https://github.com/ciphergoth/sansreplace}.
+    DOI: \href{https://doi.org/10.5281/zenodo.24545118}{\nolinkurl{10.5281/zenodo.24545118}}
 \end{abstract}
 
 \section{Introduction}
@@ -904,7 +906,7 @@ tested, and the animated graphs in
 \repo{results.md}{\texttt{results.md}}
 in the repository sweep through many values of \(n\). The complete
 benchmark data is in
-\href{https://github.com/ciphergoth/sansreplace/tree/arxiv_01/results/latest}{\texttt{results/latest}}.
+\href{https://github.com/ciphergoth/sansreplace/tree/paper_v1/results/latest}{\texttt{results/latest}}.
 
 Here, \autoref{cpprandomsmalln} to \autoref{rustsortedlargen} graph
 time/\(k\) in ns against \(k\) for two values of \(n\) for random
@@ -1402,7 +1404,7 @@ all of these. We would not read anything into a difference of less than
 5\% between two algorithms at a point, nor less than 10\% where \(k\)
 is in the millions. The three runs are in \texttt{runs.tar.xz}, attached
 to the
-\href{https://github.com/ciphergoth/sansreplace/releases/tag/arxiv_01}{release}
+\href{https://github.com/ciphergoth/sansreplace/releases/tag/paper_v1}{release}
 of the repository that this paper describes, and \texttt{python/agree}
 computes the table above from them.
 
